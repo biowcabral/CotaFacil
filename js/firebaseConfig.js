@@ -3,13 +3,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyD_YXnid23lFBvvMftPOA8A9iqCMi6Uejs",
-    authDomain: "gescon-684aa.firebaseapp.com",
-    projectId: "gescon-684aa",
-    storageBucket: "gescon-684aa.appspot.com",
-    messagingSenderId: "854894210731",
-    appId: "1:854894210731:web:8fb476fbcb76bd7ec291ee",
-    measurementId: "G-RZKSQ0HPGL"
+    apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+    authDomain: "cotafacil-b0489.firebaseapp.com",
+    projectId: "cotafacil-b0489",
+    storageBucket: "cotafacil-b0489.firebasestorage.app",
+    messagingSenderId: "201488478427",
+    appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+    measurementId: "G-9BDP1YLJLE"
 };
 
 const app = initializeApp(firebaseConfig);

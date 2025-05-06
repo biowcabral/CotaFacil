@@ -58,15 +58,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
         // Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
-  authDomain: "cotafacil-b0489.firebaseapp.com",
-  projectId: "cotafacil-b0489",
-  storageBucket: "cotafacil-b0489.firebasestorage.app",
-  messagingSenderId: "201488478427",
-  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
-  measurementId: "G-9BDP1YLJLE"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+            authDomain: "cotafacil-b0489.firebaseapp.com",
+            projectId: "cotafacil-b0489",
+            storageBucket: "cotafacil-b0489.firebasestorage.app",
+            messagingSenderId: "201488478427",
+            appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+            measurementId: "G-9BDP1YLJLE"
+        };
 
         // Inicializar o Firebase
         firebase.initializeApp(firebaseConfig);
@@ -75,20 +75,22 @@ const firebaseConfig = {
 
         document.addEventListener('DOMContentLoaded', () => {
             const registerForm = document.getElementById('registerForm');
+            const errorMessage = document.getElementById('errorMessage');
+
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 const permissionLevel = document.getElementById('permissionLevel').value;
-                
+
                 try {
-                    // Criação do usuário
+                    // Criação do usuário no Firebase Authentication
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     const user = userCredential.user;
 
                     // Salvando no Firestore com email como ID
-                    await db.collection('users').doc(email).set({
+                    await db.collection('users').doc(user.uid).set({
                         email: email,
                         role: permissionLevel
                     });
@@ -97,12 +99,15 @@ const firebaseConfig = {
                     registerForm.reset();
                     window.location.href = 'login.html'; // Redirecionar para a página de login
                 } catch (error) {
+                    // Tratamento de erros
                     if (error.code === 'auth/email-already-in-use') {
-                        document.getElementById('errorMessage').textContent = 'O endereço de email já está em uso por outra conta.';
+                        errorMessage.textContent = 'O endereço de email já está em uso por outra conta.';
+                    } else if (error.code === 'auth/weak-password') {
+                        errorMessage.textContent = 'A senha deve ter pelo menos 6 caracteres.';
                     } else {
-                        document.getElementById('errorMessage').textContent = `Erro: ${error.message}`;
+                        errorMessage.textContent = `Erro: ${error.message}`;
                     }
-                    document.getElementById('errorMessage').style.display = 'block';
+                    errorMessage.style.display = 'block';
                     console.error('Erro ao registrar usuário:', error.code, error.message);
                 }
             });
@@ -116,10 +121,15 @@ const firebaseConfig = {
             <input type="email" id="email" placeholder="Email" required>
             <input type="password" id="password" placeholder="Senha" required>
             <select id="permissionLevel" required>
-                <option value="">Selecione o Nível de Permissão</option>
-                <option value="admin">Admin</option>
-                <option value="vendedor">Vendedor</option>
-                <option value="usuario">Usuário</option>
+                <option value="" disabled selected>Selecione o Nível de Permissão</option>
+                <option value="proprietario-socio">Proprietário-Sócio</option>
+                <option value="gestor-comercial">Gestor Comercial</option>
+                <option value="gestor-administrativo">Gestor Administrativo</option>
+                <option value="vendedor-interno">Vendedor Interno</option>
+                <option value="vendedor-externo">Vendedor Externo</option>
+                <option value="indicador">Indicador</option>
+                <option value="administrativo">Administrativo</option>
+                <option value="estagio-adm">Estágio ADM</option>
             </select>
             <button type="submit">Registrar</button>
             <div id="errorMessage" class="error-message"></div>

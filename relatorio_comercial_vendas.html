@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Comercial - Vendas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .root{
+            --sidebar-background: linear-gradient(135deg, #2c3e50, #3498db); /* Nova paleta de cores */
+            --sidebar-text-color: #ecf0f1;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-y: auto;
+            background-color: #f0f0f0;
+        }
+        .sidebar {
+            width: 60px;
+            background: linear-gradient(135deg, #4e4376, #6a5acd);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar:hover {
+            width: 240px;
+        }
+        
+        .sidebar a {
+            color: #ecf0f1;
+            text-decoration: none;
+            margin: 10px;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 1px;
+        }
+        .sidebar a i {
+            margin-right: 20px;
+            font-size: 1.2em;
+        }
+        
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+        
+        .sidebar:hover a span {
+            display: inline;
+        }
+        
+        .main-content {
+            margin-left: 60px;
+            padding: 20px;
+            flex: 1;
+            transition: margin-left 0.3s;
+        }
+        
+        .sidebar:hover ~ .content {
+            margin-left: 200px;
+        }
+        .header {
+            background-color: #fff;
+            padding: 0px 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between; /* Espaçar o título e as informações do usuário */
+            align-items: center;
+            position: relative; /* Adicionar posição relativa */
+            margin-bottom: 5%;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .header .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px; /* Espaçamento entre a imagem e o nome */
+        }
+        h1 {
+            font-size: 24px; /* Ajuste o tamanho da fonte conforme necessário */
+        }
+        .header .user-info span {
+            font-size: 1em;
+            color: #333;
+        }
+        .chart-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .chart-container h2 {
+            margin-top: 0;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 150px;
+        }
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .filter-group select,
+        .filter-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+        .btn-filter {
+            padding: 10px 20px;
+            background-color: #381e97;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            align-self: flex-end;
+        }
+        .btn-filter:hover {
+            background-color: #6a5acd;
+        }
+        .menu-item {
+        cursor: pointer;
+        }
+        
+        .submenu {
+    display: none;
+
+        }
+
+        .menu-item.active .submenu {
+        display: block;
+        }
+        #userName {
+            margin-right: 14%;
+        }
+        
+</style>
+<!-- Adicione os scripts do Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script>
+    // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+
+    // Inicializar o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Carregar dados do usuário
+                db.collection('users').doc(user.email).get().then((doc) => {
+                    if (doc.exists) {
+                        document.getElementById('userName').textContent = doc.data().name;
+                    } else {
+                        console.log("Nenhum dado encontrado!");
+                    }
+                }).catch((error) => {
+                    console.log("Erro ao obter documento:", error);
+                });
+
+                // Carregar dados dos gráficos
+                loadChartData();
+            }
+        });
+    });
+
+    // Função para fazer o download do relatório de vendas em XLS
+    async function downloadReport() {
+        const adm = document.getElementById('filterAdm').value;
+        const vendedor = document.getElementById('filterVendedor').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+
+        let query = db.collectionGroup('vendas');
+
+        if (adm) {
+            query = query.where('administradora', '==', adm);
+        }
+        if (vendedor) {
+            query = query.where('vendedor', '==', vendedor);
+        }
+        if (startDate) {
+            query = query.where('dataHoraCadastro', '>=', new Date(startDate));
+        }
+        if (endDate) {
+            query = query.where('dataHoraCadastro', '<=', new Date(endDate));
+        }
+
+        const snapshot = await query.get();
+        const rows = [['Nome Completo', 'CPF/CNPJ', 'Administradora', 'Produto', 'Valor do Crédito', 'Vendedor', 'Grupo', 'Cota', 'Data e Hora do Cadastro', 'Status da Venda']];
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const date = new Date(data.dataHoraCadastro.toDate());
+            const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+            const status = data.status || 'Ativa'; // Considera "Ativa" se não houver status
+
+            rows.push([
+                data.nomeCompleto,
+                data.cpfCnpj,
+                data.administradora,
+                data.produto,
+                data.valorCredito,
+                data.vendedor,
+                data.grupo,
+                data.cota,
+                formattedDate,
+                status
+            ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório de Vendas');
+        XLSX.writeFile(workbook, 'Relatorio_Vendas.xlsx');
+    }
+
+    // Função para carregar dados dos gráficos
+    async function loadChartData() {
+        const weeklySales = [];
+        const monthlySales = [];
+
+        const snapshot = await db.collectionGroup('vendas').get();
+        const processedDocs = new Set(); // Conjunto para armazenar IDs de documentos processados
+
+        snapshot.forEach(doc => {
+            if (!processedDocs.has(doc.id)) {
+                const data = doc.data();
+                const date = new Date(data.dataHoraCadastro.toDate());
+                const week = getWeekNumber(date);
+                const month = `${date.getFullYear()}-${date.getMonth() + 1}`; // Formato para mês e ano
+
+                weeklySales.push({ week, value: data.valorCredito });
+                monthlySales.push({ month, value: data.valorCredito });
+
+                processedDocs.add(doc.id); // Adicionar ID do documento ao conjunto
+            }
+        });
+
+        // Ordenar os dados cronologicamente
+        weeklySales.sort((a, b) => a.week - b.week);
+        monthlySales.sort((a, b) => new Date(a.month) - new Date(b.month));
+
+        // Transformar os dados em formato de objeto para renderização dos gráficos
+        const weeklySalesData = weeklySales.reduce((acc, curr) => {
+            acc[curr.week] = (acc[curr.week] || 0) + curr.value;
+            return acc;
+        }, {});
+
+        const monthlySalesData = monthlySales.reduce((acc, curr) => {
+            acc[curr.month] = (acc[curr.month] || 0) + curr.value;
+            return acc;
+        }, {});
+
+        renderChart('weeklySalesChart', 'Vendas Semana a Semana', weeklySalesData);
+        renderChart('monthlySalesChart', 'Vendas Mês a Mês', monthlySalesData);
+    }
+
+    let weeklySalesChartInstance = null;
+    let monthlySalesChartInstance = null;
+
+    // Função para renderizar gráficos
+    function renderChart(canvasId, label, data) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+
+        // Destruir o gráfico existente, se houver
+        if (canvasId === 'weeklySalesChart' && weeklySalesChartInstance) {
+            weeklySalesChartInstance.destroy();
+        } else if (canvasId === 'monthlySalesChart' && monthlySalesChartInstance) {
+            monthlySalesChartInstance.destroy();
+        }
+
+        const chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{
+                    label: label,
+                    data: Object.values(data),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'category',
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Armazenar a instância do gráfico para destruição futura
+        if (canvasId === 'weeklySalesChart') {
+            weeklySalesChartInstance = chartInstance;
+        } else if (canvasId === 'monthlySalesChart') {
+            monthlySalesChartInstance = chartInstance;
+        }
+    }
+
+    // Função para obter o número da semana de uma data
+    function getWeekNumber(date) {
+        const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+        const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+        return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('hidden');
+    }
+
+    function toggleSubmenu(event) {
+        const menuItem = event.currentTarget;
+        menuItem.classList.toggle('active');
+    }
+
+    // Função para aplicar os filtros
+    async function applyFilters() {
+        const adm = document.getElementById('filterAdm').value;
+        const vendedor = document.getElementById('filterVendedor').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+
+        const weeklySales = [];
+        const monthlySales = [];
+
+        const snapshot = await db.collectionGroup('vendas').get();
+        const processedDocs = new Set(); // Conjunto para armazenar IDs de documentos processados
+
+        snapshot.forEach(doc => {
+            if (!processedDocs.has(doc.id)) {
+                const data = doc.data();
+                const date = new Date(data.dataHoraCadastro.toDate());
+
+                // Aplicar filtros no lado do cliente
+                if ((adm && data.administradora !== adm) ||
+                    (vendedor && data.vendedor !== vendedor) ||
+                    (startDate && date < new Date(startDate)) ||
+                    (endDate && date > new Date(endDate))) {
+                    return;
+                }
+
+                const week = getWeekNumber(date);
+                const month = `${date.getFullYear()}-${date.getMonth() + 1}`; // Formato para mês e ano
+
+                weeklySales.push({ week, value: data.valorCredito });
+                monthlySales.push({ month, value: data.valorCredito });
+
+                processedDocs.add(doc.id); // Adicionar ID do documento ao conjunto
+            }
+        });
+
+        // Ordenar os dados cronologicamente
+        weeklySales.sort((a, b) => a.week - b.week);
+        monthlySales.sort((a, b) => new Date(a.month) - new Date(b.month));
+
+        // Transformar os dados em formato de objeto para renderização dos gráficos
+        const weeklySalesData = weeklySales.reduce((acc, curr) => {
+            acc[curr.week] = (acc[curr.week] || 0) + curr.value;
+            return acc;
+        }, {});
+
+        const monthlySalesData = monthlySales.reduce((acc, curr) => {
+            acc[curr.month] = (acc[curr.month] || 0) + curr.value;
+            return acc;
+        }, {});
+
+        renderChart('weeklySalesChart', 'Vendas Semana a Semana', weeklySalesData);
+        renderChart('monthlySalesChart', 'Vendas Mês a Mês', monthlySalesData);
+    }
+
+    // Função para preencher dinamicamente os vendedores no filtro
+    async function populateVendedores() {
+        const vendedorSelect = document.getElementById('filterVendedor');
+        vendedorSelect.innerHTML = '<option value="">Todos os Vendedores</option>'; // Limpa a lista de vendedores antes de preenchê-la
+
+        const snapshot = await db.collection('users').get();
+        snapshot.forEach(doc => {
+            const user = doc.data();
+            const option = document.createElement('option');
+            option.value = user.nome || user.name; // Verifica se o campo 'nome' ou 'name' existe
+            option.textContent = user.nome || user.name; // Verifica se o campo 'nome' ou 'name' existe
+            vendedorSelect.appendChild(option);
+        });
+    }
+
+    // Função para fazer o download do relatório de vendas em XLS
+    async function downloadReport() {
+        const adm = document.getElementById('filterAdm').value;
+        const vendedor = document.getElementById('filterVendedor').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+
+        const snapshot = await db.collectionGroup('vendas').get();
+        const rows = [['Nome Completo', 'CPF/CNPJ', 'Administradora', 'Produto', 'Valor do Crédito', 'Vendedor', 'Grupo', 'Cota', 'Data e Hora do Cadastro', 'Status da Venda']];
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const date = new Date(data.dataHoraCadastro.toDate());
+
+            // Aplicar filtros no lado do cliente
+            if ((adm && data.administradora !== adm) ||
+                (vendedor && data.vendedor !== vendedor) ||
+                (startDate && date < new Date(startDate)) ||
+                (endDate && date > new Date(endDate))) {
+                return;
+            }
+
+            const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+            const status = data.status || 'Ativa'; // Considera "Ativa" se não houver status
+
+            rows.push([
+                data.nomeCompleto,
+                data.cpfCnpj,
+                data.administradora,
+                data.produto,
+                data.valorCredito,
+                data.vendedor,
+                data.grupo,
+                data.cota,
+                formattedDate,
+                status
+            ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório de Vendas');
+        XLSX.writeFile(workbook, 'Relatorio_Vendas.xlsx');
+    }
+
+    // Chama a função para preencher os vendedores quando o documento é carregado
+    document.addEventListener('DOMContentLoaded', () => {
+        populateVendedores();
+    });
+</script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard.html" style="margin-left: 40px;"><i class="fas fa-home"></i><span> Home</span></a>
+        <div class="menu-item" onclick="toggleSubmenu(event)">
+            <a><i class="fas fa-chart-bar"></i><span> Comercial</span></a>
+            <div class="submenu">
+                <a href="relatorio_comercial_vendas.html"><i class="fas fa-shopping-cart"></i><span> Vendas</span></a>
+                <a href="relatorio_comercial_comissao.html"><i class="fas fa-money-bill-wave"></i><span> Comissão a Pagar</span></a>
+                <a href="relatorio_comercial_comissao_a_receber.html"><i class="fas fa-money-bill-wave"></i><span> Comissão a Receber</span></a>
+                <a href="relatorio_comercial_estorno.html"><i class="fas fa-undo-alt"></i><span> Estorno</span></a>
+            </div>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1><img src="relatorio_comercial_vendas_BEMVINDO.png" style="width: 720px;" style="align-items: ce;" alt=""></h1>
+            <div class="user-info">
+                <a href="gerenciar_dados.html" class="profile-link">
+                    <img src="user-avatar.jpeg" alt="Perfil">
+                    <span id="userName">Nome do Usuário</span> <!-- Nome inicial será atualizado pelo Firebase -->
+                </a>
+            </div>
+        </div>
+                <div class="content">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filterAdm">Administradora</label>
+                    <select id="filterAdm">
+                        <option value="">Todas as Administradoras</option>
+                        <option value="Magalu">Magalu</option>
+                        <option value="Servopa">Servopa</option>
+                        <option value="União">União</option>
+                        <option value="Gazin">Gazin</option>
+                        <option value="Zema">Zema</option>
+                        <option value="Embracon">Embracon</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterVendedor">Vendedor</label>
+                    <select id="filterVendedor">
+                        <option value="">Todos os Vendedores</option>
+                        <!-- Opções serão preenchidas dinamicamente -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterStartDate">Data de Início</label>
+                    <input type="date" id="filterStartDate">
+                </div>
+                <div class="filter-group">
+                    <label for="filterEndDate">Data de Fim</label>
+                    <input type="date" id="filterEndDate">
+                </div>
+                <button class="btn-filter" onclick="applyFilters()">Aplicar Filtros</button>
+                <button class="btn-filter" onclick="downloadReport()">Download Relatório</button>
+            </div>
+            <div class="chart-container">
+                <h2>Vendas Semana a Semana</h2>
+                <canvas id="weeklySalesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h2>Vendas Mês a Mês</h2>
+                <canvas id="monthlySalesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</body>

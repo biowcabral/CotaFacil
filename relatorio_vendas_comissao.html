@@ -1,0 +1,284 @@
+<body>
+    <div class="container">
+        <h1>Relatório de Vendas - Comissões</h1>
+        <div id="progressContainer" style="display: none;">
+            <div id="progressBar" style="width: 0%; height: 20px; background-color: green;"></div>
+        </div>
+        <button id="saveAllButton">Salvar Todos</button>
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Vendedor</th>
+                    <th>Produto</th>
+                    <th>Valor Crédito</th>
+                    <th>Comissão</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- As linhas da tabela serão preenchidas dinamicamente -->
+            </tbody>
+        </table>
+        <div id="pagination">
+            <button id="prevPageButton" disabled>Anterior</button>
+            <span id="pageInfo">Página 1</span>
+            <button id="nextPageButton">Próxima</button>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        const rowsPerPage = 50;
+        let currentPage = 1;
+        let lastVisible = null;
+    
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                fetchSales();
+            } else {
+                alert('Você precisa estar logado para acessar esta página.');
+                window.location.href = 'login.html'; // Redireciona para a página de login
+            }
+        });
+    
+        async function fetchSales() {
+            const salesTableBody = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
+            salesTableBody.innerHTML = ''; // Limpar a tabela antes de preenchê-la
+    
+            let query = db.collectionGroup('vendas')
+                .where('status', 'in', ['Ativa', 'Contemplada'])
+                .orderBy('dataHoraCadastro')
+                .limit(rowsPerPage);
+    
+            if (lastVisible) {
+                query = query.startAfter(lastVisible);
+            }
+    
+            const snapshot = await query.get();
+            lastVisible = snapshot.docs[snapshot.docs.length - 1];
+    
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = new Date(data.dataHoraCadastro.toDate());
+                const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+    
+                const row = salesTableBody.insertRow();
+                row.insertCell(0).textContent = formattedDate;
+                row.insertCell(1).textContent = data.vendedor;
+                row.insertCell(2).textContent = data.produto;
+                row.insertCell(3).textContent = formatCurrency(data.valorCredito);
+                row.insertCell(4).textContent = formatCurrency(calcularComissao(data, date.getMonth() + 1));
+    
+                const saveButton = document.createElement('button');
+                saveButton.textContent = 'Salvar';
+                saveButton.onclick = () => salvarComissao(doc.id, data);
+                row.insertCell(5).appendChild(saveButton);
+            });
+    
+            document.getElementById('pageInfo').textContent = `Página ${currentPage}`;
+            document.getElementById('prevPageButton').disabled = currentPage === 1;
+            document.getElementById('nextPageButton').disabled = snapshot.docs.length < rowsPerPage;
+        }
+    
+        document.getElementById('prevPageButton').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                lastVisible = null; // Reset lastVisible to fetch previous page
+                fetchSales();
+            }
+        });
+    
+        document.getElementById('nextPageButton').addEventListener('click', () => {
+            if (lastVisible) {
+                currentPage++;
+                fetchSales();
+            }
+        });
+    
+        async function salvarComissao(docId, data) {
+            if (data.dataHoraCadastro) {
+                try {
+                    const date = new Date(data.dataHoraCadastro.toDate());
+                    const vendedor = data.vendedor;
+    
+                    for (let mes = 1; mes <= 12; mes++) {
+                        const commissionDate = new Date(date);
+                        commissionDate.setMonth(commissionDate.getMonth() + mes);
+                        const monthYear = `${commissionDate.getFullYear()}-${String(commissionDate.getMonth() + 1).padStart(2, '0')}`;
+                        const commission = calcularComissao(data, mes);
+    
+                        if (commission > 0) {
+                            const relatorioComissaoRef = db.collection('relatoriocomissao').doc(vendedor);
+    
+                            // Atualizar o campo do mês com o valor da comissão
+                            await relatorioComissaoRef.set({
+                                [monthYear]: firebase.firestore.FieldValue.increment(commission)
+                            }, { merge: true });
+                        }
+                    }
+    
+                    console.log(`Comissões salvas com sucesso para a venda ${docId}`);
+                } catch (error) {
+                    console.error(`Erro ao salvar comissão para a venda ${docId}:`, error);
+                }
+            } else {
+                console.error(`Venda sem data de cadastro: ${docId}`);
+            }
+        }
+    
+        async function saveAll() {
+            const saveButtons = document.querySelectorAll('#salesTable tbody tr button');
+            const totalButtons = saveButtons.length;
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+    
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+    
+            for (let i = 0; i < totalButtons; i++) {
+                saveButtons[i].click();
+                const progress = ((i + 1) / totalButtons) * 100;
+                progressBar.style.width = `${progress}%`;
+                await new Promise(resolve => setTimeout(resolve, 100)); // Pequeno atraso para garantir que as operações assíncronas sejam processadas
+            }
+    
+            alert('Todas as comissões foram salvas com sucesso!');
+            progressContainer.style.display = 'none';
+        }
+    
+        document.getElementById('saveAllButton').addEventListener('click', saveAll);
+    
+        function calcularComissao(data, mes) {
+            const valorCredito = data.valorCredito;
+            const administradora = data.administradora;
+            const produto = data.produto;
+    
+            if (administradora === "Magalu" && ["NEGOCIADO - AUTO 50-50 NEGOCIADO", "NEGOCIADO - CAMINHÃO 50-50 NEGOCIADO", "NEGOCIADO - IMÓVEL 50-50 NEGOCIADO"].includes(produto)) {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0012;
+                if (mes === 12) return valorCredito * 0.007;
+            } else if (administradora === "Magalu" && produto === "NEGOCIADO - IMÓVEL LINEAR A") {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0013;
+            } else if (administradora === "Magalu" && produto === "NEGOCIADO - IMÓVEL LINEAR") {
+                if (mes >= 1 && mes <= 2) return valorCredito * 0.0013;
+            } else if (administradora === "Magalu" && ["NORMAL - AUTO LINEAR", "NORMAL - MOTO LINEAR", "NORMAL - ELETRO LINEAR", "NORMAL - SERVIÇO LINEAR", "NORMAL - IMÓVEL LINEAR", "NORMAL - CAMINHÃO LINEAR 50-50 REDUZIDA"].includes(produto)) {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0023;
+            } else if (administradora === "Gazin" && ["ELETRO - LINEAR", "SERVIÇOS - LINEAR", "MOTO - LINEAR", "AUTOMÓVEIS - LINEAR", "IMÓVEL - LINEAR"].includes(produto)) {
+                if (mes >= 1 && mes <= 4) return valorCredito * 0.0033;
+                if (mes === 5) return valorCredito * 0.0050;
+            } else if (administradora === "Gazin" && ["ELETRO - MEIA PARCELA", "SERVIÇOS - MEIA PARCELA", "MOTO - MEIA PARCELA", "AUTOMÓVEIS - MEIA PARCELA", "IMÓVEL - MEIA PARCELA"].includes(produto)) {
+                if (mes >= 1 && mes <= 4) return valorCredito * 0.0017;
+                if (mes === 5) return valorCredito * 0.0024;
+            } else if (administradora === "Servopa" && ["IMÓVEIS 100%", "AUTO 100%"].includes(produto)) {
+                if (mes === 1) return valorCredito * 0.0040;
+                if (mes >= 2 && mes <= 5) return valorCredito * 0.0025;
+            } else if (administradora === "Servopa" && ["IMÓVEIS 50%", "AUTO 50%"].includes(produto)) {
+                if (mes === 1) return valorCredito * 0.0020;
+                if (mes >= 2 && mes <= 5) return valorCredito * 0.0013;
+            } else if (administradora === "Embracon" && ["EMBRACON - IMÓVEL LINEAR", "EMBRACON - AUTO LINEAR"].includes(produto)) {
+                if (mes === 1) return valorCredito * 0.0030;
+                if (mes === 2) return valorCredito * 0.0025;
+                if (mes >= 3 && mes <= 5) return valorCredito * 0.0025;
+                if (mes === 6) return valorCredito * 0.0040;
+            } else if (administradora === "Zema" && produto === "IMOVEL 120X TX20% S-AD TC") {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0025;
+                if (mes === 7) return valorCredito * 0.0030;
+            } else if (administradora === "Zema" && produto === "IMOVEL 144X TX21% S-AD TC") {
+                if (mes >= 1 && mes <= 7) return valorCredito * 0.0020;
+                if (mes === 8) return valorCredito * 0.0040;
+            } else if (administradora === "Zema" && produto === "IMOVEL 180X TX23% S-AD TC") {
+                if (mes >= 1 && mes <= 9) return valorCredito * 0.0015;
+                if (mes === 10) return valorCredito * 0.0045;
+            } else if (administradora === "Zema" && produto === "AUTOS 72X TX18% S-AD TC") {
+                if (mes >= 1 && mes <= 4) return valorCredito * 0.0045;
+            } else if (administradora === "Zema" && produto === "PESADOS 100X TX20% S-AD TC") {
+                if (mes === 1) return valorCredito * 0.0040;
+                if (mes >= 2 && mes <= 4) return valorCredito * 0.0030;
+                if (mes === 5) return valorCredito * 0.0050;
+            } else if (administradora === "Zema" && produto === "PESADOS 120X TX20% S-AD TC") {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0025;
+                if (mes === 7) return valorCredito * 0.0030;
+            } else if (administradora === "Zema" && produto === "PESADOS 144X TX21% S-AD TC") {
+                if (mes >= 1 && mes <= 7) return valorCredito * 0.0020;
+                if (mes === 8) return valorCredito * 0.0040;
+            } else if (administradora === "Zema" && produto === "IMOVEL 120X TX20% S-AD TC - PARCELA REDUZIDA") {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0013;
+                if (mes === 7) return valorCredito * 0.0015;
+                if (mes >= 11 && mes <= 16) return valorCredito * 0.0013;
+                if (mes === 17) return valorCredito * 0.0015;
+            } else if (administradora === "Zema" && produto === "IMOVEL 144X TX21% S-AD TC - PARCELA REDUZIDA") {
+                if (mes >= 1 && mes <= 7) return valorCredito * 0.0010;
+                if (mes === 8) return valorCredito * 0.0020;
+                if (mes >= 11 && mes <= 17) return valorCredito * 0.0010;
+                if (mes === 18) return valorCredito * 0.0020;
+            } else if (administradora === "Zema" && produto === "IMOVEL 180X TX23% S-AD TC - PARCELA REDUZIDA") {
+                if (mes >= 1 && mes <= 9) return valorCredito * 0.0008;
+                if (mes === 10) return valorCredito * 0.0023;
+                if (mes === 20) return valorCredito * 0.0023;
+            } else if (administradora === "Zema" && produto === "AUTOS 72X TX18% S-AD TC - PARCELA REDUZIDA") {
+                if (mes >= 1 && mes <= 4) return valorCredito * 0.0023;
+                if (mes >= 11 && mes <= 14) return valorCredito * 0.0023;
+            } else if (administradora === "Zema" && produto === "PESADOS 100X TX20% S-AD TC - PARCELA REDUZIDA") {
+                if (mes === 1) return valorCredito * 0.0020;
+                if (mes >= 2 && mes <= 4) return valorCredito * 0.0015;
+                if (mes === 5) return valorCredito * 0.0025;
+                if (mes >= 11 && mes <= 14) return valorCredito * 0.0015;
+                if (mes === 15) return valorCredito * 0.0025;
+            } else if (administradora === "Zema" && produto === "PESADOS 120X TX20% S-AD TC - PARCELA REDUZIDA") {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0013;
+                if (mes === 7) return valorCredito * 0.0015;
+                if (mes >= 11 && mes <= 16) return valorCredito * 0.0013;
+                if (mes === 17) return valorCredito * 0.0015;
+            } else if (administradora === "Zema" && produto === "PESADOS 144X TX21% S-AD TC - PARCELA REDUZIDA") {
+                if (mes >= 1 && mes <= 7) return valorCredito * 0.0010;
+                if (mes === 8) return valorCredito * 0.0020;
+                if (mes >= 11 && mes <= 17) return valorCredito * 0.0010;
+                if (mes === 18) return valorCredito * 0.0020;
+            } else if (administradora === "União" && ["IMÓVEIS", "AUTOMÓVEIS"].includes(produto)) {
+                if (mes >= 1 && mes <= 5) return valorCredito * 0.0013;
+                if (mes === 6) return valorCredito * 0.0012;
+                if (mes === 10) return valorCredito * 0.0025;
+            } else if (administradora === "União" && ["IMÓVEIS MCA", "AUTOMÓVEIS MCA"].includes(produto)) {
+                if (mes === 1) return valorCredito * 0.0015;
+                if (mes >= 2 && mes <= 5) return valorCredito * 0.0014;
+                if (mes === 6) return valorCredito * 0.0016;
+            } else if (administradora === "União" && ["CAMINHÕES", "IMPLEMENTOS"].includes(produto)) {
+                if (mes >= 1 && mes <= 6) return valorCredito * 0.0005;
+            } else if (administradora === "União" && ["MOTOCICLETAS", "SERVIÇOS"].includes(produto)) {
+                if (mes === 1) return valorCredito * 0.0030;
+                if (mes >= 2 && mes <= 5) return valorCredito * 0.0020;
+                if (mes === 6) return valorCredito * 0.0060;
+            } else if(administradora === "BSB" &&["TODOS"].includes(produto)){
+                if (mes >= 1 && mes <= 6) return valorCredito * 0;
+                if (mes === 12) return valorCredito * 0;
+            } else if(administradora === "ANCORA" &&["TODOS"].includes(produto)){
+                if (mes >= 1 && mes <= 6) return valorCredito * 0;
+                if (mes === 12) return valorCredito * 0;
+            }
+    
+            return 0.0;
+        }
+    
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+    </script>
+</body>

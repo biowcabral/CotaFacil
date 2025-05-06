@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas por Clientes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <style>
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #381e97;
+            --button-hover-background: #9d98c2;
+            --button-text-color: white;
+        }
+        
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --button-text-color: white;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+        
+        .buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .dropdown {
+            display: inline-block;
+            position: relative;
+            margin: 10px;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: var(--card-background);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        .dropdown-content button {
+            color: var(--text-color);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: var(--card-background);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .dropdown-content button:hover {
+            background-color: var(--button-hover-background);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+        }
+        
+        tr {
+            border-bottom: 2px solid var(--button-background);
+        }
+        
+        input[type="datetime-local"],
+        input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+        
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar:hover {
+            width: 200px;
+        }
+        
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+        
+        .sidebar:hover a span {
+            display: inline;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 60px;
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+        
+        .sidebar:hover ~ .main-content {
+            margin-left: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+        
+            .sidebar:hover {
+                width: 100%;
+            }
+        
+            .main-content {
+                margin-left: 0;
+            }
+        
+            .sidebar:hover ~ .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        .total-vendas-card {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 250px;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #6a5acd;
+            z-index: 1001; /* Ensure it stays above other content */
+        }
+        
+        .filter-container {
+            position: relative;
+            width: 250px;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: var(--card-background);
+            margin-bottom: 20px;
+        }
+        
+        .vendedor-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .vendedor-item input {
+            margin-right: 8px;
+        }
+        
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+        
+        .card-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        #summaryTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        #summaryTable, #summaryTable th, #summaryTable td {
+            border: 1px solid #ddd;
+        }
+        
+        #summaryTable th, #summaryTable td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        #summaryTable th {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+        }
+        .saved-today {
+        background-color: #6a5acd; /* Verde claro */
+        }
+        #scrollButtons {
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #scrollButtons button {
+    padding: 10px;
+    background-color: rgba(106, 90, 205, 0.8); /* Fundo roxo com 80% de opacidade */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#scrollButtons button:hover {
+    background-color: rgba(106, 90, 205, 1); /* Fundo roxo sólido ao passar o mouse */
+}
+    .all-button {
+        padding: 10px 20px;
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            gap: 10px;
+            margin-right: 10px;
+}
+
+.all-button:hover {
+    background-color: #6a5acd; /* Cor de fundo verde escuro ao passar o mouse */
+}
+button {
+            padding: 10px 20px;
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            gap: 10px;
+        }
+
+        
+        button:hover {
+            background-color: var(--button-hover-background);
+        }
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 995px;
+            max-width: 1200px;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100px; /* Ajuste a altura mínima para caber o nome completo */
+            margin-left: 130px;
+            margin-bottom: 0px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--header-text-color);
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+            text-align: center;
+            max-width: 150px; /* Ajuste conforme necessário */
+            word-wrap: break-word;
+        }
+        
+        .user-info {
+    display: flex;
+    flex-direction: row; /* Altera a direção do flex para linha */
+    align-items: center;
+    position: absolute;
+    right: 20px;
+    text-align: center;
+    max-width: 150px; /* Ajuste conforme necessário */
+    word-wrap: break-word;
+    margin-top: -90px;
+}
+
+.user-info img {
+    margin-right: 10px; /* Espaçamento entre a imagem e o texto */
+}
+#filterCpfCnpj {
+    border-radius: px;
+}
+        
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard_administrativo.html"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="gerenciamento_processos.html"><i class="fas fa-tasks"></i><span>CRM de Processos</span></a>
+        <a href="relatorio_vendas_clientes.html"><i class="fas fa-chart-bar"></i><span>Relatório de Vendas</span></a>
+        <a href="rotina_lance_boleto.html"><i class="fas fa-bullhorn"></i><span>Rotina Lance Boleto</span></a>
+        <a href="pos_vendas.html"><i class="fas fa-users"></i><span>Pós Vendas</span></a>
+    </div>
+    <div class="main-content">
+        <div class="container">
+            <h1><img src="RelatorioDeVendasPorCliente.png" alt=""></h1>
+            <div class="user-info">
+                <a href="gerenciar_dados.html" class="profile-link">
+                    <img src="user-avatar.jpeg" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%;">
+                    <br>
+                    <span id="userName">Nome do Usuário</span> <!-- Nome inicial será atualizado pelo Firebase -->
+                </a>
+            </div>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>Total</th>
+                        <th>Total Ativas</th>
+                        <th>Total Canceladas + Desistentes</th>
+                        <th>Total Canceladas</th>
+                        <th>Total Desistentes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="totalVendasFiltradas">R$ 0,00</td>
+                        <td id="totalVendas">R$ 0,00</td>
+                        <td id="totalCanceladasDesistentes">R$ 0,00</td>
+                        <td id="totalCanceladas">R$ 0,00</td>
+                        <td id="totalDesistentes">R$ 0,00</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="buttons" id="buttonsContainer">
+                <!-- Botões serão gerados dinamicamente aqui -->
+            </div>
+            <table id="salesTable">
+                <thead>
+                    <tr>
+                        <th>
+                            Nome Completo
+                            <input type="text" id="filterNomeCompleto" placeholder="Filtrar por Nome">
+                        </th>
+                        <th>
+                            CPF/CNPJ
+                            <input type="text" id="filterCpfCnpj" placeholder="Filtrar por CPF/CNPJ">
+                        </th>
+                        <th>Administradora</th>
+                        <th>Valor do Crédito</th>
+                        <th>
+                            Vendedor
+                            <select id="filterVendedor">
+                                <option value="">Todos</option>
+                            </select>
+                        </th>
+                        <th>Grupo</th>
+                        <th>Cota</th>
+                        <th>Data da Venda</th>
+                        <th>Mês do Pagamento</th>
+                        <th>
+                            Status
+                            <select id="filterStatus">
+                                <option value="">Todos</option>
+                                <option value="Ativa">Ativa</option>
+                                <option value="Contemplada">Contemplada</option>
+                                <option value="Cancelada">Cancelada</option>
+                                <option value="Falta pagar">Falta pagar</option>
+                                <option value="Desistente">Desistente</option>
+                            </select>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- As vendas serão listadas aqui -->
+                </tbody>
+            </table>
+            <button onclick="saveAllClientes()">Salvar Todos</button>
+        </div>
+    </div>
+    <div id="scrollButtons">
+        <button id="scrollToTop">Topo da tabela</button>
+        <button id="scrollToBottom">Final da tabela</button>
+    </div>
+</body>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                fetchSales();
+            } else {
+                alert('Você precisa estar logado para acessar esta página.');
+                window.location.href = 'login.html'; // Redireciona para a página de login
+            }
+        });
+    
+        async function fetchSales() {
+    const snapshot = await db.collectionGroup('vendas').get();
+    const tbody = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
+    const sales = [];
+    const vendedoresSet = new Set();
+
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        // Converte o Timestamp do Firebase para um objeto Date
+        const date = new Date(data.dataHoraCadastro.toDate());
+
+        // Aqui formata a data para o formato yyyy-MM-dd
+        const formattedDate = date.toISOString().slice(0, 10); // Pega apenas a parte yyyy-MM-dd
+
+        const dataVenda = data.dataVenda ? data.dataVenda : '2024-10-10';
+        
+        sales.push({
+            data,
+            date,
+            formattedDate, // Aqui estamos usando o valor formatado
+            dataVenda,
+            docPath: doc.ref.path
+        });
+
+        vendedoresSet.add(data.vendedor);
+    });
+    
+            // Ordenar as vendas por data
+            sales.sort((a, b) => a.date - b.date);
+
+const dates = new Set();
+sales.forEach(sale => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td>${sale.data.nomeCompleto}</td>
+        <td>${sale.data.cpfCnpj}</td>
+        <td>${sale.data.administradora}</td>
+        <td><input type="text" value="${formatCurrency(sale.data.valorCredito)}" onchange="markAsEdited(this)" oninput="formatCurrencyInput(this)"></td>
+        <td>${sale.data.vendedor}</td>
+        <td>${sale.data.grupo}</td>
+        <td>${sale.data.cota}</td>
+        <td><input type="date" value="${sale.formattedDate}" onchange="markAsEdited(this)"></td>
+        <td><input type="datetime-local" value="${sale.formattedDate}T00:00" onchange="markAsEdited(this)"></td>
+        <td>
+            <div style="display: flex; align-items: center;">
+                <select onchange="markAsEdited(this)" style="margin-right: 10px;">
+                    <option value="Ativa" ${sale.data.status === 'Ativa' ? 'selected' : ''}>Ativa</option>
+                    <option value="Contemplada" ${sale.data.status === 'Contemplada' ? 'selected' : ''}>Contemplada</option>
+                    <option value="Cancelada" ${sale.data.status === 'Cancelada' ? 'selected' : ''}>Cancelada</option>
+                    <option value="Falta pagar" ${sale.data.status === 'Falta pagar' ? 'selected' : ''}>Falta pagar</option>
+                    <option value="Desistente" ${sale.data.status === 'Desistente' ? 'selected' : ''}>Desistente</option>
+                </select>
+                <button onclick="saveData('${sale.docPath}', this)">Salvar</button>
+            </div>
+        </td>
+    `;
+    const monthYear = `${String(sale.date.getMonth() + 1).padStart(2, '0')}/${sale.date.getFullYear()}`;
+    row.setAttribute('data-date', monthYear);
+    row.setAttribute('data-doc-path', sale.docPath);
+    dates.add(monthYear);
+});
+    
+    applySavedTodayClass();
+    calculateTotals();
+    generateButtons(Array.from(dates).sort((a, b) => {
+        const [monthA, yearA] = a.split('/').map(Number);
+        const [monthB, yearB] = b.split('/').map(Number);
+        return yearA - yearB || monthA - monthB;
+    }));
+    
+    populateVendedorFilter(vendedoresSet);
+}
+    
+function generateButtons(dates) {
+    const buttonsContainer = document.getElementById('buttonsContainer');
+    const years = {};
+
+    dates.forEach(date => {
+        const [month, year] = date.split('/');
+        if (!years[year]) {
+            years[year] = [];
+        }
+        years[year].push(month);
+    });
+
+    // Adicionar botão "Todos"
+    const allButton = document.createElement('button');
+allButton.textContent = 'Todos';
+allButton.className = 'all-button'; // Adiciona a classe 'all-button'
+allButton.onclick = resetFilters;
+buttonsContainer.appendChild(allButton);
+
+    Object.keys(years).forEach(year => {
+        const dropdown = document.createElement('div');
+        dropdown.className = 'dropdown';
+
+        const yearButton = document.createElement('button');
+        yearButton.textContent = year;
+        dropdown.appendChild(yearButton);
+
+        const dropdownContent = document.createElement('div');
+        dropdownContent.className = 'dropdown-content';
+
+        years[year].forEach(month => {
+            const monthButton = document.createElement('button');
+            monthButton.textContent = `${month}/${year}`;
+            monthButton.onclick = () => filterSales(`${month}/${year}`);
+            dropdownContent.appendChild(monthButton);
+        });
+
+        dropdown.appendChild(dropdownContent);
+        buttonsContainer.appendChild(dropdown);
+    });
+}
+
+function resetFilters() {
+    const rows = document.querySelectorAll('#salesTable tbody tr');
+    rows.forEach(row => {
+        row.style.display = '';
+    });
+}
+
+function filterSales(monthYear) {
+    console.log(`Filtering sales for: ${monthYear}`);
+    const rows = document.querySelectorAll('#salesTable tbody tr');
+    rows.forEach(row => {
+        const rowDate = row.getAttribute('data-date');
+        console.log(`Row date: ${rowDate}`);
+        if (rowDate === monthYear) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    // Não chamar filterTable aqui, pois queremos apenas filtrar por mês e ano
+}
+    
+        function markAsEdited(input) {
+            input.classList.add('edited');
+        }
+    
+        async function saveData(docPath, button) {
+            const row = button.closest('tr');
+            const dateInput = row.querySelector('input[type="datetime-local"]');
+            const valorCreditoInput = row.querySelector('input[type="text"]');
+            const dataVendaInput = row.querySelector('input[type="date"]');
+            const statusSelect = row.querySelector('select');
+            const vendedor = row.cells[4].textContent;
+            const cliente = row.cells[0].textContent;
+    
+            const updates = {};
+    
+            if (dateInput) {
+                const newDate = new Date(dateInput.value);
+                updates.dataHoraCadastro = newDate;
+            }
+    
+            if (valorCreditoInput) {
+                const newValorCredito = parseFloat(valorCreditoInput.value.replace(/\D/g, '')) / 100;
+                if (!isNaN(newValorCredito)) {
+                    updates.valorCredito = newValorCredito;
+                } else {
+                    alert('Valor do crédito inválido.');
+                    return;
+                }
+            }
+    
+            if (dataVendaInput) {
+                updates.dataVenda = dataVendaInput.value;
+            }
+    
+            if (statusSelect) {
+                updates.status = statusSelect.value;
+            }
+    
+            await db.doc(docPath).update(updates);
+            await updateRelatoriosClientes(vendedor, cliente, updates);
+    
+            // Marcar a linha como salva hoje
+            const today = new Date().toISOString().split('T')[0];
+            localStorage.setItem(`saved-${docPath}`, today);
+            row.classList.add('saved-today');
+        }
+    
+        async function updateRelatoriosClientes(vendedor, cliente, updates) {
+            const dataHoraCadastro = updates.dataHoraCadastro || new Date();
+            const dateKey = `${dataHoraCadastro.getFullYear()}-${String(dataHoraCadastro.getMonth() + 1).padStart(2, '0')}-${String(dataHoraCadastro.getDate()).padStart(2, '0')}`;
+    
+            const relatorioRef = db.collection('relatorioclientes').doc(vendedor).collection('clientes').doc(cliente);
+            const relatorioDoc = await relatorioRef.get();
+    
+            if (relatorioDoc.exists) {
+                const relatorioData = relatorioDoc.data();
+                relatorioData[dateKey] = (relatorioData[dateKey] || 0) + (updates.valorCredito || 0);
+                await relatorioRef.update(relatorioData);
+            } else {
+                const relatorioData = {};
+                relatorioData[dateKey] = updates.valorCredito || 0;
+                await relatorioRef.set(relatorioData);
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+    
+        function formatCurrencyInput(input) {
+            let value = input.value.replace(/\D/g, '');
+            value = (value / 100).toFixed(2);
+            input.value = formatCurrency(value);
+        }
+    
+        function populateVendedorFilter(vendedoresSet) {
+            const filterVendedor = document.getElementById('filterVendedor');
+            filterVendedor.innerHTML = '<option value="">Todos</option>'; // Adiciona a opção "Todos"
+            Array.from(vendedoresSet).sort().forEach(vendedor => {
+                const option = document.createElement('option');
+                option.value = vendedor;
+                option.textContent = vendedor;
+                filterVendedor.appendChild(option);
+            });
+        }
+    
+        function filterTable() {
+            const filterNomeCompleto = document.getElementById('filterNomeCompleto').value.toLowerCase();
+            const filterCpfCnpj = document.getElementById('filterCpfCnpj').value.toLowerCase();
+            const filterVendedor = document.getElementById('filterVendedor').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+
+            rows.forEach(row => {
+                const nomeCompleto = row.cells[0].textContent.toLowerCase();
+                const cpfCnpj = row.cells[1].textContent.toLowerCase();
+                const vendedor = row.cells[4].textContent;
+                const status = row.querySelector('select').value;
+                let shouldShow = true;
+
+                if (filterNomeCompleto && !nomeCompleto.includes(filterNomeCompleto)) {
+                    shouldShow = false;
+                }
+                if (filterCpfCnpj && !cpfCnpj.includes(filterCpfCnpj)) {
+                    shouldShow = false;
+                }
+                if (filterVendedor && vendedor !== filterVendedor) {
+                    shouldShow = false;
+                }
+                if (filterStatus && status !== filterStatus) {
+                    shouldShow = false;
+                }
+
+                if (shouldShow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            calculateTotals();
+        }
+        
+        function calculateTotals() {
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+            let totalVendas = 0;
+            let totalVendasFiltradas = 0;
+            let totalCanceladasDesistentes = 0;
+            let totalCanceladas = 0;
+            let totalDesistentes = 0;
+        
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const valorCredito = parseFloat(row.querySelector('input[type="text"]').value.replace(/\D/g, '')) / 100;
+                    const status = row.querySelector('select').value;
+                    totalVendasFiltradas += valorCredito;
+                    if (status === 'Ativa' || status === 'Contemplada') {
+                        totalVendas += valorCredito;
+                    } else if (status === 'Cancelada') {
+                        totalCanceladas += valorCredito;
+                        totalCanceladasDesistentes += valorCredito;
+                    } else if (status === 'Desistente') {
+                        totalDesistentes += valorCredito;
+                        totalCanceladasDesistentes += valorCredito;
+                    }
+                }
+            });
+        
+            document.getElementById('totalVendas').textContent = formatCurrency(totalVendas);
+            document.getElementById('totalVendasFiltradas').textContent = formatCurrency(totalVendasFiltradas);
+            document.getElementById('totalCanceladasDesistentes').textContent = formatCurrency(totalCanceladasDesistentes);
+            document.getElementById('totalCanceladas').textContent = formatCurrency(totalCanceladas);
+            document.getElementById('totalDesistentes').textContent = formatCurrency(totalDesistentes);
+        }
+    
+        function applySavedTodayClass() {
+            const today = new Date().toISOString().split('T')[0];
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+            rows.forEach(row => {
+                const docPath = row.getAttribute('data-doc-path');
+                const savedDate = localStorage.getItem(`saved-${docPath}`);
+                if (savedDate === today) {
+                    row.classList.add('saved-today');
+                } else {
+                    row.classList.remove('saved-today');
+                }
+            });
+
+            document.getElementById('filterNomeCompleto').addEventListener('input', filterTable);
+            document.getElementById('filterCpfCnpj').addEventListener('input', filterTable);
+            document.getElementById('filterVendedor').addEventListener('change', filterTable);
+            document.getElementById('filterStatus').addEventListener('change', filterTable);
+
+        }
+        async function saveAllClientes() {
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+        
+            for (const row of rows) {
+                const docPath = row.querySelector('button').getAttribute('onclick').match(/'([^']+)'/)[1];
+                const dateInput = row.querySelector('input[type="datetime-local"]');
+                const valorCreditoInput = row.querySelector('input[type="text"]');
+                const dataVendaInput = row.querySelector('input[type="date"]');
+                const statusSelect = row.querySelector('select');
+                const vendedor = row.cells[4].textContent.trim(); // Remover espaços antes e depois do nome
+                const cliente = row.cells[0].textContent;
+        
+                const updates = {};
+        
+                if (dateInput) {
+                    const newDate = new Date(dateInput.value);
+                    updates.dataHoraCadastro = newDate;
+                }
+        
+                if (valorCreditoInput) {
+                    const newValorCredito = parseFloat(valorCreditoInput.value.replace(/\D/g, '')) / 100;
+                    if (!isNaN(newValorCredito)) {
+                        updates.valorCredito = newValorCredito;
+                    } else {
+                        alert('Valor do crédito inválido.');
+                        return;
+                    }
+                }
+        
+                if (dataVendaInput) {
+                    updates.dataVenda = dataVendaInput.value;
+                }
+        
+                if (statusSelect) {
+                    updates.status = statusSelect.value;
+                }
+        
+                await db.doc(docPath).update(updates);
+                await updateRelatoriosClientes(vendedor, cliente, updates);
+        
+                // Marcar a linha como salva hoje
+                const today = new Date().toISOString().split('T')[0];
+                localStorage.setItem(`saved-${docPath}`, today);
+                row.classList.add('saved-today');
+            }
+        
+            alert('Todos os dados foram atualizados com sucesso!');
+        }
+
+
+        document.getElementById('scrollToTop').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    
+        document.getElementById('scrollToBottom').addEventListener('click', () => {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+    </script>

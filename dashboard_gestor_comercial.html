@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-3d@latest/dist/chartjs-plugin-3d.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #ffffff);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --button-background: #381e97;
+            --button-hover-background: #6a5acd;
+            --button-text-color: white;
+        }
+    
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --button-text-color: white;
+        }
+    
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+    
+        .theme-toggle-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 1001; /* Ensure the button is above other elements */
+        }
+    
+        .theme-toggle-button:hover {
+            background-color: #4e4376;
+            transform: scale(1.1);
+        }
+    
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+    
+        .sidebar:hover {
+            width: 220px;
+        }
+    
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+    
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+    
+        .sidebar:hover a span {
+            display: inline;
+        }
+    
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 60px;
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+    
+        .sidebar:hover ~ .main-content {
+            margin-left: 200px;
+        }
+    
+    
+        .sidebar:hover ~ .header {
+            width: calc(100% - 220px);
+        }
+    
+        .header {
+    display: flex; /* Ativa o Flexbox */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    background: var(--header-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    width: calc(100% - 80px); /* Espaçamento da aba lateral */
+    height: 80px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.header h1 {
+    font-family: 'Merriweather', serif; /* Mantém a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto horizontalmente */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    margin: 0; /* Remove margens extras */
+    position: relative; /* Necessário para os pseudo-elementos */
+}
+
+.header h1::before,
+.header h1::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header h1::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+    transform: translateY(-50%); /* Garante alinhamento vertical */
+}
+
+.header h1::after {
+    right: -60px; /* Posiciona a linha à direita */
+    transform: translateY(-50%); /* Garante alinhamento vertical */
+}
+    
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    
+        .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+    
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+    
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    
+        .nav-buttons button {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+    
+        .nav-buttons button:hover {
+            background-color: var(--button-hover-background);
+            transform: scale(1.1);
+        }
+    
+        .content {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+    
+        .content.active {
+            display: block;
+        }
+    
+        .filter-group-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    
+        .filter-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        .filter-group label {
+            margin-right: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+    
+        .filter-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+    
+        .filter-group input[type="month"] {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s;
+        }
+    
+        .filter-group input[type="month"]:focus {
+            border-color: #6a5acd;
+            outline: none;
+        }
+    
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        .sales-table th, .sales-table td {
+            border: 1px solid #000000;
+            padding: 12px;
+            text-align: left;
+        }
+    
+        .sales-table th {
+            background-color: #6a5acd;
+            color: white;
+            font-weight: bold;
+        }
+    
+        .sales-table tr:nth-child(even) {
+            background-color: #9f9f9f;
+        }
+    
+        .sales-table td {
+            color: #333;
+        }
+    
+        .sales-table .total-row td {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        /* Adicione este CSS ao seu estilo existente */
+        .button {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px; /* Adicione um espaçamento superior */
+        }
+        
+        .button:hover {
+            background-color: var(--button-hover-background);
+            transform: scale(1.1);
+        }
+        .subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#relatoriosSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao elemento pai */
+top: 29%; /* Alinha ao topo do item pai */
+left: 100%; /* Ajusta para a largura da sidebar expandida */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+top: 10%; /* Ajuste a posição vertical conforme necessário */
+left: 123%; /* Ajuste a posição horizontal conforme necessário */
+position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+
+#comercialSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+
+/* Centraliza os itens */
+display: flex;
+align-items: center; /* Alinha horizontalmente ao centro */
+justify-content: center; /* Alinha verticalmente ao centro */
+}
+.sidebar-bottom-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-top: auto; /* Garante que os botões fiquem no rodapé */
+}
+
+.sidebar-button {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.sidebar-button i {
+  margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+}
+
+.sidebar-button span {
+  margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+}
+
+.sidebar-button:first-child {
+  margin-right: 5px;
+}
+
+.sidebar-button:last-child {
+  margin-left: 5px;
+}
+.step.no-hover:hover {
+background: var(--card-background);
+transform: none;
+}
+.step.active {
+background: var(--button-background);
+color: var(--button-text-color);
+margin-left: 50px;
+}
+.step.no-hover:hover {
+background: var(--card-background);
+transform: none;
+}
+.step.disabled {
+pointer-events: none;
+opacity: 1;
+}
+.menu-item {
+position: relative;
+}
+
+
+
+.sidebar:not(:hover) .subcategory-sidebar {
+display: none !important; /* Garante que o submenu seja ocultado */
+}
+#homeChevron {
+transition: transform 0.3s ease;
+}
+.sidebar a#homeLink {
+display: flex;
+align-items: center;
+justify-content: flex-start; /* Alinha o conteúdo à esquerda */
+padding: 15px 20px; /* Aumenta o espaço interno */
+width: 100%; /* Garante que o botão ocupe toda a largura disponível */
+box-sizing: border-box; /* Inclui o padding na largura total */
+overflow: hidden; /* Evita que o conteúdo transborde */
+gap: 1px; /* Adiciona espaço entre o ícone e o texto */
+}
+.sidebar:not(:hover) #homeChevron {
+display: none; /* Esconde o ícone quando a sidebar está colapsada */
+}
+
+/* Mantém o submenu visível enquanto o mouse está sobre o item principal ou o submenu */
+.menu-item:hover .subcategory-sidebar,
+.subcategory-sidebar:hover {
+display: none;
+}
+    .edit-button {
+        background-color: var(--button-background);
+        color: var(--button-text-color);
+        border: none;
+        padding: 8px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .edit-button:hover {
+        background-color: var(--button-hover-background);
+        transform: scale(1.1);
+    }
+
+    .edit-button i {
+        font-size: 1.2em;
+    }
+    #relatoriosSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 29%; /* Alinha ao topo do item pai */
+    left: 100%; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const chartInstances = {};
+
+    function toggleTheme() {
+        const isDarkMode = document.body.classList.toggle('dark-mode');
+        const newTheme = isDarkMode ? 'dark' : 'clean';
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                db.collection('users').doc(user.email).update({ theme: newTheme })
+                    .then(() => console.log('Tema atualizado com sucesso.'))
+                    .catch((error) => console.error('Erro ao atualizar tema:', error));
+            }
+        });
+    }
+
+    function mostrarConteudo(conteudoId) {
+        const conteudos = document.querySelectorAll('.content');
+        conteudos.forEach(conteudo => {
+            conteudo.classList.remove('active');
+        });
+        document.getElementById(conteudoId).classList.add('active');
+    }
+
+    async function filtrarVendedores() {
+    const checkboxes = document.querySelectorAll('.filter-group input[type="checkbox"]:checked');
+    const roles = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+    // Limpar a tabela antes de carregar novos dados
+    const tbody = document.querySelector('.sales-table tbody');
+    tbody.innerHTML = '';
+
+    // Remover linha de totais duplicada, se existir
+    const existingTotalRow = document.querySelector('tr.total-row');
+    if (existingTotalRow) {
+        existingTotalRow.remove();
+    }
+
+    if (roles.length === 0) {
+        console.log('Nenhum filtro selecionado.');
+        return;
+    }
+
+    try {
+        console.log('Iniciando filtragem com os papéis:', roles);
+        const querySnapshot = await db.collection('users').where('role', 'in', roles).get();
+        let totalMeta = 0;
+        let totalRealizado = 0;
+
+        // Mapear vendedores e remover duplicatas com base no email
+        const vendedores = querySnapshot.docs.map(doc => ({
+            name: doc.data().name,
+            email: doc.data().email
+        }));
+        console.log('Vendedores encontrados:', vendedores);
+
+        const vendedoresUnicos = vendedores.filter((vendedor, index, self) =>
+            index === self.findIndex(v => v.email === vendedor.email)
+        );
+        console.log('Vendedores únicos após remoção de duplicatas:', vendedoresUnicos);
+
+        // Obter o mês selecionado
+        const allMonths = document.getElementById('allMonths').checked;
+        let selectedMonthYear;
+        if (!allMonths) {
+            const monthFilter = document.getElementById('monthFilter').value;
+            if (!monthFilter) {
+                alert('Selecione um mês para filtrar.');
+                return;
+            }
+
+            // Converter o valor do filtro de mês para o formato "Janeiro/2025"
+            const [year, month] = monthFilter.split('-').map(Number);
+            const monthNames = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            selectedMonthYear = `${monthNames[month - 1]}/${year}`;
+            console.log('Mês selecionado:', selectedMonthYear);
+        } else {
+            console.log('Todos os meses selecionados.');
+        }
+
+        // Limpar vendedores duplicados ao alternar entre filtros
+        const vendedoresAdicionados = new Set();
+
+        for (const vendedor of vendedoresUnicos) {
+            if (vendedoresAdicionados.has(vendedor.email)) {
+                console.log(`Vendedor duplicado ignorado: ${vendedor.name} (${vendedor.email})`);
+                continue; // Ignorar vendedores já adicionados
+            }
+            vendedoresAdicionados.add(vendedor.email);
+
+            let metaValue = 0;
+
+            if (allMonths) {
+                // Somar metas mês a mês
+                const metasSnapshot = await db.collection('goals')
+                    .doc(vendedor.email)
+                    .collection('metas')
+                    .get();
+
+                metasSnapshot.forEach(doc => {
+                    metaValue += doc.data().value || 0; // Somar valores das metas
+                });
+                console.log(`Metas acumuladas para ${vendedor.name}:`, metaValue);
+            } else {
+                // Filtrar pelo mês/ano selecionado
+                const metasSnapshot = await db.collection('goals')
+                    .doc(vendedor.email)
+                    .collection('metas')
+                    .where('monthYear', '==', selectedMonthYear)
+                    .get();
+
+                metaValue = 0; // Reiniciar o valor da meta para evitar acumulação
+                metasSnapshot.forEach(doc => {
+                    metaValue += doc.data().value || 0; // Somar valores das metas apenas para o mês selecionado
+                });
+                console.log(`Metas para ${vendedor.name} no mês ${selectedMonthYear}:`, metaValue);
+            }
+
+            const metaFormatted = metaValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            totalMeta += metaValue;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${vendedor.name}</td>
+                <td>${metaFormatted}</td>
+                <td class="valor-realizado">Carregando...</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // Carregar vendas realizadas
+        const vendasPorVendedor = await calcularTotalVendas(vendedoresUnicos.map(v => v.name), selectedMonthYear, allMonths);
+        console.log('Vendas realizadas por vendedor:', vendasPorVendedor);
+
+        for (const vendedor of vendedoresUnicos) {
+            const valorRealizado = vendasPorVendedor[vendedor.name] || 0;
+            const valorRealizadoFormatted = valorRealizado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            totalRealizado += valorRealizado;
+
+            const tr = Array.from(tbody.children).find(row => row.children[0].textContent === vendedor.name);
+            if (tr) {
+                tr.querySelector('.valor-realizado').textContent = valorRealizadoFormatted;
+            }
+        }
+
+        // Adicionar linha de totais
+        const trTotal = document.createElement('tr');
+        trTotal.classList.add('total-row');
+        trTotal.innerHTML = `
+            <td><strong>Total</strong></td>
+            <td><strong>${totalMeta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></td>
+            <td><strong>${totalRealizado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></td>
+        `;
+        tbody.appendChild(trTotal);
+
+        console.log('Totais calculados:', { totalMeta, totalRealizado });
+    } catch (error) {
+        console.error('Erro ao buscar metas e vendas:', error);
+    }
+}
+
+    async function calcularTotalVendas(vendedores, selectedMonthYear, allMonths) {
+        try {
+            const clientesSnapshot = await db.collection('clientes').get();
+            let vendasPorVendedor = {};
+    
+            for (const clienteDoc of clientesSnapshot.docs) {
+                let vendasSnapshot;
+    
+                if (allMonths) {
+                    // Buscar todas as vendas sem filtrar por mês
+                    vendasSnapshot = await db.collection('clientes').doc(clienteDoc.id).collection('vendas').get();
+                } else {
+                    // Garantir que selectedMonthYear esteja definido
+                    if (!selectedMonthYear) {
+                        console.error('selectedMonthYear não definido.');
+                        continue;
+                    }
+    
+                    // Filtrar vendas pelo mês/ano selecionado
+                    const [monthName, year] = selectedMonthYear.split('/');
+                    const monthNames = [
+                        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                    ];
+                    const monthIndex = monthNames.indexOf(monthName);
+    
+                    if (monthIndex === -1 || !year) {
+                        console.error('selectedMonthYear inválido:', selectedMonthYear);
+                        continue;
+                    }
+    
+                    const startDate = new Date(parseInt(year), monthIndex, 1);
+                    const endDate = new Date(parseInt(year), monthIndex + 1, 0); // Último dia do mês
+    
+                    vendasSnapshot = await db.collection('clientes').doc(clienteDoc.id).collection('vendas')
+                        .where('dataHoraCadastro', '>=', startDate)
+                        .where('dataHoraCadastro', '<=', endDate)
+                        .get();
+                }
+    
+                vendasSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const vendedorNome = data.vendedor;
+                    if (!vendasPorVendedor[vendedorNome]) {
+                        vendasPorVendedor[vendedorNome] = 0;
+                    }
+                    vendasPorVendedor[vendedorNome] += data.valorCredito || 0;
+                });
+            }
+    
+            return vendasPorVendedor;
+        } catch (error) {
+            console.error('Erro ao calcular o total de vendas: ', error);
+            return {};
+        }
+    }
+
+    async function calcularTotalVendasADM(administradoras, startDate, endDate) {
+        try {
+            // Buscar todas as vendas na coleção 'clientes'
+            const clientesSnapshot = await db.collection('clientes').get();
+            let vendasPorAdministradora = {};
+
+            for (const clienteDoc of clientesSnapshot.docs) {
+                const vendasSnapshot = await db.collection('clientes').doc(clienteDoc.id).collection('vendas')
+                    .where('dataHoraCadastro', '>=', startDate)
+                    .where('dataHoraCadastro', '<=', endDate)
+                    .get();
+
+                vendasSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const administradoraNome = data.administradora.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                    if (!vendasPorAdministradora[administradoraNome]) {
+                        vendasPorAdministradora[administradoraNome] = 0;
+                    }
+                    vendasPorAdministradora[administradoraNome] += data.valorCredito || 0;
+                });
+            }
+
+            console.log('Vendas por administradora calculadas:', vendasPorAdministradora);
+
+            return vendasPorAdministradora;
+        } catch (error) {
+            console.error('Erro ao calcular o total de vendas: ', error);
+            return {};
+        }
+    }
+
+    async function filtrarAdministradoras() {
+        const monthFilter = document.getElementById('monthFilterADM');
+        const allMonthsCheckbox = document.getElementById('allMonthsADM');
+        const tbody = document.querySelector('#metaVendasADM .sales-table tbody');
+
+        if (!monthFilter || !tbody) {
+            console.error('Filtro de mês ou tabela não encontrados na seção Meta de Vendas (ADM).');
+            return;
+        }
+
+        tbody.innerHTML = ''; // Limpar a tabela antes de carregar novos dados
+
+        let selectedMonthYear;
+        const allMonths = allMonthsCheckbox.checked;
+
+        let startDate, endDate;
+
+        if (allMonths) {
+            startDate = new Date(0); // Data mínima possível
+            endDate = new Date(); // Data atual
+        } else {
+            const monthValue = monthFilter.value;
+            if (!monthValue) {
+                alert('Selecione um mês para filtrar.');
+                return;
+            }
+
+            const [year, month] = monthValue.split('-').map(Number);
+            startDate = new Date(year, month - 1, 1); // Início do mês selecionado
+            endDate = new Date(year, month, 0); // Fim do mês selecionado
+        }
+
+        try {
+            console.log('Iniciando filtragem para administradoras...');
+            const administradorasSnapshot = await db.collection('administrators').get();
+            const administradoras = administradorasSnapshot.docs.map(doc => ({
+                name: doc.data().name,
+                meta: doc.data().meta || 0
+            }));
+
+            const vendasPorAdministradora = await calcularTotalVendasADM(administradoras.map(a => a.name), startDate, endDate);
+
+            let totalMeta = 0;
+            let totalRealizado = 0;
+
+            administradoras.forEach(administradora => {
+                const normalizedName = administradora.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const metaFormatted = administradora.meta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const valorRealizado = vendasPorAdministradora[normalizedName] || 0;
+                const valorRealizadoFormatted = valorRealizado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                totalMeta += administradora.meta;
+                totalRealizado += valorRealizado;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${administradora.name}</td>
+                    <td>${metaFormatted}</td>
+                    <td>${valorRealizadoFormatted}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Adicionar linha de totais
+            const trTotal = document.createElement('tr');
+            trTotal.classList.add('total-row');
+            trTotal.innerHTML = `
+                <td><strong>Total</strong></td>
+                <td><strong>${totalMeta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></td>
+                <td><strong>${totalRealizado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></td>
+            `;
+            tbody.appendChild(trTotal);
+
+            console.log('Filtragem concluída.');
+        } catch (error) {
+            console.error('Erro ao buscar administradoras:', error);
+        }
+    }
+
+    let isFiltering = false;
+
+    async function applyFiltersADM() {
+        const applyFiltersButton = document.getElementById('applyFiltersButtonADM');
+        const monthFilter = document.getElementById('monthFilterADM');
+        const allMonthsCheckbox = document.getElementById('allMonthsADM');
+        const tbody = document.querySelector('#metaVendasADM .sales-table tbody');
+
+        if (!applyFiltersButton || !tbody) {
+            console.error('Botão ou tabela não encontrados na seção Meta de Vendas (ADM).');
+            return;
+        }
+
+        if (isFiltering) {
+            console.log('Filtragem já em andamento, ignorando chamada duplicada.');
+            return;
+        }
+
+        // Disable filters and button during filtering
+        isFiltering = true;
+        applyFiltersButton.disabled = true;
+        monthFilter.disabled = true;
+        allMonthsCheckbox.disabled = true;
+        applyFiltersButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            console.log('Iniciando a aplicação de filtros na seção Meta de Vendas (ADM)...');
+            tbody.innerHTML = ''; // Limpar a tabela antes de carregar novos dados
+            await filtrarAdministradoras(); // Executa a função de filtragem
+        } catch (error) {
+            console.error('Erro ao aplicar filtros na seção Meta de Vendas (ADM):', error);
+        } finally {
+            // Re-enable filters and button after filtering
+            isFiltering = false;
+            applyFiltersButton.disabled = false;
+            monthFilter.disabled = allMonthsCheckbox.checked; // Re-enable month filter if "Todos os Meses" is unchecked
+            allMonthsCheckbox.disabled = false;
+            applyFiltersButton.innerHTML = 'Aplicar Filtros';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const monthFilterADM = document.getElementById('monthFilterADM');
+        const allMonthsADM = document.getElementById('allMonthsADM');
+
+        // Remove onchange event from the date filter
+        monthFilterADM.onchange = null;
+        allMonthsADM.onchange = null;
+
+        console.log('Filtro de data na seção Meta de Vendas (ADM) atualizado para funcionar apenas com o botão.');
+    });
+
+    let isFilteringVendedores = false;
+
+    async function applyFiltersVendedores() {
+        const applyFiltersButton = document.getElementById('applyFiltersButton');
+        const checkboxes = document.querySelectorAll('#metaVendasVendedores .filter-group input[type="checkbox"]');
+        const monthFilter = document.getElementById('monthFilter');
+        const allMonthsCheckbox = document.getElementById('allMonths');
+        const tbody = document.querySelector('#metaVendasVendedores .sales-table tbody');
+
+        if (!applyFiltersButton || !tbody) {
+            console.error('Botão ou tabela não encontrados na seção Meta de Vendas (Vendedores).');
+            return;
+        }
+
+        if (isFilteringVendedores) {
+            console.log('Filtragem já em andamento na seção Meta de Vendas (Vendedores), ignorando chamada duplicada.');
+            return;
+        }
+
+        // Disable filters and button during filtering
+        isFilteringVendedores = true;
+        applyFiltersButton.disabled = true;
+        checkboxes.forEach(checkbox => checkbox.disabled = true);
+        monthFilter.disabled = true;
+        allMonthsCheckbox.disabled = true;
+        applyFiltersButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            console.log('Iniciando a aplicação de filtros na seção Meta de Vendas (Vendedores)...');
+            tbody.innerHTML = ''; // Limpar a tabela antes de carregar novos dados
+            await filtrarVendedores(); // Executa a função de filtragem
+        } catch (error) {
+            console.error('Erro ao aplicar filtros na seção Meta de Vendas (Vendedores):', error);
+        } finally {
+            // Re-enable filters and button after filtering
+            isFilteringVendedores = false;
+            applyFiltersButton.disabled = false;
+            checkboxes.forEach(checkbox => checkbox.disabled = false);
+            monthFilter.disabled = allMonthsCheckbox.checked; // Re-enable month filter if "Todos os Meses" is unchecked
+            allMonthsCheckbox.disabled = false;
+            applyFiltersButton.innerHTML = 'Aplicar Filtros';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkboxes = document.querySelectorAll('.filter-group input[type="checkbox"]');
+        const monthFilter = document.getElementById('monthFilter');
+        const allMonthsCheckbox = document.getElementById('allMonths');
+
+        // Prevent automatic updates when filters are changed
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                console.log('Checkbox alterado. Aguarde o botão de filtro.');
+            });
+        });
+
+        monthFilter.addEventListener('change', () => {
+            console.log('Filtro de mês alterado. Aguarde o botão de filtro.');
+        });
+
+        allMonthsCheckbox.addEventListener('change', () => {
+            console.log('Filtro "Todos os Meses" alterado. Aguarde o botão de filtro.');
+        });
+    });
+
+    let isFilteringCategoriaVendedor = false;
+
+    async function applyFiltersCategoriaVendedor() {
+        const applyFiltersButton = document.getElementById('applyFiltersButtonCategoriaVendedor');
+        const monthFilter = document.getElementById('monthFilterCategoriaVendedor');
+        const allMonthsCheckbox = document.getElementById('allMonthsCategoriaVendedor');
+        const tbody = document.querySelector('#metaVendasCategoriaVendedor .sales-table tbody');
+
+        if (!applyFiltersButton || !tbody) {
+            console.error('Botão ou tabela não encontrados. Verifique o HTML.');
+            return;
+        }
+
+        if (isFilteringCategoriaVendedor) {
+            console.log('Filtragem já em andamento, ignorando chamada duplicada.');
+            return;
+        }
+
+        isFilteringCategoriaVendedor = true;
+        applyFiltersButton.disabled = true;
+        monthFilter.disabled = true;
+        allMonthsCheckbox.disabled = true;
+        applyFiltersButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            console.log('Iniciando a aplicação de filtros para Categoria de Vendedor...');
+            tbody.innerHTML = ''; // Clear the table before loading new data
+            await filtrarVendasPorCategoriaVendedor(); // Execute the filtering function
+        } catch (error) {
+            console.error('Erro ao aplicar filtros para Categoria de Vendedor:', error);
+        } finally {
+            isFilteringCategoriaVendedor = false;
+            applyFiltersButton.disabled = false;
+            monthFilter.disabled = allMonthsCheckbox.checked;
+            allMonthsCheckbox.disabled = false;
+            applyFiltersButton.innerHTML = 'Aplicar Filtros';
+        }
+    }
+
+    async function filtrarVendasPorCategoriaVendedor() {
+        const applyFiltersButton = document.getElementById('applyFiltersButtonCategoriaVendedor');
+        const monthFilter = document.getElementById('monthFilterCategoriaVendedor');
+        const allMonthsCheckbox = document.getElementById('allMonthsCategoriaVendedor');
+        const tbody = document.querySelector('#metaVendasCategoriaVendedor .sales-table tbody');
+
+        if (!applyFiltersButton || !tbody) {
+            console.error('Botão ou tabela não encontrados na seção Meta de Vendas (Categoria de Vendedor).');
+            return;
+        }
+
+        if (isFilteringCategoriaVendedor) {
+            console.log('Filtragem já em andamento, ignorando chamada duplicada.');
+            return;
+        }
+
+        // Disable filters and button during filtering
+        isFilteringCategoriaVendedor = true;
+        applyFiltersButton.disabled = true;
+        monthFilter.disabled = true;
+        allMonthsCheckbox.disabled = true;
+        applyFiltersButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            tbody.innerHTML = ''; // Limpar a tabela antes de carregar novos dados
+            let totalMeta = 0;
+            let totalRealizado = 0;
+
+            // Buscar vendedores na coleção 'users'
+            const vendedoresSnapshot = await db.collection('users').get();
+            const vendedores = vendedoresSnapshot.docs.map(doc => ({
+                name: doc.data().name,
+                role: doc.data().role,
+                email: doc.data().email
+            }));
+
+            console.log('Vendedores:', vendedores);
+
+            // Categorias de vendedores
+            const categorias = ['vendedor-interno', 'vendedor-externo', 'indicador'];
+            const metasPorCategoria = {};
+            const realizadosPorCategoria = {};
+
+            for (const categoria of categorias) {
+                metasPorCategoria[categoria] = 0;
+                realizadosPorCategoria[categoria] = 0;
+            }
+
+            // Obter o mês selecionado
+            const allMonths = allMonthsCheckbox.checked;
+            let selectedMonthYear;
+            let startDate, endDate;
+
+            if (!allMonths) {
+                const monthValue = monthFilter.value;
+                if (!monthValue) {
+                    alert('Selecione um mês para filtrar.');
+                    return;
+                }
+
+                const [year, month] = monthValue.split('-').map(Number);
+                const monthNames = [
+                    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                ];
+                selectedMonthYear = `${monthNames[month - 1]}/${year}`;
+                startDate = new Date(year, month - 1, 1); // Início do mês selecionado
+                endDate = new Date(year, month, 0); // Fim do mês selecionado
+                console.log('Mês selecionado:', selectedMonthYear);
+            } else {
+                startDate = new Date(0); // Data mínima possível
+                endDate = new Date(); // Data atual
+                console.log('Todos os meses selecionados.');
+            }
+
+            // Somar metas por categoria
+            for (const vendedor of vendedores) {
+                if (categorias.includes(vendedor.role)) {
+                    let metaValue = 0;
+
+                    if (allMonths) {
+                        const metasSnapshot = await db.collection('goals')
+                            .doc(vendedor.email)
+                            .collection('metas')
+                            .get();
+
+                        metasSnapshot.forEach(doc => {
+                            metaValue += doc.data().value || 0;
+                        });
+                    } else {
+                        const metasSnapshot = await db.collection('goals')
+                            .doc(vendedor.email)
+                            .collection('metas')
+                            .where('monthYear', '==', selectedMonthYear)
+                            .get();
+
+                        metasSnapshot.forEach(doc => {
+                            metaValue += doc.data().value || 0;
+                        });
+                    }
+
+                    metasPorCategoria[vendedor.role] += metaValue;
+                }
+            }
+
+            // Adicionar linhas na tabela com as metas por categoria
+            for (const categoria of categorias) {
+                const metaFormatted = metasPorCategoria[categoria].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                totalMeta += metasPorCategoria[categoria];
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${categoria.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</td>
+                    <td>${metaFormatted}</td>
+                    <td class="valor-realizado">Carregando...</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            // Carregar vendas e somar valores por categoria
+            const vendasPorCategoria = await calcularTotalVendasPorCategoria(vendedores, startDate, endDate);
+
+            console.log('Vendas por categoria:', vendasPorCategoria);
+
+            for (const categoria of categorias) {
+                realizadosPorCategoria[categoria] = vendasPorCategoria[categoria] || 0;
+                totalRealizado += realizadosPorCategoria[categoria];
+
+                const realizadoFormatted = realizadosPorCategoria[categoria].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                const tr = Array.from(tbody.children).find(row => row.children[0].textContent === categoria.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                if (tr) {
+                    tr.querySelector('.valor-realizado').textContent = realizadoFormatted;
+                }
+            }
+
+            // Remover linha de totais duplicada, se existir
+            const existingTotalRow = tbody.querySelector('tr.total-row');
+            if (existingTotalRow) {
+                existingTotalRow.remove();
+            }
+
+            // Adicionar linha de totais
+            const trTotal = document.createElement('tr');
+            trTotal.classList.add('total-row');
+            trTotal.innerHTML = `
+                <td><strong>Total</strong></td>
+                <td><strong>${totalMeta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></td>
+                <td><strong>${totalRealizado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></td>
+            `;
+            tbody.appendChild(trTotal);
+        } catch (error) {
+            console.error('Erro ao buscar vendas por categoria de vendedor:', error);
+        } finally {
+            // Re-enable filters and button after filtering
+            isFilteringCategoriaVendedor = false;
+            applyFiltersButton.disabled = false;
+            monthFilter.disabled = allMonthsCheckbox.checked; // Re-enable month filter if "Todos os Meses" is unchecked
+            allMonthsCheckbox.disabled = false;
+            applyFiltersButton.innerHTML = 'Aplicar Filtros';
+        }
+    }
+
+    async function calcularTotalVendasPorCategoria(vendedores, startDate, endDate) {
+        try {
+            const clientesSnapshot = await db.collection('clientes').get();
+            let vendasPorCategoria = {
+                'vendedor-interno': 0,
+                'vendedor-externo': 0,
+                'indicador': 0
+            };
+
+            for (const clienteDoc of clientesSnapshot.docs) {
+                const vendasSnapshot = await db.collection('clientes').doc(clienteDoc.id).collection('vendas')
+                    .where('dataHoraCadastro', '>=', startDate)
+                    .where('dataHoraCadastro', '<=', endDate)
+                    .get();
+
+                vendasSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const vendedorNome = data.vendedor;
+                    const vendedor = vendedores.find(v => v.name === vendedorNome);
+                    if (vendedor && vendasPorCategoria[vendedor.role] !== undefined) {
+                        vendasPorCategoria[vendedor.role] += data.valorCredito || 0;
+                    }
+                });
+            }
+
+            console.log('Vendas por categoria calculadas:', vendasPorCategoria);
+
+            return vendasPorCategoria;
+        } catch (error) {
+            console.error('Erro ao calcular o total de vendas por categoria:', error);
+            return {};
+        }
+    }
+
+    let isFilteringTarefas = false; // Define the variable at the correct scope
+
+    async function filtrarTarefas() {
+    const applyFiltersButton = document.getElementById('applyFiltersButtonTarefas');
+    const monthFilter = document.getElementById('monthFilterTarefas');
+    const allMonthsCheckbox = document.getElementById('allMonthsTarefas');
+    const tbody = document.querySelector('#tarefas .sales-table tbody');
+
+    if (!applyFiltersButton || !tbody) {
+        console.error('Botão ou tabela não encontrados na seção Tarefas.');
+        return;
+    }
+
+    if (isFilteringTarefas) {
+        console.log('Filtragem já em andamento, ignorando chamada duplicada.');
+        return;
+    }
+
+    // Disable filters and button during filtering
+    isFilteringTarefas = true;
+    applyFiltersButton.disabled = true;
+    monthFilter.disabled = true;
+    allMonthsCheckbox.disabled = true;
+    applyFiltersButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+    try {
+        tbody.innerHTML = ''; // Limpar a tabela antes de carregar novos dados
+
+        // Buscar vendedores internos na coleção 'users'
+        const vendedoresSnapshot = await db.collection('users').where('role', '==', 'vendedor-interno').get();
+        const vendedores = vendedoresSnapshot.docs.map(doc => ({
+            name: doc.data().name,
+            email: doc.data().email
+        }));
+
+        console.log('Vendedores Internos:', vendedores);
+
+        // Inicializar contadores
+        const tarefasPorVendedor = {};
+        for (const vendedor of vendedores) {
+            tarefasPorVendedor[vendedor.email] = {
+                name: vendedor.name,
+                semContato: 0,
+                emDia: 0,
+                atraso: 0,
+                semTarefa: 0
+            };
+        }
+
+        // Adicionar linhas na tabela com a mensagem "Carregando..."
+        for (const vendedor of vendedores) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${vendedor.name}</td>
+                <td class="sem-contato">Carregando...</td>
+                <td class="em-dia">Carregando...</td>
+                <td class="atraso">Carregando...</td>
+                <td class="sem-tarefa">Carregando...</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // Obter o intervalo de datas
+        const allMonths = allMonthsCheckbox.checked;
+        let startDate, endDate;
+
+        if (allMonths) {
+            startDate = new Date(0); // Data mínima possível
+            endDate = new Date(); // Data atual
+        } else {
+            const monthValue = monthFilter.value;
+            if (!monthValue) {
+                alert('Selecione um mês para filtrar.');
+                return;
+            }
+
+            const [year, month] = monthValue.split('-').map(Number);
+            startDate = new Date(year, month - 1, 1); // Início do mês selecionado
+            endDate = new Date(year, month, 0); // Fim do mês selecionado
+        }
+
+        const leadsSnapshot = await db.collection('leads').get();
+        for (const leadDoc of leadsSnapshot.docs) {
+            const leadData = leadDoc.data();
+            const vendedorEmail = leadData.vendedorEmail;
+            if (tarefasPorVendedor[vendedorEmail]) {
+                const tarefasSnapshot = await db.collection('leads').doc(leadDoc.id).collection('tarefas')
+                    .where('dataHora', '>=', startDate)
+                    .where('dataHora', '<=', endDate)
+                    .get();
+
+                if (tarefasSnapshot.empty) {
+                    tarefasPorVendedor[vendedorEmail].semTarefa += 1;
+                } else {
+                    let hasTarefas = false;
+                    tarefasSnapshot.forEach(tarefaDoc => {
+                        hasTarefas = true;
+                        const tarefaData = tarefaDoc.data();
+                        const dataConclusao = tarefaData.concluida ? tarefaData.dataHora.toDate() : null;
+                        const dataPrevista = tarefaData.dataHora.toDate();
+
+                        if (tarefaData.concluida && dataConclusao <= dataPrevista) {
+                            tarefasPorVendedor[vendedorEmail].emDia += 1;
+                        } else if (tarefaData.concluida && dataConclusao > dataPrevista) {
+                            tarefasPorVendedor[vendedorEmail].atraso += 1;
+                        } else if (!tarefaData.concluida && new Date() > dataPrevista) {
+                            tarefasPorVendedor[vendedorEmail].atraso += 1;
+                        } else {
+                            tarefasPorVendedor[vendedorEmail].emDia += 1;
+                        }
+                    });
+                    if (!hasTarefas) {
+                        tarefasPorVendedor[vendedorEmail].semTarefa += 1;
+                    }
+                }
+
+                // Contar leads sem contato
+                if (leadData.stage === 'sem_contato') {
+                    tarefasPorVendedor[vendedorEmail].semContato += 1;
+                }
+            }
+        }
+
+        console.log('Tarefas por vendedor:', tarefasPorVendedor);
+
+        // Atualizar linhas na tabela com os valores calculados
+        for (const vendedorEmail in tarefasPorVendedor) {
+            const vendedor = tarefasPorVendedor[vendedorEmail];
+            const tr = Array.from(tbody.children).find(row => row.children[0].textContent === vendedor.name);
+            if (tr) {
+                tr.querySelector('.sem-contato').textContent = vendedor.semContato;
+                tr.querySelector('.em-dia').textContent = vendedor.emDia;
+                tr.querySelector('.atraso').textContent = vendedor.atraso;
+                tr.querySelector('.sem-tarefa').textContent = vendedor.semTarefa;
+            }
+        }
+
+        // Remover linha de totais duplicada, se existir
+        const existingTotalRow = tbody.querySelector('tr.total-row');
+        if (existingTotalRow) {
+            existingTotalRow.remove();
+        }
+
+        // Adicionar linha de totais
+        const trTotal = document.createElement('tr');
+        trTotal.classList.add('total-row');
+        trTotal.innerHTML = `
+            <td><strong>Total</strong></td>
+            <td><strong>${Object.values(tarefasPorVendedor).reduce((acc, vendedor) => acc + vendedor.semContato, 0)}</strong></td>
+            <td><strong>${Object.values(tarefasPorVendedor).reduce((acc, vendedor) => acc + vendedor.emDia, 0)}</strong></td>
+            <td><strong>${Object.values(tarefasPorVendedor).reduce((acc, vendedor) => acc + vendedor.atraso, 0)}</strong></td>
+            <td><strong>${Object.values(tarefasPorVendedor).reduce((acc, vendedor) => acc + vendedor.semTarefa, 0)}</strong></td>
+        `;
+        tbody.appendChild(trTotal);
+    } catch (error) {
+        console.error('Erro ao buscar tarefas:', error);
+    } finally {
+        // Re-enable filters and button after filtering
+        isFilteringTarefas = false;
+        applyFiltersButton.disabled = false;
+        monthFilter.disabled = allMonthsCheckbox.checked; // Re-enable month filter if "Todos os Meses" is unchecked
+        allMonthsCheckbox.disabled = false;
+        applyFiltersButton.innerHTML = 'Aplicar Filtros';
+    }
+}
+
+    let isFilteringApresentacao = false; // Define the variable at the correct scope
+
+    async function filtrarApresentacaoSupervisor() {
+        const applyFiltersButton = document.getElementById('applyFiltersButtonApresentacao');
+        const monthFilter = document.getElementById('monthFilterApresentacao');
+        const tbody = document.querySelector('#apresentacaoSupervisor .sales-table tbody');
+
+        if (!applyFiltersButton || !tbody) {
+            console.error('Botão ou tabela não encontrados na seção Apresentação com Supervisor.');
+            return;
+        }
+
+        if (isFilteringApresentacao) {
+            console.log('Filtragem já em andamento, ignorando chamada duplicada.');
+            return;
+        }
+
+        // Disable filters and button during filtering
+        isFilteringApresentacao = true;
+        applyFiltersButton.disabled = true;
+        monthFilter.disabled = true;
+        applyFiltersButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            tbody.innerHTML = ''; // Limpar a tabela antes de carregar novos dados
+
+            // Buscar vendedores internos na coleção 'users'
+            const vendedoresSnapshot = await db.collection('users').where('role', '==', 'vendedor-interno').get();
+            const vendedores = vendedoresSnapshot.docs.map(doc => ({
+                name: doc.data().name,
+                email: doc.data().email
+            }));
+
+            console.log('Vendedores Internos:', vendedores);
+
+            // Inicializar contadores
+            const apresentacaoPorVendedor = {};
+            for (const vendedor of vendedores) {
+                apresentacaoPorVendedor[vendedor.email] = {
+                    name: vendedor.name,
+                    semanas: [0, 0, 0, 0, 0] // Inicializar contadores para 5 semanas
+                };
+            }
+
+            // Adicionar linhas na tabela com a mensagem "Carregando..."
+            for (const vendedor of vendedores) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${vendedor.name}</td>
+                    <td class="semana-1">Carregando...</td>
+                    <td class="semana-2">Carregando...</td>
+                    <td class="semana-3">Carregando...</td>
+                    <td class="semana-4">Carregando...</td>
+                    <td class="semana-5">Carregando...</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            // Obter o intervalo de datas
+            const monthValue = monthFilter.value;
+            if (!monthValue) {
+                alert('Selecione um mês para filtrar.');
+                return;
+            }
+
+            const [year, month] = monthValue.split('-').map(Number);
+            const startDate = new Date(year, month - 1, 1); // Início do mês selecionado
+            const endDate = new Date(year, month, 0); // Fim do mês selecionado
+
+            const leadsSnapshot = await db.collection('leads').get();
+            for (const leadDoc of leadsSnapshot.docs) {
+                const leadData = leadDoc.data();
+                const vendedorEmail = leadData.vendedorEmail;
+                if (apresentacaoPorVendedor[vendedorEmail]) {
+                    const apresentacoesSnapshot = await db.collection('leads').doc(leadDoc.id).collection('apresentacoes')
+                        .where('dataHora', '>=', startDate)
+                        .where('dataHora', '<=', endDate)
+                        .get();
+
+                    apresentacoesSnapshot.forEach(apresentacaoDoc => {
+                        const apresentacaoData = apresentacaoDoc.data();
+                        const dataApresentacao = apresentacaoData.dataHora.toDate();
+                        const semana = Math.ceil(dataApresentacao.getDate() / 7) - 1; // Determinar a semana (0 a 4)
+                        apresentacaoPorVendedor[vendedorEmail].semanas[semana] += 1;
+                    });
+                }
+            }
+
+            console.log('Apresentações por vendedor:', apresentacaoPorVendedor);
+
+            // Atualizar linhas na tabela com os valores calculados
+            for (const vendedorEmail in apresentacaoPorVendedor) {
+                const vendedor = apresentacaoPorVendedor[vendedorEmail];
+                const tr = Array.from(tbody.children).find(row => row.children[0].textContent === vendedor.name);
+                if (tr) {
+                    vendedor.semanas.forEach((valor, index) => {
+                        tr.querySelector(`.semana-${index + 1}`).textContent = valor;
+                    });
+                }
+            }
+
+            // Remover linha de totais duplicada, se existir
+            const existingTotalRow = tbody.querySelector('tr.total-row');
+            if (existingTotalRow) {
+                existingTotalRow.remove();
+            }
+
+            // Adicionar linha de totais
+            const trTotal = document.createElement('tr');
+            trTotal.classList.add('total-row');
+            trTotal.innerHTML = `
+                <td><strong>Total</strong></td>
+                ${[0, 1, 2, 3, 4].map(semana => `
+                    <td><strong>${Object.values(apresentacaoPorVendedor).reduce((acc, vendedor) => acc + vendedor.semanas[semana], 0)}</strong></td>
+                `).join('')}
+            `;
+            tbody.appendChild(trTotal);
+        } catch (error) {
+            console.error('Erro ao buscar apresentações:', error);
+        } finally {
+            // Re-enable filters and button after filtering
+            isFilteringApresentacao = false;
+            applyFiltersButton.disabled = false;
+            monthFilter.disabled = false;
+            applyFiltersButton.innerHTML = 'Aplicar Filtros';
+        }
+    }
+</script>
+<style>
+.modal {
+    display: none; /* Oculto por padrão */
+    position: absolute; /* Posiciona relativo ao container pai */
+    z-index: 1000; /* Coloca acima de outros elementos */
+    left: 50%; /* Centraliza horizontalmente */
+    transform: translateX(75%); /* Ajusta para o centro exato */
+    width: 50%; /* Largura do modal */
+    max-width: 600px; /* Limita a largura máxima */
+    background-color: white; /* Fundo branco */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+    border-radius: 10px; /* Bordas arredondadas */
+    padding: 20px; /* Espaçamento interno */
+    font-family: 'Roboto', sans-serif; /* Fonte consistente */
+    box-sizing: border-box; /* Inclui padding no cálculo de largura */
+    overflow: hidden; /* Remove a barra de rolagem */
+}
+
+#vendasNovas {
+    position: relative; /* Define o contexto de posicionamento para o modal */
+}
+</style>
+
+<script>
+function openEditModal(vendaId) {
+    const modal = document.getElementById('editVendaModal');
+    const form = document.getElementById('editVendaForm');
+
+    db.collection('VendasID').doc(vendaId).get().then(doc => {
+        if (doc.exists) {
+            const venda = doc.data();
+            form.editNome.value = venda.nomeCompleto || '';
+            form.editCpfCnpj.value = venda.cpfCnpj || '';
+            form.editAdm.value = venda.administradora || '';
+            form.editGrupo.value = venda.grupo || '';
+            form.editCota.value = venda.cota || '';
+            form.editValor.value = venda.valorCredito || '';
+            form.editVendedor.value = venda.vendedor || '';
+            form.setAttribute('data-id', vendaId);
+            modal.style.display = 'block';
+        }
+    }).catch(error => {
+        console.error('Erro ao buscar dados da venda:', error);
+    });
+}
+
+async function saveVendaEdits() {
+    const form = document.getElementById('editVendaForm');
+    const vendaId = form.getAttribute('data-id');
+
+    const updatedData = {
+        administradora: form.editAdm.value,
+        grupo: form.editGrupo.value,
+        cota: form.editCota.value,
+        valorCredito: parseFloat(form.editValor.value),
+        vendedor: form.editVendedor.value
+    };
+
+    try {
+        await db.collection('VendasID').doc(vendaId).update(updatedData);
+        alert('Venda atualizada com sucesso!');
+        closeModal(); // Fecha o modal após salvar
+        fetchVendasNovas(); // Atualiza a tabela
+    } catch (error) {
+        console.error('Erro ao salvar alterações da venda:', error);
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('editVendaModal');
+    modal.style.display = 'none';
+}
+
+document.addEventListener('click', (event) => {
+    const modal = document.getElementById('editVendaModal');
+    if (modal && modal.style.display === 'block' && !modal.contains(event.target)) {
+        closeModal();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchVendasNovas();
+});
+</script>
+<style>
+    .btn-submit {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background-color: #0056b3;
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-row.centered {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .form-group:last-child {
+        margin-right: 0;
+    }
+    #relatoriosSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 29%; /* Alinha ao topo do item pai */
+    left: 100%; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+    top: 10%; /* Ajuste a posição vertical conforme necessário */
+    left: 123%; /* Ajuste a posição horizontal conforme necessário */
+    position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+    z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#relatoriosSubcategoriesSidebar {
+    position: fixed; /* Fixa o submenu na tela */
+    top: 200px; /* Ajuste para alinhar verticalmente com o botão "Relatórios" */
+    left: 219px; /* Ajuste para alinhar horizontalmente ao lado da sidebar expandida */
+    z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+    display: none; /* Esconde o submenu por padrão */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+#comercialSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao botão pai */
+    top: 0; /* Alinha ao topo do botão pai */
+    left: 100%; /* Posiciona ao lado direito do botão pai */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+
+    /* Centraliza os itens */
+    display: flex;
+    align-items: center; /* Alinha horizontalmente ao centro */
+    justify-content: center; /* Alinha verticalmente ao centro */
+}
+</style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_comercial_vendas.html">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_comercial_comissao.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_comercial_comissao_a_receber.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_comercial_estorno.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="info-cards">
+                <h1>Dashboard</h1>
+                <div class="info-card centered-content" id="salesTargetCard" style="width: 85%; display: none;">
+                    <h2>Meta</h2>
+                    <p id="salesTarget"><i class="fas fa-spinner fa-spin"></i></p>
+                </div>
+                <div class="info-card centered-content" id="clientsServedCard" style="width: 85%; display: none;">
+                    <a href="gerenciar_dados.html" class="profile-link">
+                        <img src="user-avatar.jpeg" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <br>
+                        <span id="userName">Nome do Usuário</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <button class="theme-toggle-button" onclick="toggleTheme()">Alternar Tema</button>
+        <div class="nav-buttons">
+            <button onclick="mostrarConteudo('metaVendasVendedores')">Meta de Vendas (Vendedores)</button>
+            <button onclick="mostrarConteudo('metaVendasADM')">Meta de Vendas (ADM)</button>
+            <button onclick="mostrarConteudo('metaVendasCategoriaVendedor')">Meta de Vendas (Categoria de Vendedor)</button>
+            <button onclick="mostrarConteudo('tarefas')">Tarefas</button>
+            <button onclick="mostrarConteudo('apresentacaoSupervisor')">Apresentação com Supervisor</button>
+            <button onclick="mostrarConteudo('vendasNovas')">Vendas Novas</button> <!-- Novo botão adicionado -->
+        </div>
+        <div id="metaVendasVendedores" class="content active">
+            <div class="filter-group-container">
+                <div class="filter-group">
+                    <label><input type="checkbox" value="vendedor-interno"> Vendedor Interno</label>
+                    <label><input type="checkbox" value="vendedor-externo"> Vendedor Externo</label>
+                    <label><input type="checkbox" value="indicador"> Indicador</label>
+                </div>
+                <div class="filter-group">
+                    <label for="monthFilter">Selecione o Mês:</label>
+                    <input type="month" id="monthFilter" name="monthFilter">
+                    <label><input type="checkbox" id="allMonths"> Todos os Meses</label>
+                </div>
+                <button id="applyFiltersButton" class="button" onclick="applyFiltersVendedores()">Aplicar Filtros</button>
+            </div>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Vendedor</th>
+                        <th>Meta Assumida</th>
+                        <th>Valor Realizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados dos vendedores serão inseridos aqui -->
+                </tbody>
+            </table>
+        </div>
+        <div id="metaVendasADM" class="content">
+            <div class="filter-group-container">
+                <div class="filter-group">
+                    <label for="monthFilterADM">Selecione o Mês:</label>
+                    <input type="month" id="monthFilterADM" name="monthFilterADM">
+                    <label><input type="checkbox" id="allMonthsADM"> Todos os Meses</label>
+                </div>
+                <button id="applyFiltersButtonADM" class="button" onclick="applyFiltersADM()">Aplicar Filtros</button>
+            </div>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Nome da Administradora</th>
+                        <th>Meta Assumida</th>
+                        <th>Valor Realizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados das administradoras serão inseridos aqui -->
+                </tbody>
+            </table>
+        </div>
+        <div id="metaVendasCategoriaVendedor" class="content">
+            <div class="filter-group-container">
+                <div class="filter-group">
+                    <label for="monthFilterCategoriaVendedor">Selecione o Mês:</label>
+                    <input type="month" id="monthFilterCategoriaVendedor" name="monthFilterCategoriaVendedor" onchange="filtrarVendasPorCategoriaVendedor()">
+                    <label><input type="checkbox" id="allMonthsCategoriaVendedor" onchange="toggleAllMonthsCategoriaVendedor()"> Todos os Meses</label>
+                </div>
+                <button id="applyFiltersButtonCategoriaVendedor" class="button" onclick="applyFiltersCategoriaVendedor()">Aplicar Filtros</button>
+            </div>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Categoria de Vendedor</th>
+                        <th>Meta Assumida</th>
+                        <th>Valor Realizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados das categorias de vendedores serão inseridos aqui -->
+                </tbody>
+            </table>
+        </div>
+        <div id="tarefas" class="content">
+            <div class="filter-group-container">
+                <div class="filter-group">
+                    <label for="monthFilterTarefas">Selecione o Mês:</label>
+                    <input type="month" id="monthFilterTarefas" name="monthFilterTarefas">
+                    <label><input type="checkbox" id="allMonthsTarefas"> Todos os Meses</label>
+                </div>
+                <button id="applyFiltersButtonTarefas" class="button" onclick="filtrarTarefas()">Aplicar Filtros</button>
+            </div>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Vendedor</th>
+                        <th>Sem Contato</th>
+                        <th>Em Dia</th>
+                        <th>Atraso</th>
+                        <th>Sem Tarefa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados das tarefas serão inseridos aqui -->
+                </tbody>
+            </table>
+        </div> 
+        <div id="apresentacaoSupervisor" class="content">
+            <div class="filter-group-container">
+                <div class="filter-group">
+                    <label for="monthFilterApresentacao">Selecione o Mês:</label>
+                    <input type="month" id="monthFilterApresentacao" name="monthFilterApresentacao">
+                </div>
+                <button id="applyFiltersButtonApresentacao" class="button" onclick="filtrarApresentacaoSupervisor()">Aplicar Filtros</button>
+            </div>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Vendedor</th>
+                        <th>Semana 1</th>
+                        <th>Semana 2</th>
+                        <th>Semana 3</th>
+                        <th>Semana 4</th>
+                        <th>Semana 5</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados das apresentações serão inseridos aqui -->
+                </tbody>
+            </table>
+        </div>
+        <div id="vendasNovas" class="content">
+            <h2>Vendas Novas</h2>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>ADM</th>
+                        <th>Grupo/Cota</th>
+                        <th>Valor</th>
+                        <th>Vendedor</th>
+                        <th>Status da Cota</th>
+                    </tr>
+                </thead>
+                <tbody id="vendasNovasTableBody">
+                    <!-- Vendas novas serão listadas aqui -->
+                </tbody>
+            </table>
+            <button id="saveAll" class="button" onclick="saveAllStatus()">Salvar Todos</button>
+        </div>
+
+        <!-- Modal para edição de dados da venda -->
+        <div id="editVendaModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('editVendaModal')">&times;</span> <!-- Botão "X" para fechar -->
+        <h2>Editar Venda</h2>
+        <form id="editVendaForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editNome">Nome</label>
+                    <input type="text" id="editNome" name="editNome" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editCpfCnpj">CPF/CNPJ</label>
+                    <input type="text" id="editCpfCnpj" name="editCpfCnpj" readonly>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editAdm">Administradora</label>
+                    <input type="text" id="editAdm" name="editAdm" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editGrupo">Grupo</label>
+                    <input type="text" id="editGrupo" name="editGrupo">
+                </div>
+                <div class="form-group">
+                    <label for="editCota">Cota</label>
+                    <input type="text" id="editCota" name="editCota">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editValor">Valor do Crédito</label>
+                    <input type="text" id="editValor" name="editValor">
+                </div>
+                <div class="form-group">
+                    <label for="editVendedor">Vendedor</label>
+                    <input type="text" id="editVendedor" name="editVendedor" readonly>
+                </div>
+            </div>
+            <div class="form-row centered">
+                <input type="button" class="btn-submit" value="Salvar Alterações" onclick="saveVendaEdits()">
+            </div>
+        </form>
+    </div>
+</div>
+
+        <div id="registrarVendaModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('registrarVendaModal')">&times;</span>
+        <div class="card">
+            <form id="registrarVendaForm" onsubmit="registrarVenda(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clienteNome">Nome</label>
+                        <input type="text" id="clienteNome" name="clienteNome">
+                    </div>
+                    <div class="form-group">
+                        <label for="clienteCpfCnpj">CPF/CNPJ</label>
+                        <input type="text" id="clienteCpfCnpj" name="clienteCpfCnpj">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="administradora">Administradora</label>
+                        <select id="administradora" name="administradora" required>
+                            <option value="">Selecione</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="segmentoVenda">Segmento da Venda <i class="fas fa-info-circle info-icon" title=""></i></label>
+                        <select id="segmentoVenda" name="segmentoVenda" required>
+                            <option value="" disabled selected>Selecione</option>
+                            <option value="imovel">Imóvel</option>
+                            <option value="automovel">Automóvel</option>
+                            <option value="serviço">Serviço</option>
+                            <option value="eletro">Eletro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="perfilVenda">Perfil da Venda <i class="fas fa-info-circle info-icon"></i></label>
+                        <select id="perfilVenda" name="perfilVenda" required>
+                            <option value="" disabled selected>Selecione</option>
+                            <option value="logista">Logista</option>
+                            <option value="construtora">Construtora</option>
+                            <option value="imobiliaria">Imobiliária</option>
+                            <option value="transportadora">Transportadora</option>
+                            <option value="locadora">Locadora</option>
+                            <option value="varejo">Varejo</option>
+                            <option value="investidor">Investidor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="produto">Plano <i class="fas fa-info-circle info-icon"></i></label>
+                        <select id="produto" name="produto" required>
+                            <option value="">Selecione</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vendedor">Vendedor</label>
+                        <select id="vendedor" name="vendedor" required>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="valorCredito">Valor do Crédito</label>
+                        <input type="text" id="valorCredito" name="valorCredito" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="grupo">Grupo</label>
+                        <input type="text" id="grupo" name="grupo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cota">Cota</label>
+                        <input type="text" id="cota" name="cota" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lancebolso">Lance Sugerido <i class="fas fa-info-circle info-icon"></i></label>
+                        <input type="text" id="lancebolso" name="lancebolso" required oninput="updatePercentage(this)" placeholder="0%">
+                    </div>
+                    <div class="form-group">
+                        <label for="lanceembutido">Lance Embutido <i class="fas fa-info-circle info-icon"></i></label>
+                        <input type="text" id="lanceembutido" name="lanceembutido" required oninput="updatePercentage(this)" placeholder="0%">
+                    </div>
+                    <div class="form-group">
+                        <label for="boleto">Forma de Contato <i class="fas fa-info-circle info-icon"></i></label>
+                        <select id="boleto" name="boleto" required>
+                            <option value="" disabled selected>Selecione</option>
+                            <option value="whatsapp">Whatsapp</option>
+                            <option value="email">E-mail</option>
+                            <option value="vai_vendedor">Via Vendedor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row centered">
+                    <div class="form-group">
+                        <label for="dataVenda">Data da Venda <i class="fas fa-info-circle info-icon"></i></label>
+                        <input type="date" id="dataVenda" name="dataVenda" required>
+                    </div>
+                </div>
+                <div class="form-row centered">
+                    <div class="form-group">
+                        <input type="submit" class="btn-submit" value="Registrar Venda">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+}
+.sidebar:not(:hover) .fas.fa-chevron-down {
+    display: none;
+}
+
+/* Mostra o ícone > quando a sidebar está aberta */
+.sidebar:hover .fas.fa-chevron-down {
+    display: inline-block;
+}
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    async function fetchAndPopulateVendedores() {
+        const vendedorSelect = document.getElementById('vendedor');
+        vendedorSelect.innerHTML = ''; // Limpa a lista de vendedores antes de preenchê-la
+
+        // Adiciona a opção "Selecione" como primeira opção
+        const optionSelect = document.createElement('option');
+        optionSelect.value = ''; // Nenhuma opção selecionada
+        optionSelect.textContent = 'Selecione'; // Texto da opção
+        vendedorSelect.appendChild(optionSelect);
+
+        try {
+            // Buscar usuários com os roles permitidos
+            const snapshot = await db.collection("users")
+                .where("role", "in", ["vendedor-interno", "vendedor-externo", "gestor-comercial"])
+                .get();
+
+            const vendedores = [];
+            snapshot.forEach(doc => {
+                const user = doc.data();
+                const name = user.nome || user.name; // Verifica se o campo 'nome' ou 'name' existe
+                if (name && name.trim() !== "") { // Verifica se o nome não está vazio
+                    vendedores.push(name.trim());
+                }
+            });
+
+            // Ordena os vendedores em ordem alfabética
+            vendedores.sort((a, b) => a.localeCompare(b));
+
+            // Preenche o dropdown com os vendedores ordenados
+            vendedores.forEach(vendedor => {
+                const option = document.createElement('option');
+                option.value = vendedor;
+                option.textContent = vendedor;
+                vendedorSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Erro ao buscar usuários: ", error);
+        }
+    }
+
+    async function fetchAndPopulateProdutos(administradora) {
+        const produtoSelect = document.getElementById('produto');
+        produtoSelect.innerHTML = ''; // Limpa a lista de produtos antes de preenchê-la
+
+        // Adiciona a opção "Selecione" como primeira opção
+        const optionSelect = document.createElement('option');
+        optionSelect.value = ''; // Nenhuma opção selecionada
+        optionSelect.textContent = 'Selecione'; // Texto da opção
+        produtoSelect.appendChild(optionSelect);
+
+        try {
+            const snapshot = await db.collection('administrators').where('name', '==', administradora).get();
+            if (!snapshot.empty) {
+                const adminData = snapshot.docs[0].data();
+                adminData.products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.name;
+                    option.textContent = product.name;
+                    produtoSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao buscar produtos: ", error);
+        }
+    }
+
+    async function fetchAndPopulateAdministradoras() {
+        const administradoraSelect = document.getElementById('administradora');
+        administradoraSelect.innerHTML = ''; // Limpa a lista de administradoras antes de preenchê-la
+
+        // Adiciona a opção "Selecione" como primeira opção
+        const optionSelect = document.createElement('option');
+        optionSelect.value = ''; // Nenhuma opção selecionada
+        optionSelect.textContent = 'Selecione'; // Texto da opção
+        administradoraSelect.appendChild(optionSelect);
+
+        try {
+            const snapshot = await db.collection('administrators').get();
+            snapshot.forEach(doc => {
+                const adminData = doc.data();
+                const option = document.createElement('option');
+                option.value = adminData.name;
+                option.textContent = adminData.name;
+                administradoraSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Erro ao buscar administradoras: ", error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await fetchAndPopulateAdministradoras();
+        await fetchAndPopulateVendedores();
+
+        const administradoraSelect = document.getElementById('administradora');
+        administradoraSelect.addEventListener('change', (event) => {
+            const selectedAdministradora = event.target.value;
+            if (selectedAdministradora) {
+                fetchAndPopulateProdutos(selectedAdministradora);
+            } else {
+                const produtoSelect = document.getElementById('produto');
+                produtoSelect.innerHTML = '<option value="">Selecione</option>'; // Reseta o dropdown de produtos
+            }
+        });
+    });
+</script>
+<script>
+    function openRegistrarVendaModal() {
+        const modal = document.getElementById('registrarVendaModal');
+        modal.style.display = 'block';
+
+        // Populate dropdowns when the modal is opened
+        fetchAndPopulateAdministradoras();
+        fetchAndPopulateVendedores();
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const administradoraSelect = document.getElementById('administradora');
+        administradoraSelect.addEventListener('change', (event) => {
+            const selectedAdministradora = event.target.value;
+            if (selectedAdministradora) {
+                fetchAndPopulateProdutos(selectedAdministradora);
+            } else {
+                const produtoSelect = document.getElementById('produto');
+                produtoSelect.innerHTML = '<option value="">Selecione</option>'; // Reset the dropdown
+            }
+        });
+    });
+
+    function toggleAllMonthsCategoriaVendedor() {
+        const allMonthsCheckbox = document.getElementById('allMonthsCategoriaVendedor');
+        const monthFilter = document.getElementById('monthFilterCategoriaVendedor');
+        if (allMonthsCheckbox.checked) {
+            monthFilter.disabled = true;
+            filtrarVendasPorCategoriaVendedor(); // Chama a função de filtragem automaticamente
+        } else {
+            monthFilter.disabled = false;
+        }
+    }
+
+    async function fetchVendasNovas() {
+        const vendasNovasTableBody = document.querySelector('#vendasNovasTableBody');
+        vendasNovasTableBody.innerHTML = '';
+    
+        try {
+            console.log('Iniciando a busca de vendas novas...');
+            const snapshot = await db.collection('VendasID').where('status', '==', 'Falta Pagar').get();
+            console.log('Snapshot:', snapshot);
+            console.log('Número de documentos encontrados:', snapshot.size);
+    
+            const vendas = snapshot.docs.map(doc => {
+                console.log('Documento encontrado:', doc.id, doc.data());
+                return { id: doc.id, ...doc.data() };
+            });
+    
+            vendas.forEach(venda => {
+                const valorCredito = venda.valorCredito || 0; // Garantir que valorCredito não seja undefined
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        ${venda.nomeCompleto}
+                        <button class="edit-button" onclick="openEditModal('${venda.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                    <td>${venda.administradora || ''}</td>
+                    <td>${venda.grupo || ''}/${venda.cota || ''}</td>
+                    <td>${valorCredito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td>${venda.vendedor || ''}</td>
+                    <td>
+                        <select onchange="markAsEdited(this)" data-id="${venda.id}">
+                            <option value="Falta Pagar" ${venda.status === 'Falta Pagar' ? 'selected' : ''}>Falta Pagar</option>
+                            <option value="Ativa" ${venda.status === 'Ativa' ? 'selected' : ''}>Ativa</option>
+                            <option value="Desistente" ${venda.status === 'Desistente' ? 'selected' : ''}>Desistente</option>
+                        </select>
+                    </td>
+                `;
+                vendasNovasTableBody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Erro ao buscar vendas novas:', error);
+        }
+    }
+    function markAsEdited(selectElement) {
+        selectElement.classList.add('edited');
+    }
+    async function updateStatus(vendaId, newStatus) {
+    try {
+        // Atualizar o status na coleção VendasID
+        await db.collection('VendasID').doc(vendaId).update({ status: newStatus });
+        console.log(`Status da venda ${vendaId} atualizado para ${newStatus}`);
+
+        // Buscar os dados da venda para localizar o cliente e a subcoleção
+        const vendaDoc = await db.collection('VendasID').doc(vendaId).get();
+        if (vendaDoc.exists) {
+            const vendaData = vendaDoc.data();
+            const { cpfCnpj, grupo, cota, vendedor, administradora, produto, valorCredito, nomeCompleto } = vendaData;
+
+            // Garantir que dataVenda seja um objeto Date
+            const dataVenda = vendaData.dataVenda.toDate ? vendaData.dataVenda.toDate() : new Date(vendaData.dataVenda);
+
+            if (cpfCnpj && grupo && cota) {
+                // Localizar o cliente pelo CPF/CNPJ
+                const clienteDoc = await db.collection('clientes').doc(cpfCnpj).get();
+                if (clienteDoc.exists) {
+                    // Atualizar o status na subcoleção vendas
+                    const vendasSnapshot = await db.collection('clientes').doc(cpfCnpj).collection('vendas').get();
+
+                    vendasSnapshot.forEach(async (doc) => {
+                        const venda = doc.data();
+                        if (venda.grupo === grupo && venda.cota === cota) {
+                            await doc.ref.update({ status: newStatus });
+                            console.log(`Status da venda na subcoleção atualizado para ${newStatus}`);
+                        }
+                    });
+                } else {
+                    console.warn(`Cliente com CPF/CNPJ ${cpfCnpj} não encontrado.`);
+                }
+            } else {
+                console.warn(`Dados insuficientes para localizar a venda na subcoleção: CPF/CNPJ, grupo ou cota ausentes.`);
+            }
+
+            // Registrar dados nas coleções adicionais se o status for "Ativa"
+            if (newStatus === "Ativa") {
+                const month = `${dataVenda.getFullYear()}-${String(dataVenda.getMonth() + 1).padStart(2, '0')}`;
+                const dateKey = `${dataVenda.getFullYear()}-${String(dataVenda.getMonth() + 1).padStart(2, '0')}-${String(dataVenda.getDate()).padStart(2, '0')}`;
+                const monthYearKey = `${dataVenda.getFullYear()}-${String(dataVenda.getMonth() + 1).padStart(2, '0')}`;
+
+                // Atualizar a coleção 'relatorioprodutos'
+                const vendedorRef = db.collection('relatorioprodutos').doc(vendedor);
+                const produtoRef = vendedorRef.collection('produtos').doc(produto.replace(/\//g, '-'));
+
+                const produtoDoc = await produtoRef.get();
+                if (produtoDoc.exists) {
+                    const produtoData = produtoDoc.data();
+                    if (produtoData[month]) {
+                        produtoData[month] += valorCredito;
+                    } else {
+                        produtoData[month] = valorCredito;
+                    }
+                    await produtoRef.set(produtoData);
+                } else {
+                    const produtoData = {};
+                    produtoData[month] = valorCredito;
+                    await produtoRef.set(produtoData);
+                }
+
+                // Atualizar a coleção 'relatorioclientes'
+                const relatorioRef = db.collection('relatorioclientes').doc(vendedor).collection('clientes').doc(nomeCompleto);
+
+                const relatorioDoc = await relatorioRef.get();
+                if (relatorioDoc.exists) {
+                    const relatorioData = relatorioDoc.data();
+                    if (relatorioData[dateKey]) {
+                        relatorioData[dateKey] += valorCredito;
+                    } else {
+                        relatorioData[dateKey] = valorCredito;
+                    }
+                    await relatorioRef.update(relatorioData);
+                } else {
+                    const relatorioData = {};
+                    relatorioData[dateKey] = valorCredito;
+                    await relatorioRef.set(relatorioData);
+                }
+
+                // Atualizar a coleção 'relatorioadm'
+                const relatorioAdmRef = db.collection('relatorioadm').doc(vendedor).collection('administradoras').doc(administradora);
+
+                const relatorioAdmDoc = await relatorioAdmRef.get();
+                if (relatorioAdmDoc.exists) {
+                    const relatorioAdmData = relatorioAdmDoc.data();
+                    if (relatorioAdmData[monthYearKey]) {
+                        relatorioAdmData[monthYearKey] += valorCredito;
+                    } else {
+                        relatorioAdmData[monthYearKey] = valorCredito;
+                    }
+                    await relatorioAdmRef.update(relatorioAdmData);
+                } else {
+                    const relatorioAdmData = {};
+                    relatorioAdmData[monthYearKey] = valorCredito;
+                    await relatorioAdmRef.set(relatorioAdmData);
+                }
+
+                // Atualizar a coleção 'relatorios'
+                const relatorioVendedorRef = db.collection('relatorios').doc(vendedor);
+                const relatorioVendedorDoc = await relatorioVendedorRef.get();
+                const relatorioVendedorData = relatorioVendedorDoc.exists ? relatorioVendedorDoc.data() : {};
+                if (relatorioVendedorData[monthYearKey]) {
+                    relatorioVendedorData[monthYearKey] += valorCredito;
+                } else {
+                    relatorioVendedorData[monthYearKey] = valorCredito;
+                }
+                await relatorioVendedorRef.set(relatorioVendedorData);
+            }
+        } else {
+            console.warn(`Venda com ID ${vendaId} não encontrada na coleção VendasID.`);
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar status da venda:', error);
+    }
+}
+    function saveAllStatus() {
+        const editedSelects = document.querySelectorAll('#vendasNovasTableBody select.edited');
+        editedSelects.forEach(select => {
+            const vendaId = select.getAttribute('data-id');
+            const newStatus = select.value;
+            updateStatus(vendaId, newStatus);
+            select.classList.remove('edited');
+        });
+        alert('Todos os status foram salvos.');
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    if (sidebarLogoutButton) {
+        sidebarLogoutButton.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+            }).catch((error) => {
+                console.error('Erro ao fazer logout:', error);
+            });
+        });
+    } else {
+        console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+    } else {
+        submenu.style.display = "none";
+        chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const relatoriosLink = document.getElementById('relatoriosLink');
+
+    if (sidebar && relatoriosLink) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Simula o clique no botão "Relatórios"
+            relatoriosLink.click();
+        });
+    } else {
+        console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    // Fecha outros submenus abertos
+    allSubmenus.forEach(otherSubmenu => {
+        if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+            otherSubmenu.style.display = 'none';
+            const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (otherChevron) {
+                otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    });
+
+    // Alterna o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (chevron) {
+            chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = 'none';
+        if (chevron) {
+            chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const relatoriosChevron = document.getElementById('relatoriosChevron');
+
+    if (sidebar && relatoriosSubmenu && relatoriosChevron) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Fecha o submenu "Relatórios"
+            relatoriosSubmenu.style.display = 'none';
+            // Reseta o ícone para apontar para baixo
+            relatoriosChevron.style.transform = 'rotate(0deg)';
+        });
+    } else {
+        console.error("Elemento 'sidebar', 'relatoriosSubcategoriesSidebar' ou 'relatoriosChevron' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+    if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+        homeSubmenu.style.display = 'none';
+        const homeChevron = document.getElementById('homeChevron');
+        if (homeChevron) {
+            homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+        }
+    }
+
+    // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+    if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+        relatoriosSubmenu.style.display = 'none';
+        const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        if (relatoriosChevron) {
+            relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+        }
+    }
+
+    // Alterna o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (chevron) {
+            chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = 'none';
+        if (chevron) {
+            chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+    const homeChevron = document.getElementById('homeChevron');
+    const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Fecha o submenu "Home" se estiver aberto
+            if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                homeSubmenu.style.display = 'none';
+                if (homeChevron) {
+                    homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+
+            // Fecha o submenu "Relatórios" se estiver aberto
+            if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+
+            // Fecha o submenu "Comercial" se estiver aberto
+            if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                comercialSubmenu.style.display = 'none';
+                if (comercialChevron) {
+                    comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+    } else {
+        console.error("Elemento 'sidebar' não encontrado.");
+    }
+});
+</script>
+</body>
+</html>

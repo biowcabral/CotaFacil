@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - FR Consórcio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            font-family: 'Roboto', sans-serif;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .styled-table thead tr {
+            background-color: #381e97;
+            color: #ffffff;
+            text-align: left;
+        }
+        .styled-table {
+    overflow-x: hidden;
+}
+
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+            border: 1px solid #dddddd;
+        }
+
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #ececec;
+        }
+
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #381e97;
+        }
+
+        .styled-table tbody tr td[contenteditable="true"] {
+    cursor: text;
+}
+
+.styled-table tbody tr td[contenteditable="true"]:not([data-field="phone"]):not([data-field="cpf"]) {
+    background-color: inherit;
+}
+.styled-table tbody tr td[contenteditable="true"] {
+    cursor: text;
+    background-color: inherit;
+}
+
+        .styled-table tbody tr td[contenteditable="true"]:focus {
+            outline: 2px solid #381e97;
+        }
+
+        .styled-table button {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background-color: #009879;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .styled-table button:hover {
+            background-color: #381e97;
+        }
+
+        .config-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .config-buttons button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #4e4376;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .config-buttons button:hover {
+            background-color: #381e97;
+            transform: scale(1.05);
+        }
+
+        .admin-container {
+            margin-bottom: 20px;
+        }
+
+        .admin-container h3 {
+            margin-bottom: 10px;
+        }
+
+        .product-container {
+            margin-bottom: 10px;
+        }
+
+        .product-container input[type="number"] {
+            width: 60px;
+        }
+
+        .product-container button {
+            margin-left: 10px;
+        }
+
+    .styled-table button {
+        padding: 5px 10px;
+        font-size: 0.9em;
+        background-color: #381e97;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .styled-table button:hover {
+        background-color: #381e97;
+    }
+
+    .config-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .config-buttons button {
+        padding: 10px 20px;
+        font-size: 1em;
+        background-color: #381e97;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .config-buttons button:hover {
+        background-color: #381e97;
+        transform: scale(1.05);
+    }
+
+    .admin-container {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .admin-container h3 {
+        margin-bottom: 10px;
+        color: #009879;
+    }
+
+    .product-container {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background-color: #ffffff;
+    }
+
+    .product-container input[type="number"],
+    .product-container input[type="text"] {
+        width: 100px;
+        padding: 5px;
+        margin-right: 10px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+    }
+
+    .product-container button {
+        padding: 5px 10px;
+        font-size: 0.9em;
+        background-color: #381e97;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .product-container button:hover {
+        background-color: #381e97;
+    }
+
+    .commission-container {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background-color: #f3f3f3;
+    }
+
+    .commission-container input[type="number"] {
+        width: 60px;
+        padding: 5px;
+        margin-right: 10px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+    }
+
+    .commission-container button {
+        padding: 5px 10px;
+        font-size: 0.9em;
+        background-color: #381e97;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .commission-container button:hover {
+        background-color: #381e97;
+    }
+    .config-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .config-buttons button {
+        padding: 10px 20px;
+        font-size: 1em;
+        background-color: #381e97;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+    
+    .config-buttons button:hover {
+        background-color: #381e97;
+        transform: scale(1.05);
+    }
+    .styled-table-button {
+        padding: 10px 20px;
+        font-size: 1em;
+        background-color: #381e97;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .styled-table-button:hover {
+        background-color: #381e97;
+        transform: scale(1.05);
+    }
+    .styled-input {
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 1em;
+        border: 1px solid #656565;
+        border-radius: 5px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .styled-input:focus {
+        border-color: #381e97;
+        box-shadow: #381e97;
+        outline: none;
+    }
+    .admin-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    .admin-container input {
+        margin-bottom: 10px;
+        width: 80%; /* Ajuste a largura conforme necessário */
+    }
+    
+    .admin-container button {
+        width: 80%; /* Ajuste a largura conforme necessário */
+    }
+    select {
+        border-radius: 5px; /* Define o raio da borda para arredondar */
+        padding: 2px; /* Adiciona um pouco de preenchimento interno */
+        border: 1px solid #dddddd; /* Define a cor e o estilo da borda */
+        font-size: 1em; /* Define o tamanho da fonte */
+    }
+    select:focus {
+        outline: none; /* Remove o contorno padrão ao focar */
+        border-color: #381e97; /* Define a cor da borda ao focar */
+    }
+    .sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+    .goals-container {
+        display: none;
+        margin-top: 10px;
+    }
+    
+    .goals-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .goals-table th, .goals-table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .goals-table th, .styled-table th {
+        background-color: #f2f2f2;
+        color: #000000;
+    }
+    
+    .goal-item {
+        background-color: #f9f9f9;
+    }
+    
+    .goal-item:nth-child(even) {
+        background-color: #ececec;
+    }
+    
+    .goal-item td {
+        text-align: center;
+    }
+    
+    .add-goal-form {
+        margin-top: 10px;
+    }
+    
+    .add-goal-form select, .add-goal-form input {
+        margin-right: 10px;
+    }
+    .toggle-goals-button {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .notifications-list {
+        margin-top: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+    
+    .notification {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .notification:last-child {
+        border-bottom: none;
+    }
+    
+    .notification p {
+        margin: 0;
+        font-size: 1em;
+    }
+    
+    .notification small {
+        color: #666;
+        font-size: 0.8em;
+    }
+    .header h1 {
+    font-family: 'Merriweather', serif; /* Aplica a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    position: relative; /* Necessário para posicionar as linhas */
+    display: inline-block; /* Garante que o texto seja tratado como bloco */
+}
+
+.header h1::before,
+.header h1::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha, ajuste conforme necessário */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header h1::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+}
+
+.header h1::after {
+    right: -60px; /* Posiciona a linha à direita */
+}
+.subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#relatoriosSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao elemento pai */
+top: 29%; /* Alinha ao topo do item pai */
+left: 100%; /* Ajusta para a largura da sidebar expandida */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+top: 10%; /* Ajuste a posição vertical conforme necessário */
+left: 123%; /* Ajuste a posição horizontal conforme necessário */
+position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#comercialSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+
+/* Centraliza os itens */
+display: flex;
+align-items: center; /* Alinha horizontalmente ao centro */
+justify-content: center; /* Alinha verticalmente ao centro */
+}
+.sidebar-bottom-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-top: auto; /* Garante que os botões fiquem no rodapé */
+}
+
+.sidebar-button {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.sidebar-button i {
+  margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+}
+
+.sidebar-button span {
+  margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+}
+
+.sidebar-button:first-child {
+  margin-right: 5px;
+}
+
+.sidebar-button:last-child {
+  margin-left: 5px;
+}
+.step.no-hover:hover {
+background: var(--card-background);
+transform: none;
+}
+.step.active {
+background: var(--button-background);
+color: var(--button-text-color);
+margin-left: 50px;
+}
+.step.no-hover:hover {
+background: var(--card-background);
+transform: none;
+}
+.step.disabled {
+pointer-events: none;
+opacity: 1;
+}
+.menu-item {
+position: relative;
+}
+
+
+
+.sidebar:not(:hover) .subcategory-sidebar {
+display: none !important; /* Garante que o submenu seja ocultado */
+}
+#homeChevron {
+transition: transform 0.3s ease;
+}
+.sidebar a#homeLink {
+display: flex;
+align-items: center;
+justify-content: flex-start; /* Alinha o conteúdo à esquerda */
+padding: 15px 20px; /* Aumenta o espaço interno */
+width: 100%; /* Garante que o botão ocupe toda a largura disponível */
+box-sizing: border-box; /* Inclui o padding na largura total */
+overflow: hidden; /* Evita que o conteúdo transborde */
+gap: 1px; /* Adiciona espaço entre o ícone e o texto */
+}
+.sidebar:not(:hover) #homeChevron {
+display: none; /* Esconde o ícone quando a sidebar está colapsada */
+}
+
+/* Mantém o submenu visível enquanto o mouse está sobre o item principal ou o submenu */
+.menu-item:hover .subcategory-sidebar,
+.subcategory-sidebar:hover {
+display: none;
+}
+
+
+
+
+
+
+
+
+
+.subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#relatoriosSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao elemento pai */
+top: 29%; /* Alinha ao topo do item pai */
+left: 100%; /* Ajusta para a largura da sidebar expandida */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+top: 10%; /* Ajuste a posição vertical conforme necessário */
+left: 117%; /* Ajuste a posição horizontal conforme necessário */
+position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#comercialSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+
+/* Centraliza os itens */
+display: flex;
+align-items: center; /* Alinha horizontalmente ao centro */
+justify-content: center; /* Alinha verticalmente ao centro */
+}
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_vendas_mensal.html" class="subcategory">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1>Configurações</h1>
+        </div>
+        <div class="config-buttons">
+            <button onclick="showUserConfig()">Configurações (Usuários)</button>
+            <button onclick="showAdministratorsConfig()">Configuração (Administradoras)</button>
+            <button onclick="showGoalsConfig()">Configurações (Metas-Vendedores)</button>
+            <button onclick="showAdminGoalsConfig()">Configurações (Metas-Administradoras)</button>
+            <button onclick="testarEnvioNotificacao()">Testar Envio de Notificação</button>
+        </div>
+        <div class="content-container" id="contentContainer">
+            <!-- Conteúdo das configurações será preenchido aqui -->
+        </div>
+    </div>
+        <div id="notificationsContainer" class="notifications-list">
+        <!-- Notificações serão carregadas dinamicamente aqui -->
+    </div>
+    <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    async function showAdministratorsConfig() {
+        const contentContainer = document.getElementById('contentContainer');
+        contentContainer.innerHTML = `
+            <h2>Configuração de Administradoras</h2>
+            <button class="styled-table-button" onclick="showAddAdministratorForm()">Adicionar Administradora</button>
+            <table id="administratorsTable" class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Produto</th>
+                        <th>Comissão (%)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados das administradoras serão preenchidos aqui -->
+                </tbody>
+            </table>
+        `;
+        await loadAdministrators();
+    }
+
+    async function showUserConfig() {
+        const contentContainer = document.getElementById('contentContainer');
+        contentContainer.innerHTML = `
+            <table id="usersTable" class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>CPF</th>
+                        <th>Role</th>
+                        <th>Líder</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados dos usuários serão preenchidos aqui -->
+                </tbody>
+            </table>
+        `;
+        await loadUsers();
+    }
+    document.addEventListener('DOMContentLoaded', showUserConfig);
+
+        async function showCommissionsReceivableConfig() {
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.innerHTML = `
+                <h2>Configuração de Comissões à Receber</h2>
+                <div>
+                    <button onclick="showAddAdministratorForm()">Adicionar Administradora</button>
+                    <div id="administratorsContainer"></div>
+                </div>
+            `;
+            await loadAdministrators();
+        }
+
+        async function showCommissionsPayableConfig() {
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.innerHTML = `
+                <h2>Configuração de Comissões à Pagar</h2>
+                <div>
+                    <button onclick="showAddAdministratorForm()">Adicionar Administradora</button>
+                    <div id="administratorsContainer"></div>
+                </div>
+            `;
+            await loadAdministrators();
+        }
+
+        function showAddAdministratorForm() {
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.innerHTML += `
+                <div class="admin-container">
+                    <input type="text" id="adminName" class="styled-input" placeholder="Nome da Administradora">
+                    <button class="styled-table-button" onclick="addAdministrator()"> Salvar Administradora</button>
+                </div>
+            `;
+        }
+        
+        function addProductField() {
+            const productsContainer = document.getElementById('productsContainer');
+            productsContainer.innerHTML += `
+                <div class="product-container">
+                    <input type="text" placeholder="Nome do Produto">
+                </div>
+            `;
+        }
+
+
+        async function loadUsers() {
+            const usersTableBody = document.getElementById('usersTable').querySelector('tbody');
+            usersTableBody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+
+            const snapshot = await db.collection('users').get();
+            const leadersSnapshot = await db.collection('users').where('role', 'in', ['proprietario-socio', 'gestor-comercial', 'gestor-administrativo']).get();
+            const leaders = leadersSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+            snapshot.forEach(doc => {
+                const userData = doc.data();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td contenteditable="true" data-field="name">${userData.name}</td>
+                    <td data-field="email">${userData.email}</td>
+                    <td contenteditable="true" data-field="phone">${userData.phone || ''}</td>
+                    <td contenteditable="true" data-field="cpf">${userData.cpf || ''}</td>
+                    <td>
+                        <select data-field="role">
+                            <option value="proprietario-socio" ${userData.role === 'proprietario-socio' ? 'selected' : ''}>Proprietário-Sócio</option>
+                            <option value="gestor-comercial" ${userData.role === 'gestor-comercial' ? 'selected' : ''}>Gestor Comercial</option>
+                            <option value="gestor-administrativo" ${userData.role === 'gestor-administrativo' ? 'selected' : ''}>Gestor Administrativo</option>
+                            <option value="vendedor-interno" ${userData.role === 'vendedor-interno' ? 'selected' : ''}>Vendedor Interno</option>
+                            <option value="vendedor-externo" ${userData.role === 'vendedor-externo' ? 'selected' : ''}>Vendedor Externo</option>
+                            <option value="indicador" ${userData.role === 'indicador' ? 'selected' : ''}>Indicador</option>
+                            <option value="administrativo" ${userData.role === 'administrativo' ? 'selected' : ''}>Administrativo</option>
+                            <option value="estagio-adm" ${userData.role === 'estagio-adm' ? 'selected' : ''}>Estágio ADM</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select data-field="leader">
+                            <option value="">Nenhum</option>
+                            ${leaders.map(leader => `<option value="${leader.id}" ${userData.leader === leader.id ? 'selected' : ''}>${leader.data.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select data-field="status">
+                        <option value="ativo" ${userData.status === 'ativo' ? 'selected' : ''}>Ativo</option>
+                        <option value="inativo" ${userData.status === 'inativo' ? 'selected' : ''}>Inativo</option>
+                        </select>
+                    </td>
+                    <td><button onclick="saveUser('${doc.id}', this)"><i class="fas fa-save"></i> Salvar</button></td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        }
+
+async function addCommission(adminId, productId) {
+    const month = parseInt(document.getElementById(`commissionMonth-${adminId}-${productId}`).value);
+    const rate = parseFloat(document.getElementById(`commissionRate-${adminId}-${productId}`).value);
+    if (!isNaN(month) && !isNaN(rate)) {
+        const adminDoc = await db.collection('administrators').doc(adminId).get();
+        const adminData = adminDoc.data();
+        const updatedProducts = adminData.products.map(product => {
+            if (product.id === productId) {
+                if (!product.commissions) {
+                    product.commissions = [];
+                }
+                product.commissions.push({ month, rate });
+            }
+            return product;
+        });
+        await db.collection('administrators').doc(adminId).update({ products: updatedProducts });
+        await loadAdministrators();
+    }
+}
+
+            async function loadAdministrators() {
+                const administratorsTableBody = document.getElementById('administratorsTable').querySelector('tbody');
+                administratorsTableBody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+            
+                const snapshot = await db.collection('administrators').get();
+                snapshot.forEach(doc => {
+                    const adminData = doc.data();
+                    const adminId = doc.id;
+                    adminData.products.forEach(product => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td contenteditable="true" data-admin-id="${adminId}" data-field="name">${adminData.name}</td>
+                            <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${product.id}" data-field="productName">${product.name}</td>
+                            <td>
+                                <button onclick="toggleCommissions('${adminId}', '${product.id}')">Mostrar/Ocultar Comissões</button>
+                                <div id="commissionsContainer-${adminId}-${product.id}" style="display: none;">
+                                    <table class="styled-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Mês</th>
+                                                <th>Comissão a Receber (%)</th>
+                                                <th>Comissão a Pagar (%)</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${product.commissions.map(commission => `
+                                                <tr>
+                                                    <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${product.id}" data-field="commissionMonth">${commission.month}</td>
+                                                    <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${product.id}" data-field="commissionReceivable">${commission.receivable}</td>
+                                                    <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${product.id}" data-field="commissionPayable">${commission.payable}</td>
+                                                    <td><button onclick="deleteCommission('${adminId}', '${product.id}', ${commission.month})" style="background: transparent; border: none;"><i class="fas fa-trash" style="color: #381e97;"></i></button></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <button onclick="showAddCommissionForm('${adminId}', '${product.id}')">Adicionar Comissão</button>
+                                </div>
+                            </td>
+                            <td>
+                                <button onclick="saveAdministrator('${adminId}', '${product.id}', this)"><i class="fas fa-save"></i> Salvar</button>
+                                <button onclick="deleteProduct('${adminId}', '${product.id}')"><i class="fas fa-trash"></i> Excluir Produto</button>
+                            </td>
+                        `;
+                        administratorsTableBody.appendChild(row);
+                    });
+            
+                    // Adicionar linha para adicionar novos produtos
+                    const newProductRow = document.createElement('tr');
+                    newProductRow.innerHTML = `
+                        <td contenteditable="false" data-admin-id="${adminId}">${adminData.name}</td>
+                        <td contenteditable="true" data-admin-id="${adminId}" data-field="newProductName"></td>
+                        <td colspan="2"><button onclick="addProduct('${adminId}', this)">Adicionar Produto</button></td>
+                    `;
+                    administratorsTableBody.appendChild(newProductRow);
+            
+                    // Adicionar botão para excluir administradora
+                    const deleteAdminRow = document.createElement('tr');
+                    deleteAdminRow.innerHTML = `
+                        <td colspan="4"><button onclick="deleteAdministrator('${adminId}')"><i class="fas fa-trash"></i> Excluir Administradora</button></td>
+                    `;
+                    administratorsTableBody.appendChild(deleteAdminRow);
+                });
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+    const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    if (sidebarLogoutButton) {
+        sidebarLogoutButton.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+            }).catch((error) => {
+                console.error('Erro ao fazer logout:', error);
+            });
+        });
+    } else {
+        console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+    } else {
+        submenu.style.display = "none";
+        chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const relatoriosLink = document.getElementById('relatoriosLink');
+
+    if (sidebar && relatoriosLink) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Simula o clique no botão "Relatórios"
+            relatoriosLink.click();
+        });
+    } else {
+        console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const allSubmenus = document.querySelectorAll('.subcategory-sidebar'); // Seleciona todos os submenus
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    // Fecha outros submenus abertos
+    allSubmenus.forEach(otherSubmenu => {
+        if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+            otherSubmenu.style.display = 'none';
+            const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (otherChevron) {
+                otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    });
+
+    // Alterna o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (chevron) {
+            chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = 'none';
+        if (chevron) {
+            chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const relatoriosChevron = document.getElementById('homeChevron');
+
+    if (sidebar && relatoriosSubmenu) {
+        sidebar.addEventListener('mouseleave', () => {
+            if (relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+
+        sidebar.addEventListener('mouseenter', () => {
+            // Não reabre automaticamente o submenu ao retornar
+            if (relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+    } else {
+        console.error("Elemento 'sidebar' ou 'relatoriosSubcategoriesSidebar' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+    if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+        homeSubmenu.style.display = 'none';
+        const homeChevron = document.getElementById('homeChevron');
+        if (homeChevron) {
+            homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+        }
+    }
+
+    // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+    if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+        relatoriosSubmenu.style.display = 'none';
+        const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        if (relatoriosChevron) {
+            relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+        }
+    }
+
+    // Alterna o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (chevron) {
+            chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = 'none';
+        if (chevron) {
+            chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+    const homeChevron = document.getElementById('homeChevron');
+    const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Fecha o submenu "Home" se estiver aberto
+            if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                homeSubmenu.style.display = 'none';
+                if (homeChevron) {
+                    homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+
+            // Fecha o submenu "Relatórios" se estiver aberto
+            if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+
+            // Fecha o submenu "Comercial" se estiver aberto
+            if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                comercialSubmenu.style.display = 'none';
+                if (comercialChevron) {
+                    comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+    } else {
+        console.error("Elemento 'sidebar' não encontrado.");
+    }
+});
+
+        function toggleCommissions(adminId, productId) {
+            const commissionsContainer = document.getElementById(`commissionsContainer-${adminId}-${productId}`);
+            if (commissionsContainer.style.display === 'none') {
+                commissionsContainer.style.display = 'block';
+            } else {
+                commissionsContainer.style.display = 'none';
+            }
+        }
+
+        async function deleteCommission(adminId, productId, month) {
+            if (confirm('Você realmente quer excluir esta comissão?')) {
+                const adminDoc = await db.collection('administrators').doc(adminId).get();
+                const adminData = adminDoc.data();
+                const updatedProducts = adminData.products.map(product => {
+                    if (product.id === productId) {
+                        product.commissions = product.commissions.filter(commission => commission.month !== month);
+                    }
+                    return product;
+                });
+                await db.collection('administrators').doc(adminId).update({ products: updatedProducts });
+                await loadAdministrators();
+            }
+        }
+
+        async function deleteProduct(adminId, productId) {
+            if (confirm('Você realmente quer excluir este produto?')) {
+                const adminDoc = await db.collection('administrators').doc(adminId).get();
+                const adminData = adminDoc.data();
+                const updatedProducts = adminData.products.filter(product => product.id !== productId);
+                await db.collection('administrators').doc(adminId).update({ products: updatedProducts });
+                await loadAdministrators();
+            }
+        }
+
+        async function deleteAdministrator(adminId) {
+            if (confirm('Você realmente quer excluir esta administradora?')) {
+                await db.collection('administrators').doc(adminId).delete();
+                await loadAdministrators();
+            }
+        }
+
+async function saveAdministrator(adminId, productId, button) {
+    const row = button.closest('tr');
+    const updatedData = {};
+    const changes = []; // Array para armazenar as alterações realizadas
+
+    row.querySelectorAll('[contenteditable]').forEach(cell => {
+        const field = cell.getAttribute('data-field');
+        let value = cell.textContent.trim();
+        if (field === 'commissionReceivable' || field === 'commissionPayable') {
+            value = parseFloat(value.replace(',', '.')); // Substitui vírgula por ponto
+        }
+        updatedData[field] = value;
+    });
+
+    try {
+        const adminDoc = await db.collection('administrators').doc(adminId).get();
+        const adminData = adminDoc.data();
+
+        const updatedProducts = adminData.products.map(product => {
+            if (product.id === productId) {
+                const updatedCommissions = [];
+                row.querySelectorAll('tbody tr').forEach(commissionRow => {
+                    const monthCell = commissionRow.querySelector('[data-field="commissionMonth"]');
+                    const receivableCell = commissionRow.querySelector('[data-field="commissionReceivable"]');
+                    const payableCell = commissionRow.querySelector('[data-field="commissionPayable"]');
+
+                    if (monthCell && receivableCell && payableCell) {
+                        const month = monthCell.textContent.trim();
+                        const oldReceivable = parseFloat(receivableCell.getAttribute('data-old-value') || 0);
+                        const oldPayable = parseFloat(payableCell.getAttribute('data-old-value') || 0);
+                        const newReceivable = parseFloat(receivableCell.textContent.replace(',', '.'));
+                        const newPayable = parseFloat(payableCell.textContent.replace(',', '.'));
+
+                        // Adiciona as alterações ao array de mudanças
+                        if (oldReceivable !== newReceivable) {
+                            changes.push(`Comissão a Receber (${month}):`);
+                            changes.push(`- De: ${oldReceivable.toLocaleString('pt-BR')}%`);
+                            changes.push(`- Para: ${newReceivable.toLocaleString('pt-BR')}%`);
+                        } else {
+                            changes.push(`Comissão a Receber (${month}):`);
+                            changes.push(`- De: ${oldReceivable.toLocaleString('pt-BR')}%`);
+                            changes.push(`- Para: ${oldReceivable.toLocaleString('pt-BR')}%`);
+                        }
+
+                        if (oldPayable !== newPayable) {
+                            changes.push(`Comissão a Pagar (${month}):`);
+                            changes.push(`- De: ${oldPayable.toLocaleString('pt-BR')}%`);
+                            changes.push(`- Para: ${newPayable.toLocaleString('pt-BR')}%`);
+                        } else {
+                            changes.push(`Comissão a Pagar (${month}):`);
+                            changes.push(`- De: ${oldPayable.toLocaleString('pt-BR')}%`);
+                            changes.push(`- Para: ${oldPayable.toLocaleString('pt-BR')}%`);
+                        }
+
+                        updatedCommissions.push({ month, receivable: newReceivable, payable: newPayable });
+                    }
+                });
+                return { ...product, name: updatedData.productName, commissions: updatedCommissions };
+            }
+            return product;
+        });
+
+        // Atualiza os dados no Firestore
+        await db.collection('administrators').doc(adminId).update({ name: updatedData.name, products: updatedProducts });
+
+        // Enviar notificação detalhada
+        const mensagem = `As configurações da administradora "${updatedData.name}" foram atualizadas.`;
+        const acao = 'Atualização de Configuração';
+        const detalhes = changes.length > 0 ? `Detalhes:\n${changes.join('\n')}` : 'Nenhuma alteração detectada.';
+        const usuarioAfetado = updatedData.name;
+
+        alert('Dados atualizados com sucesso!');
+    } catch (error) {
+        console.error('Erro ao atualizar dados da administradora:', error);
+        alert('Erro ao atualizar dados da administradora.');
+    }
+}
+
+        function showAddProductForm(adminId) {
+            const productsContainer = document.getElementById(`productsContainer-${adminId}`);
+            productsContainer.innerHTML += `
+                <div class="product-container">
+                    <input type="text" id="productName-${adminId}" placeholder="Nome do Produto">
+                    <button onclick="addProduct('${adminId}')">Salvar Produto</button>
+                </div>
+            `;
+        }
+
+        function showAddCommissionForm(adminId, productId) {
+            const commissionsContainer = document.getElementById(`commissionsContainer-${adminId}-${productId}`).querySelector('tbody');
+            commissionsContainer.innerHTML += `
+                <tr>
+                    <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${productId}" data-field="commissionMonth"></td>
+                    <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${productId}" data-field="commissionReceivable"></td>
+                    <td contenteditable="true" data-admin-id="${adminId}" data-product-id="${productId}" data-field="commissionPayable"></td>
+                </tr>
+            `;
+        }
+
+        async function addAdministrator() {
+            const adminName = document.getElementById('adminName').value;
+        
+            if (adminName) {
+                await db.collection('administrators').add({ name: adminName, products: [] });
+                await loadAdministrators();
+            }
+        }
+
+        async function addProduct(adminId, button) {
+            const row = button.closest('tr');
+            const productName = row.querySelector('[data-field="newProductName"]').textContent;
+            if (productName) {
+                await db.collection('administrators').doc(adminId).update({
+                    products: firebase.firestore.FieldValue.arrayUnion({ id: Date.now().toString(), name: productName, commissions: [] })
+                });
+                await loadAdministrators();
+            }
+        }
+
+        async function addCommission(adminId, productId) {
+            const month = parseInt(document.getElementById(`commissionMonth-${adminId}-${productId}`).value);
+            const rate = parseFloat(document.getElementById(`commissionRate-${adminId}-${productId}`).value);
+            if (!isNaN(month) && !isNaN(rate)) {
+                const adminDoc = await db.collection('administrators').doc(adminId).get();
+                const adminData = adminDoc.data();
+                const updatedProducts = adminData.products.map(product => {
+                    if (product.id === productId) {
+                        product.commissions.push({ month, rate });
+                    }
+                    return product;
+                });
+                await db.collection('administrators').doc(adminId).update({ products: updatedProducts });
+                await loadAdministrators();
+            }
+        }
+
+        async function updateCommission(input) {
+            const adminId = input.getAttribute('data-admin-id');
+            const productId = input.getAttribute('data-product-id');
+            const month = parseInt(input.getAttribute('data-month'));
+            const newRate = parseFloat(input.value);
+            if (!isNaN(newRate)) {
+                const adminDoc = await db.collection('administrators').doc(adminId).get();
+                const adminData = adminDoc.data();
+                const updatedProducts = adminData.products.map(product => {
+                    if (product.id === productId) {
+                        product.commissions = product.commissions.map(commission => {
+                            if (commission.month === month) {
+                                return { ...commission, rate: newRate };
+                            }
+                            return commission;
+                        });
+                    }
+                    return product;
+                });
+                await db.collection('administrators').doc(adminId).update({ products: updatedProducts });
+            }
+        }
+
+        function applyCurrencyMask(element) {
+            const metaElement = document.getElementById("meta");
+        
+        // Aplique a máscara de dinheiro com a configuração desejada
+        VMasker(metaElement).maskMoney({
+            precision: 2,
+            separator: ',',
+            delimiter: '.',
+            unit: 'R$',
+            zeroCents: false
+        });
+
+        // Inicializar o campo com R$ 0,00
+        metaElement.value = "R$ 0,00";
+        }
+
+        function setCursorPosition(element, position) {
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.setStart(element.childNodes[0], position);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+async function saveUser(userId, button) {
+    const row = button.closest('tr');
+    const updatedData = {};
+    const changes = []; // Array para armazenar as alterações realizadas
+
+    row.querySelectorAll('[contenteditable], select').forEach(cell => {
+        const field = cell.getAttribute('data-field');
+        const oldValue = cell.getAttribute('data-old-value') || '';
+        const newValue = cell.tagName === 'SELECT' ? cell.value : cell.textContent.trim();
+
+        if (oldValue !== newValue) {
+            changes.push(`${field}: de "${oldValue}" para "${newValue}"`);
+        }
+
+        updatedData[field] = newValue;
+    });
+
+    try {
+        await db.collection('users').doc(userId).update(updatedData);
+
+        // Obter os números de telefone dos usuários com as roles específicas
+        const snapshot = await db.collection('users')
+            .where('role', 'in', ['proprietario-socio', 'gestor-comercial', 'gestor-administrativo'])
+            .get();
+
+        const recipients = snapshot.docs.map(doc => doc.data().phone).filter(phone => phone);
+
+        // Criar a mensagem detalhada
+        const usuarioAfetado = updatedData.name || 'Usuário desconhecido';
+        const mensagem = `As informações do usuário "${usuarioAfetado}" foram atualizadas:\n${changes.join('\n')}\nAlterado em: ${new Date().toLocaleString('pt-BR')}`;
+
+        // Enviar a notificação para os destinatários
+        await sendNotificationToBackend(recipients, mensagem);
+
+        alert('Dados atualizados com sucesso e notificações enviadas!');
+    } catch (error) {
+        console.error('Erro ao atualizar dados do usuário:', error);
+        alert('Erro ao atualizar dados do usuário.');
+    }
+}
+
+
+async function showGoalsConfig() {
+    const contentContainer = document.getElementById('contentContainer');
+    contentContainer.innerHTML = `
+        <h2>Configuração de Metas</h2>
+        <table id="goalsTable" class="styled-table">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Metas</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dados das metas serão preenchidos aqui -->
+            </tbody>
+        </table>
+    `;
+    await loadGoals();
+}
+
+async function loadGoals() {
+    const goalsTableBody = document.getElementById('goalsTable').querySelector('tbody');
+    goalsTableBody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+
+    const usersSnapshot = await db.collection('users').where('role', 'in', ['vendedor-interno', 'vendedor-externo', 'indicador']).get();
+    const users = usersSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+    for (const user of users) {
+        const userGoalsSnapshot = await db.collection('goals').doc(user.id).collection('metas').get();
+        const goals = userGoalsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+        // Ordena as metas em ordem cronológica
+        goals.sort((a, b) => {
+            const [monthA, yearA] = a.data.monthYear.split('/');
+            const [monthB, yearB] = b.data.monthYear.split('/');
+            return new Date(yearA, months.indexOf(monthA)) - new Date(yearB, months.indexOf(monthB));
+        });
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.data.name} (${user.data.role})</td>
+            <td>
+                <div class="goals-container" id="goalsContainer-${user.id}">
+                    <table class="goals-table">
+                        <thead>
+                            <tr>
+                                <th>Mês/Ano</th>
+                                <th>Meta (R$)</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${goals.map(goal => `
+                                <tr class="goal-item">
+                                    <td>${goal.data.monthYear}</td>
+                                    <td>${formatCurrency(goal.data.value)}</td>
+                                    <td>
+                                        <button onclick="editGoal('${user.id}', '${goal.id}', this)">Editar</button>
+                                        <button onclick="deleteGoal('${user.id}', '${goal.id}', this)">Excluir</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="toggle-goals-button" onclick="toggleGoals('${user.id}')">Mostrar/Ocultar Metas</button>
+                <div class="add-goal-form" id="addGoalForm-${user.id}" style="display: none;">
+                    <select data-field="monthYear">
+                        ${generateMonthYearOptions()}
+                    </select>
+                    <input type="text" data-field="value" placeholder="Meta (R$)">
+                    <button onclick="addGoal('${user.id}', this)">Adicionar Meta</button>
+                </div>
+            </td>
+            <td><button onclick="showAddGoalForm('${user.id}')">Adicionar Meta</button></td>
+        `;
+        goalsTableBody.appendChild(row);
+    }
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value);
+}
+
+const months = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
+
+function toggleGoals(userId) {
+    const goalsContainer = document.getElementById(`goalsContainer-${userId}`);
+    if (goalsContainer.style.display === 'none') {
+        goalsContainer.style.display = 'block';
+    } else {
+        goalsContainer.style.display = 'none';
+    }
+}
+
+function generateMonthYearOptions(selectedValue = '') {
+    const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 1 }, (_, i) => currentYear + i); // Próximos 5 anos
+
+    let options = '';
+    for (const year of years) {
+        for (let month = 0; month < months.length; month++) {
+            const value = `${months[month]}/${year}`;
+            const selected = value === selectedValue ? 'selected' : '';
+            options += `<option value="${value}" ${selected}>${value}</option>`;
+        }
+    }
+    return options;
+}
+
+function showAddGoalForm() {
+    const goalsTableBody = document.getElementById('goalsTable').querySelector('tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td contenteditable="true" data-field="goal"></td>
+        <td contenteditable="true" data-field="value"></td>
+        <td><button onclick="addGoal(this)"><i class="fas fa-save"></i> Salvar</button></td>
+    `;
+    goalsTableBody.appendChild(row);
+}
+
+async function addGoal(userId, button) {
+    const form = button.closest('.add-goal-form');
+    const monthYear = form.querySelector('[data-field="monthYear"]').value;
+    const value = parseFloat(form.querySelector('[data-field="value"]').value.replace('.', '').replace(',', '.'));
+
+    if (monthYear && value) {
+        await db.collection('goals').doc(userId).collection('metas').add({ monthYear, value });
+
+        // Obter o nome do usuário afetado
+        const userDoc = await db.collection('users').doc(userId).get();
+        const usuarioAfetado = userDoc.data().name;
+
+        const message = `Uma nova meta de R$ ${value.toLocaleString('pt-BR')} foi adicionada para ${monthYear} ao usuário ${usuarioAfetado}.`;
+        await sendNotificationToBackend('+5543991675646', message);
+
+        await loadGoals();
+    }
+}
+
+function editGoal(userId, goalId, button) {
+    const goalItem = button.closest('tr');
+    const monthYear = goalItem.querySelector('td:nth-child(1)').textContent;
+    const value = goalItem.querySelector('td:nth-child(2)').textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
+
+    goalItem.innerHTML = `
+        <td>
+            <select data-field="monthYear">
+                ${generateMonthYearOptions(monthYear)}
+            </select>
+        </td>
+        <td>
+            <input type="text" data-field="value" value="${value}">
+        </td>
+        <td>
+            <button onclick="saveGoal('${userId}', '${goalId}', this)">Salvar</button>
+        </td>
+    `;
+}
+
+async function deleteGoal(userId, goalId, button) {
+    if (confirm('Você realmente quer excluir esta meta?')) {
+        const goalDoc = await db.collection('goals').doc(userId).collection('metas').doc(goalId).get();
+        const goalData = goalDoc.data();
+        await db.collection('goals').doc(userId).collection('metas').doc(goalId).delete();
+
+        // Obter o nome do usuário afetado
+        const userDoc = await db.collection('users').doc(userId).get();
+        const usuarioAfetado = userDoc.data().name;
+
+        const message = `A meta de ${goalData.monthYear} foi excluída do usuário ${usuarioAfetado}.`;
+        await sendNotificationToBackend('+5543991675646', message);
+
+        await loadGoals();
+    }
+}
+
+async function saveGoal(userId, goalId, button) {
+    const goalItem = button.closest('tr');
+    const monthYear = goalItem.querySelector('[data-field="monthYear"]').value;
+    const value = parseFloat(goalItem.querySelector('[data-field="value"]').value.replace('.', '').replace(',', '.'));
+
+    if (monthYear && value) {
+        await db.collection('goals').doc(userId).collection('metas').doc(goalId).update({ monthYear, value });
+
+        // Obter o nome do usuário afetado
+        const userDoc = await db.collection('users').doc(userId).get();
+        const usuarioAfetado = userDoc.data().name;
+
+        const message = `A meta de ${monthYear} foi atualizada para R$ ${value.toLocaleString('pt-BR')} ao usuário ${usuarioAfetado}.`;
+        await sendNotificationToBackend('+5543991675646', message);
+
+        await loadGoals();
+    }
+}
+
+function showAddGoalForm(userId) {
+    const addGoalForm = document.getElementById(`addGoalForm-${userId}`);
+    addGoalForm.style.display = 'block';
+}
+async function loadAdminGoals() {
+    const adminGoalsTableBody = document.getElementById('adminGoalsTable').querySelector('tbody');
+    adminGoalsTableBody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+
+    const adminsSnapshot = await db.collection('administrators').get();
+    const admins = adminsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+    for (const admin of admins) {
+        const adminGoalsSnapshot = await db.collection('adminGoals').doc(admin.data.name).collection('metas').get();
+        const goals = adminGoalsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${admin.data.name}</td>
+            <td>
+                <div class="goals-container" id="adminGoalsContainer-${admin.data.name}">
+                    <table class="goals-table">
+                        <thead>
+                            <tr>
+                                <th>Mês/Ano</th>
+                                <th>Meta (R$)</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${goals.map(goal => `
+                                <tr class="goal-item">
+                                    <td>${goal.data.monthYear}</td>
+                                    <td>${formatCurrency(goal.data.value)}</td>
+                                    <td>
+                                        <button onclick="editAdminGoal('${admin.data.name}', '${goal.id}', this)">Editar</button>
+                                        <button onclick="deleteAdminGoal('${admin.data.name}', '${goal.id}', this)">Excluir</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="toggle-goals-button" onclick="toggleGoals('adminGoalsContainer-${admin.data.name}')">Mostrar/Ocultar Metas</button>
+                <div class="add-goal-form" id="addAdminGoalForm-${admin.data.name}" style="display: none;">
+                    <select data-field="monthYear">
+                        ${generateMonthYearOptions()}
+                    </select>
+                    <input type="text" data-field="value" placeholder="Meta (R$)">
+                    <button onclick="addAdminGoal('${admin.data.name}', this)">Adicionar Meta</button>
+                </div>
+            </td>
+            <td><button onclick="showAddAdminGoalForm('${admin.data.name}')">Adicionar Meta</button></td>
+        `;
+        adminGoalsTableBody.appendChild(row);
+    }
+}
+
+async function addAdminGoal(adminName, button) {
+    const form = button.closest('.add-goal-form');
+    const monthYear = form.querySelector('[data-field="monthYear"]').value;
+    const value = parseFloat(form.querySelector('[data-field="value"]').value.replace('.', '').replace(',', '.'));
+
+    if (monthYear && value) {
+        await db.collection('adminGoals').doc(adminName).collection('metas').add({ monthYear, value });
+        await loadAdminGoals();
+
+        // Enviar notificação
+        const message = `Uma nova meta de R$ ${value.toLocaleString('pt-BR')} foi adicionada para ${monthYear} na administradora ${adminName}.`;
+        await sendNotification('+5543991675646', message); // Substitua pelo número do destinatário
+    }
+}
+
+function editAdminGoal(adminName, goalId, button) {
+    const goalItem = button.closest('tr');
+    const monthYear = goalItem.querySelector('td:nth-child(1)').textContent;
+    const value = goalItem.querySelector('td:nth-child(2)').textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
+
+    goalItem.innerHTML = `
+        <td>
+            <select data-field="monthYear">
+                ${generateMonthYearOptions(monthYear)}
+            </select>
+        </td>
+        <td>
+            <input type="text" data-field="value" value="${value}">
+        </td>
+        <td>
+            <button onclick="saveAdminGoal('${adminName}', '${goalId}', this)">Salvar</button>
+        </td>
+    `;
+}
+
+async function deleteAdminGoal(adminName, goalId, button) {
+    if (confirm('Você realmente quer excluir esta meta?')) {
+        const goalDoc = await db.collection('adminGoals').doc(adminName).collection('metas').doc(goalId).get();
+        const goalData = goalDoc.data();
+        await db.collection('adminGoals').doc(adminName).collection('metas').doc(goalId).delete();
+        await loadAdminGoals();
+
+        const message = `A meta de ${goalData.monthYear} foi excluída da administradora ${adminName}.`;
+        await sendNotificationToBackend('+5543991675646', message);
+    }
+}
+
+async function saveAdminGoal(adminName, goalId, button) {
+    const goalItem = button.closest('tr');
+    const monthYear = goalItem.querySelector('[data-field="monthYear"]').value;
+    const value = parseFloat(goalItem.querySelector('[data-field="value"]').value.replace('.', '').replace(',', '.'));
+
+    if (monthYear && value) {
+        await db.collection('adminGoals').doc(adminName).collection('metas').doc(goalId).update({ monthYear, value });
+        await loadAdminGoals();
+
+        const message = `A meta de ${monthYear} foi atualizada para R$ ${value.toLocaleString('pt-BR')} na administradora ${adminName}.`;
+        await sendNotificationToBackend('+5543991675646', message);
+    }
+}
+
+async function showAdminGoalsConfig() {
+    const contentContainer = document.getElementById('contentContainer');
+    contentContainer.innerHTML = `
+        <h2>Configuração de Metas - Administradoras</h2>
+        <table id="adminGoalsTable" class="styled-table">
+            <thead>
+                <tr>
+                    <th>Administradora</th>
+                    <th>Metas</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dados das metas das administradoras serão preenchidos aqui -->
+            </tbody>
+        </table>
+    `;
+    await loadAdminGoals();
+}
+
+function generateMonthYearOptions(selectedValue = '') {
+    const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 5 }, (_, i) => currentYear + i); // Próximos 5 anos
+
+    let options = '';
+    for (const year of years) {
+        for (let month = 0; month < months.length; month++) {
+            const value = `${months[month]}/${year}`;
+            const selected = value === selectedValue ? 'selected' : '';
+            options += `<option value="${value}" ${selected}>${value}</option>`;
+        }
+    }
+    return options;
+}
+function toggleGoals(containerId) {
+    const goalsContainer = document.getElementById(containerId);
+    if (!goalsContainer) {
+        console.error(`Elemento com ID "${containerId}" não encontrado.`);
+        return;
+    }
+
+    if (goalsContainer.style.display === 'none' || goalsContainer.style.display === '') {
+        goalsContainer.style.display = 'block';
+    } else {
+        goalsContainer.style.display = 'none';
+    }
+}
+function showAddAdminGoalForm(adminId) {
+    const addGoalForm = document.getElementById(`addAdminGoalForm-${adminId}`);
+    if (!addGoalForm) {
+        console.error(`Formulário de adição de metas para administradora com ID "${adminId}" não encontrado.`);
+        return;
+    }
+
+    addGoalForm.style.display = 'block';
+}
+
+
+async function testarEnvioNotificacao() {
+    const numeroDestino = '+5543991675646'; // Número do destinatário
+    const mensagem = 'Teste de notificação via WhatsApp da FR Consorcios.';
+
+    if (!numeroDestino || !mensagem) {
+        alert('Número do destinatário e mensagem são obrigatórios.');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:3000/send-notification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ to: numeroDestino, message: mensagem }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('Notificação enviada com sucesso!');
+        } else {
+            console.error('Erro ao enviar notificação:', result.error);
+            alert('Erro ao enviar notificação. Verifique o console para mais detalhes.');
+        }
+    } catch (error) {
+        console.error('Erro ao enviar notificação:', error);
+        alert('Erro ao enviar notificação. Verifique o console para mais detalhes.');
+    }
+}
+
+async function sendNotificationToBackend(recipients, message) {
+    if (!recipients || recipients.length === 0 || !message) {
+        console.error('Destinatários e mensagem são obrigatórios.');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:3000/send-notification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ recipients, message }),
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+            console.error('Erro ao enviar notificações:', result.error);
+        }
+    } catch (error) {
+        console.error('Erro ao enviar notificações:', error);
+    }
+}
+
+    </script>
+</body>
+</html>

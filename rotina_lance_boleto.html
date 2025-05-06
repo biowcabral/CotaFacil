@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotina Lance/Boleto</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+    :root {
+        --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+        --text-color: #333;
+        --header-background: rgba(255, 255, 255, 0.9);
+        --header-text-color: #333;
+        --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+        --sidebar-text-color: #fff;
+        --card-background: rgba(255, 255, 255, 0.9);
+        --card-text-color: #333;
+        --button-background: #c40000;
+        --button-hover-background: #0056b3;
+        --button-text-color: white;
+        --button-success-background: green;
+        --button-success-hover-background: green;
+        --table-header-background: #6a5acd;
+        --table-header-text-color: #fff;
+    }
+    
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: var(--background-color);
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .sidebar {
+        width: 60px;
+        background: var(--sidebar-background);
+        color: var(--sidebar-text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transition: width 0.3s ease, background 0.3s;
+        z-index: 1000;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar:hover {
+        width: 230px;
+    }
+    
+    .sidebar a {
+        color: var(--sidebar-text-color);
+        text-decoration: none;
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s, width 0.3s;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .sidebar a i {
+        margin-right: 10px;
+        font-size: 1.2em;
+    }
+    
+    .sidebar a span {
+        display: none;
+        transition: display 0.3s;
+    }
+    
+    .sidebar:hover a span {
+        display: inline;
+    }
+    
+    .sidebar:hover ~ .main-content {
+        margin-left: 220px;
+    }
+    
+    .sidebar:hover ~ .header {
+        width: calc(100% - 220px);
+    }
+    
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .user-info i {
+        font-size: 2em;
+        color: #6a5acd;
+    }
+    
+    .user-info span {
+        margin-top: 5px;
+        font-size: 1em;
+        color: var(--header-text-color);
+    }
+    
+    .profile-link {
+        margin-right: 20px;
+    }
+    
+    .container {
+        max-width: 1350px;
+        margin: 50px auto; /* Centraliza horizontalmente */
+        padding: 20px;
+        background-color: var(--card-background);
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        flex: 1;
+        margin-left: 15%;
+    }
+    
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--text-color);
+        margin-left: 35%;
+    }
+    h1 img {
+    width: 150%; /* Ajuste o valor conforme necessário */
+    height: auto; /* Mantém a proporção da imagem */
+}
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--text-color);
+        font-size: 35px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        background-color: var(--card-background);
+    }
+    
+    table, th, td {
+        border: 2px solid black; /* Linhas pretas e mais grossas */
+        text-align: center;
+    }
+    
+    th, td {
+        padding: 10px;
+        text-align: center;
+    }
+    
+    th {
+        background: var(--table-header-background);
+        color: var(--table-header-text-color);
+    }
+    .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100px; /* Ajuste a altura mínima para caber o nome completo */
+            margin-left: 19%;
+        }
+        
+        .header h1 {
+            margin-left: -15%;
+            font-size: 2em;
+            color: var(--header-text-color);
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+            text-align: center;
+            max-width: 150px; /* Ajuste conforme necessário */
+            word-wrap: break-word;
+        }
+        
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+        
+        .header .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+        }
+        
+        .header .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+        
+        .header .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+    
+    #scrollButtons {
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #scrollButtons button {
+        padding: 10px;
+        background-color: rgba(106, 90, 205, 0.8); /* Fundo roxo com 80% de opacidade */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #scrollButtons button:hover {
+        background-color: rgba(106, 90, 205, 1); /* Fundo roxo sólido ao passar o mouse */
+    }
+    
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    
+    input[type="text"], select {
+        background-color: #f2f2f2;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        color: #333;
+        width: 100%;
+        max-width: 150px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+        margin-top: 20px;
+        display: block;
+        margin: 5px auto;
+    }
+
+    
+    input[type="text"]:focus, select:focus {
+        border-color: #6a5acd;
+        background-color: #fff;
+        outline: none;
+    }
+    
+    input[type="text"]::placeholder {
+        color: #aaa;
+    }
+    
+    .toggle-button {
+        background-color: var(--button-background);
+        color: var(--button-text-color);
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+        font-size: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .toggle-button.success {
+        background-color: var(--button-success-background);
+        color: white;
+    }
+    
+    .toggle-button.error {
+        background-color: var(--button-background);
+        color: white;
+    }
+    .toggle-button.atraso {
+        background-color: rgb(255, 77, 0);
+        color: white;
+    }
+
+    .toggle-button.pendente {
+        background-color: rgb(204, 204, 0); /* Amarelo escuro */
+        color: black;
+    }
+
+    .toggle-button.ofertado {
+        background-color: green;
+        color: white;
+    }
+
+    .toggle-button.historico {
+        background-color: #c40000;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+        }
+    
+        .sidebar a {
+            text-align: left;
+            padding: 10px;
+        }
+    
+        .sidebar a i {
+            margin-right: 10px;
+        }
+    
+        .main-content {
+            margin-left: 0;
+        }
+    
+        .header {
+            width: 100%;
+        }
+    
+        .container {
+            margin-left: 0;
+            padding: 10px;
+        }
+    
+        table, th, td {
+            border: 2px solid #000000;
+            font-size: 12px;
+        }
+    
+        input[type="text"], select {
+            max-width: 100px;
+        }
+    }
+    
+    /* Ajuste específico para a largura do filtro Grupo/Cota */
+    #filterGrupoCota {
+        max-width: 65px;
+    }
+    
+    .input-container {
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .input-field {
+        width: 100%;
+        border-radius: 5px;
+        height: 42px;
+        padding-right: 20px; /* Espaço para o sufixo */
+        box-sizing: border-box;
+    }
+    
+    .input-suffix {
+        position: absolute;
+        right: 10px;
+        pointer-events: none;
+    }
+    .container .custom-input {
+        background-color: transparent; /* Cor de fundo desejada */
+        border: none;
+        width: 100px;
+    }
+    
+    .select-field {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .checkbox-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px; /* Espaçamento entre o checkbox e o texto */
+}
+.print-button {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .print-button:hover {
+            background-color: var(--button-hover-background);
+            transform: scale(1.05);
+        }
+
+        @media print {
+            .sidebar, .header, .print-button, #scrollButtons {
+                display: none;
+            }
+
+            .main-content {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            .container {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            table, th, td {
+                border: 1px solid #000;
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 5px;
+                text-align: left;
+            }
+        }
+    .reset-button {
+        background-color: #ff4d4d; /* Cor de fundo vermelho */
+        color: white; /* Cor do texto */
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin: 5px 0;
+    }
+    
+    .reset-button:hover {
+        background-color: #e60000; /* Cor de fundo ao passar o mouse */
+        transform: scale(1.05); /* Efeito de zoom ao passar o mouse */
+    }
+    
+    .reset-button:disabled {
+        background-color: #cccccc; /* Cor de fundo quando desabilitado */
+        cursor: not-allowed;
+    }
+    </style>
+    <!-- Adicione os scripts do Firebase aqui -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard_administrativo.html"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="gerenciamento_processos.html"><i class="fas fa-tasks"></i><span>CRM de Processos</span></a>
+        <a href="relatorio_vendas_clientes.html"><i class="fas fa-chart-bar"></i><span>Relatório de Vendas</span></a>
+        <a href="rotina_lance_boleto.html"><i class="fas fa-bullhorn"></i><span>Rotina Lance Boleto</span></a>
+        <a href="pos_vendas.html"><i class="fas fa-users"></i><span>Pós Vendas</span></a>
+        <a href="conferencia_comissao.html"><i class="fas fa-file-alt"></i><span>Conferência de Comissão</span></a>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="card">
+            <div class="header">
+                <h1><img src="Lances&Boletos.png" alt=""></h1>
+                <div class="user-info">
+                    <a href="gerenciar_dados.html" class="profile-link">
+                        <img src="user-avatar.jpeg" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <br>
+                        <span id="userName">Nome do Usuário</span> <!-- Nome inicial será atualizado pelo Firebase -->
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h2>Relatório de Vendas por Produtos</h2>
+            <button onclick="window.print()" class="print-button">Imprimir</button> <!-- Botão de impressão -->
+            <table id="salesTable">
+                <thead>
+                    <tr>
+                        <th>Nome Completo <br> <input type="text" id="filterNomeCompleto" onkeyup="filterTable()" placeholder="Filtrar Nome"></th>
+                        <th>Administradora <select id="filterAdministradora" onchange="filterTable()"></select></th>
+                        <th>Vendedor <select id="filterVendedor" onchange="filterTable()"></select></th>
+                        <th>Grupo/Cota <input type="text" id="filterGrupoCota" onkeyup="filterTable()" placeholder="Grupo/Cota"></th>
+                        <th>Boleto <select id="filterBoleto" onchange="filterTable()">
+                            <option value="">Todos</option>
+                            <option value="true">Concluido</option>
+                            <option value="false">Pendente</option>
+                        </select>
+                        <button id="resetBoleto" class="reset-button" data-role="proprietario-socio,gestor-administrativo" onclick="confirmAndExecute('updateAllBoleto', false)">Resetar</button>
+                        </th>
+                         <th>Status <select id="filterStatus" onchange="filterTable()">
+                            <option value="">Todos</option>
+                            <option value="Ativa">Ativa</option>
+                            <option value="Contemplada">Contemplada</option>
+                            <option value="Cancelada">Cancelada</option>
+                            <option value="Falta Pagar">Falta Pagar</option>
+                            <option value="Desistente">Desistente</option>
+                        </select>
+                        <button id="resetBoletoEnviado" class="reset-button" data-role="proprietario-socio,gestor-administrativo" onclick="confirmAndExecute('updateAllBoletoEnviado', false)">Resetar</button>
+                        </th>
+                        <th>Lance Sugerido <br> 
+                            <select id="filterLanceSugerido" onchange="filterTable()">
+                                <option value="">Todos</option>
+                                <option value="pendente">Pendente</option>
+                                <option value="ofertado">Ofertado</option>
+                                <option value="atraso">Atraso</option>
+                                <option value="histórico">Histórico</option>
+                            </select>
+                            <button id="resetLance" class="reset-button" data-role="proprietario-socio,gestor-administrativo" onclick="confirmAndExecute('updateAllLance', 'Pendente')">Resetar</button>
+                        </th>
+                        <th>Lance (Embutido) <select id="filterLanceEmbutido" onchange="filterTable()">
+                            <option value="">Todos</option>
+                            <option value="true">Concluido</option>
+                            <option value="false">Pendente</option>
+                        </select></th>
+                        <th>Responsável <select id="filterResponsavel" onchange="filterTable()"></select></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- As vendas serão listadas aqui -->
+                </tbody>
+            </table>
+            <div id="scrollButtons">
+                <button class="toggle-button" id="scrollToTop">Topo da tabela</button>
+                <button class="toggle-button" id="scrollToBottom">Final da tabela</button>
+            </div>
+        </div>
+    </div>
+                <style>
+                    .toggle-button {
+                        margin-top: 5px;
+                        margin-right: 5px;
+                        margin-bottom: 5px; /* Adiciona espaçamento vertical entre os botões */
+                    }
+                    #salesTable th, #salesTable td {
+                        width: 145%; /* Aumenta a largura das colunas em 25% */
+                    }
+                </style>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            fetchSales();
+        } else {
+            alert('Você precisa estar logado para acessar esta página.');
+            window.location.href = 'login.html'; // Redireciona para a página de login
+        }
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                const userData = userDoc.data();
+    
+                if (userData && userData.role) {
+                    const allowedRoles = ['proprietario-socio', 'gestor-administrativo'];
+                    const userRole = userData.role;
+    
+                    // Exibe os botões apenas para usuários com roles permitidas
+                    const resetButtons = document.querySelectorAll('.reset-button');
+                    resetButtons.forEach(button => {
+                        const roles = button.getAttribute('data-role').split(',');
+                        if (roles.includes(userRole)) {
+                            button.style.display = 'inline-block';
+                        } else {
+                            button.style.display = 'none';
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao verificar o role do usuário:', error);
+            }
+        }
+    });
+
+    function confirmAndExecute(action, value) {
+        const confirmation = confirm('Tem certeza de que deseja executar esta ação?');
+        if (confirmation) {
+            if (action === 'updateAllBoleto') {
+                updateAllBoleto(value);
+            } else if (action === 'updateAllBoletoEnviado') {
+                updateAllBoletoEnviado(value);
+            } else if (action === 'updateAllLance') {
+                updateAllLance(value);
+            }
+        }
+    }
+    
+    async function fetchSales() {
+        try {
+            const vendasSnapshot = await db.collection('VendasID').get();
+            const tbody = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+    
+            const administradoras = new Set();
+            const vendedores = new Set();
+            const responsaveis = new Set();
+    
+            for (const vendaDoc of vendasSnapshot.docs) {
+                const data = vendaDoc.data();
+                const responsavel = (data.responsavel || 'undefined').toUpperCase();
+                const responsavelNomeArray = responsavel.split(' ');
+                const responsavelNomeFormatado = responsavelNomeArray.length > 1 
+                    ? `${responsavelNomeArray[0]} ${responsavelNomeArray[responsavelNomeArray.length - 1]}` 
+                    : responsavel;
+    
+                administradoras.add(data.administradora.toUpperCase());
+                vendedores.add(data.vendedor.toUpperCase());
+                responsaveis.add(responsavelNomeFormatado);
+    
+                const lanceBolso = data.lancebolso ? data.lancebolso.replace('%', '') : '';
+                const lanceEmbutido = data.lanceembutido ? data.lanceembutido.replace('%', '') : '';
+    
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; position: relative;">
+                            <span>${(data.nomeCompleto || '').toUpperCase()}</span>
+                            <div style="display: flex; align-items: center; width: 100%; position: relative;">
+                                <input type="text" class="custom-input" value="${(data.telefoneFinanceiro || '').toUpperCase()}" onchange="updateTelefoneFinanceiro(this, '${vendaDoc.id}')" style="padding-right: 25px;" disabled>
+                                <i class="fas fa-edit" style="position: absolute; right: 5px; cursor: pointer;" onclick="enableInput(this)"></i>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${(data.administradora || '').toUpperCase()}</td>
+                    <td>${(data.vendedor || '').toUpperCase()}</td>
+                    <td>${(data.grupo || '').toUpperCase()}/${(data.cota || '').toUpperCase()}</td>
+                    <td>
+                        <select class="select-field" onchange="markAsEdited(this)">
+                            <option value="" disabled ${!data.boleto ? 'selected' : ''}>Selecione</option>
+                            <option value="whatsapp" ${data.boleto === 'whatsapp' ? 'selected' : ''}>Whatsapp</option>
+                            <option value="email" ${data.boleto === 'email' ? 'selected' : ''}>E-mail</option>
+                            <option value="via_vendedor" ${data.boleto === 'via_vendedor' ? 'selected' : ''}>Via Vendedor</option>
+                            <option value="via_vendedor_impresso" ${data.boleto === 'via_vendedor_impresso' ? 'selected' : ''}>Via Vendedor (Impresso)</option>
+                        </select>
+                        <button class="toggle-button ${data.boletobaixado ? 'success' : 'error'}" onclick="toggleButton(this, 'boletobaixado')"><i class="fas ${data.boletobaixado ? 'fa-check' : 'fa-times'}"></i> Baixado</button>
+                    </td>
+                    <td>
+                        <select class="select-field" onchange="alterarStatusVenda('${vendaDoc.id}', this.value)">
+                            <option value="Ativa" ${data.status === 'Ativa' ? 'selected' : ''}>Ativa</option>
+                            <option value="Contemplada" ${data.status === 'Contemplada' ? 'selected' : ''}>Contemplada</option>
+                            <option value="Cancelada" ${data.status === 'Cancelada' ? 'selected' : ''}>Cancelada</option>
+                            <option value="Falta Pagar" ${data.status === 'Falta Pagar' ? 'selected' : ''}>Falta Pagar</option>
+                            <option value="Desistente" ${data.status === 'Desistente' ? 'selected' : ''}>Desistente</option>
+                        </select>
+                        <button class="toggle-button ${data.boletoenviado ? 'success' : 'error'}" onclick="toggleButton(this, 'boletoenviado')"><i class="fas ${data.boletoenviado ? 'fa-check' : 'fa-times'}"></i> Enviado</button>
+                    </td>
+                    <td>
+                        <div class="input-container">
+                            <input type="number" min="0" max="100" value="${lanceBolso}" class="input-field" onchange="updateLance('${vendaDoc.id}', 'lancebolso', this.value)">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <button class="toggle-button ${data.lance === 'pendente' ? 'pendente' : data.lance === 'ofertado' ? 'success' : data.lance === 'emAtraso' ? 'warning' : 'error'}" onclick="toggleButton(this, 'lance')">
+                            <i class="fas ${data.lance === 'pendente' ? 'fa-clock' : data.lance === 'ofertado' ? 'fa-check' : data.lance === 'emAtraso' ? 'fa-exclamation' : 'fa-times'}"></i> 
+                            ${data.lance === 'pendente' ? 'Pendente' : data.lance === 'ofertado' ? 'Ofertado' : data.lance === 'emAtraso' ? 'Atraso' : 'Histórico'}
+                        </button>
+                    </td>
+                    <td>
+                        <div class="input-container">
+                            <input type="number" min="0" max="100" value="${lanceEmbutido}" class="input-field" onchange="updateLance('${vendaDoc.id}', 'lanceembutido', this.value)">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <button class="toggle-button ${data.calcao ? 'success' : 'error'}" onclick="toggleButton(this, 'calcao')"><i class="fas ${data.calcao ? 'fa-check' : 'fa-times'}"></i> Caução</button>
+                    </td>
+                    <td>${responsavelNomeFormatado}</td>`;
+                row.setAttribute('data-doc-path', vendaDoc.ref.path);
+            }
+    
+            populateFilterOptions('filterAdministradora', administradoras);
+            populateFilterOptions('filterVendedor', vendedores);
+            populateFilterOptions('filterResponsavel', responsaveis);
+    
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+            alert("Erro ao carregar dados: " + error.message);
+        }
+    }
+
+    async function updateAllBoleto(value) {
+        try {
+            const vendasSnapshot = await db.collection('VendasID').get();
+            for (const vendaDoc of vendasSnapshot.docs) {
+                await db.collection('VendasID').doc(vendaDoc.id).update({ boletobaixado: value });
+            }
+            alert('Todos os boletos foram atualizados para ' + value);
+            fetchSales(); // Recarregar a tabela
+        } catch (error) {
+            console.error('Erro ao atualizar boletos:', error);
+            alert('Erro ao atualizar boletos: ' + error.message);
+        }
+    }
+    
+    async function updateAllBoletoEnviado(value) {
+    try {
+        const vendasSnapshot = await db.collection('VendasID').get();
+        for (const vendaDoc of vendasSnapshot.docs) {
+            await db.collection('VendasID').doc(vendaDoc.id).update({ boletoenviado: value });
+        }
+        alert('Todos os boletos enviados foram atualizados para ' + (value ? 'Concluído' : 'Pendente'));
+        fetchSales(); // Recarregar a tabela
+    } catch (error) {
+        console.error('Erro ao atualizar boletos enviados:', error);
+        alert('Erro ao atualizar boletos enviados: ' + error.message);
+    }
+}
+    
+    async function updateAllLance(value) {
+        try {
+            const vendasSnapshot = await db.collection('VendasID').get();
+            for (const vendaDoc of vendasSnapshot.docs) {
+                await db.collection('VendasID').doc(vendaDoc.id).update({ lance: value });
+            }
+            alert('Todos os lances foram atualizados para ' + value);
+            fetchSales(); // Recarregar a tabela
+        } catch (error) {
+            console.error('Erro ao atualizar lances:', error);
+            alert('Erro ao atualizar lances: ' + error.message);
+        }
+    }
+
+async function updateLance(docId, field, value) {
+    try {
+        const updates = {};
+        updates[field] = value;
+        await db.collection('VendasID').doc(docId).update(updates);
+        alert('Lance atualizado com sucesso!');
+    } catch (error) {
+        console.error('Erro ao atualizar lance:', error);
+        alert('Erro ao atualizar lance: ' + error.message);
+    }
+}
+
+async function updateTelefoneFinanceiro(input, docId) {
+        const newTelefoneFinanceiro = input.value;
+        try {
+            await db.collection('VendasID').doc(docId).update({
+                telefoneFinanceiro: newTelefoneFinanceiro
+            });
+            alert('Telefone financeiro atualizado com sucesso!');
+        } catch (error) {
+            console.error('Erro ao atualizar telefone financeiro:', error);
+            alert('Erro ao atualizar telefone financeiro: ' + error.message);
+        }
+    }
+    
+    function markAsEdited(input) {
+        input.classList.add('edited');
+    }
+    
+    async function saveData(docPath, button) {
+        const row = button.closest('tr');
+        const lanceBolsoInput = row.querySelector('input[type="number"]');
+        const lanceEmbutidoInput = row.querySelectorAll('input[type="number"]')[1];
+        const boletoSelect = row.querySelector('select');
+        
+        const updates = {};
+    
+        if (lanceBolsoInput) {
+            updates.lancebolso = lanceBolsoInput.value;
+        }
+    
+        if (lanceEmbutidoInput) {
+            updates.lanceembutido = lanceEmbutidoInput.value;
+        }
+    
+        if (boletoSelect) {
+            updates.boleto = boletoSelect.value;
+        }
+    
+        await db.doc(docPath).update(updates);
+    
+        // Marcar a linha como salva hoje
+        const today = new Date().toISOString().split('T')[0];
+        localStorage.setItem(`saved-${docPath}`, today);
+        row.classList.add('saved-today');
+    }
+    
+    async function alterarStatusVenda(vendaId, status) {
+        try {
+            const updates = { 
+                status: status, 
+                dataStatus: new Date() 
+            };
+            await db.collection('VendasID').doc(vendaId).update(updates);
+            alert('Status atualizado com sucesso!');
+        } catch (error) {
+            console.error("Erro ao atualizar status:", error);
+            alert("Erro ao atualizar status: " + error.message);
+        }
+    }
+    
+    function populateFilterOptions(filterId, options) {
+        const filter = document.getElementById(filterId);
+        filter.innerHTML = '<option value="">Todos</option>';
+        Array.from(options).sort().forEach(option => {
+            filter.innerHTML += `<option value="${option}">${option}</option>`;
+        });
+    }
+    
+    async function toggleButton(button, type) {
+        const icon = button.querySelector('i');
+        const row = button.closest('tr');
+        if (row && icon) {
+            const docPath = row.getAttribute('data-doc-path');
+            if (docPath) {
+                const updates = {};
+                let newStatus;
+    
+                if (type === 'lance') {
+                    const currentStatus = button.textContent.trim();
+                    if (currentStatus.includes('Pendente')) {
+                        newStatus = 'Ofertado';
+                    } else if (currentStatus.includes('Ofertado')) {
+                        newStatus = 'Atraso';
+                    } else if (currentStatus.includes('Atraso')) {
+                        newStatus = 'Histórico';
+                    } else {
+                        newStatus = 'Pendente';
+                    }
+                    updates.lance = newStatus;
+                    updates.dataLance = new Date(); // Adiciona a data da última atualização
+                } else if (type === 'boletobaixado') {
+                    const isTrue = icon.classList.contains('fa-check');
+                    newStatus = !isTrue;
+                    updates.boletobaixado = newStatus;
+                } else if (type === 'boletoenviado') {
+                    const isTrue = icon.classList.contains('fa-check');
+                    newStatus = !isTrue;
+                    updates.boletoenviado = newStatus;
+                } else if (type === 'calcao') {
+                    const isTrue = icon.classList.contains('fa-check');
+                    newStatus = !isTrue;
+                    updates.calcao = newStatus;
+                }
+    
+                await db.doc(docPath).update(updates);
+    
+                if (type === 'lance') {
+                    button.classList.remove('default', 'success', 'warning', 'error', 'atraso', 'pendente', 'ofertado', 'historico');
+                    if (newStatus === 'Pendente') {
+                        icon.classList.remove('fa-check', 'fa-exclamation', 'fa-times');
+                        icon.classList.add('fa-clock');
+                        button.classList.add('pendente');
+                        button.innerHTML = '<i class="fas fa-clock"></i> Pendente';
+                    } else if (newStatus === 'Ofertado') {
+                        icon.classList.remove('fa-clock', 'fa-exclamation', 'fa-times');
+                        icon.classList.add('fa-check');
+                        button.classList.add('ofertado');
+                        button.innerHTML = '<i class="fas fa-check"></i> Ofertado';
+                    } else if (newStatus === 'Atraso') {
+                        icon.classList.remove('fa-clock', 'fa-check', 'fa-times');
+                        icon.classList.add('fa-exclamation');
+                        button.classList.add('atraso');
+                        button.innerHTML = '<i class="fas fa-exclamation"></i> Atraso';
+                    } else {
+                        icon.classList.remove('fa-clock', 'fa-check', 'fa-exclamation');
+                        icon.classList.add('fa-times');
+                        button.classList.add('historico');
+                        button.innerHTML = '<i class="fas fa-times"></i> Histórico';
+                    }
+                } else {
+                    if (newStatus) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-check');
+                        button.classList.add('success');
+                        button.classList.remove('error');
+                    } else {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-times');
+                        button.classList.remove('success');
+                        button.classList.add('error');
+                    }
+                }
+            }
+        }
+    }
+    
+    async function applySavedButtonStates() {
+        const buttons = document.querySelectorAll('.toggle-button');
+        for (const button of buttons) {
+            const row = button.closest('tr');
+            if (row) {
+                const docPath = row.getAttribute('data-doc-path');
+                if (docPath) {
+                    const type = button.getAttribute('onclick').includes('lance') ? 'lance' : button.getAttribute('onclick').includes('boletobaixado') ? 'boletobaixado' : button.getAttribute('onclick').includes('boletoenviado') ? 'boletoenviado' : 'calcao';
+                    const doc = await db.doc(docPath).get();
+                    const data = doc.data();
+                    const icon = button.querySelector('i');
+                    let status;
+    
+                    if (type === 'lance') {
+                        status = data.lance;
+                    } else if (type === 'boletobaixado') {
+                        status = data.boletobaixado;
+                    } else if (type === 'boletoenviado') {
+                        status = data.boletoenviado;
+                    } else if (type === 'caucao') {
+                        status = data.caucao;
+                    }
+    
+                    if (icon && status !== undefined) {
+                        if (status) {
+                            icon.classList.remove('fa-times');
+                            icon.classList.add('fa-check');
+                            button.classList.add('success');
+                            button.classList.remove('error');
+                        } else {
+                            icon.classList.remove('fa-check');
+                            icon.classList.add('fa-times');
+                            button.classList.remove('success');
+                            button.classList.add('error');
+                        }
+                    } else if (icon) {
+                        icon.classList.remove('fa-check');
+                        icon.classList.add('fa-times');
+                        button.classList.remove('success');
+                        button.classList.add('error');
+                    }
+                }
+            }
+        }
+    }
+    
+    function checkFirstDayOfNextMonth() {
+        const today = new Date();
+        const firstDayOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        if (today.getDate() === firstDayOfNextMonth.getDate()) {
+            resetButtonStates();
+        }
+    }
+    
+    function resetButtonStates() {
+        const buttons = document.querySelectorAll('.toggle-button');
+        buttons.forEach(button => {
+            const row = button.closest('tr');
+            if (row) {
+                const docPath = row.getAttribute('data-doc-path');
+                if (docPath) {
+                    const icon = button.querySelector('i');
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-times');
+                    button.classList.remove('success');
+                    button.classList.add('error');
+                    const type = button.getAttribute('onclick').includes('lance') ? 'lance' : 'boleto';
+                    localStorage.removeItem(`button-state-${type}-${docPath}`);
+                }
+            }
+        });
+    }
+    
+    window.onload = function() {
+        applySavedButtonStates();
+        checkFirstDayOfNextMonth();
+    };
+    
+    window.onscroll = function() { scrollFunction() };
+    
+    function scrollFunction() {
+        const backToTopBtn = document.getElementById("backToTopBtn");
+        if (backToTopBtn) {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                backToTopBtn.style.display = "block";
+            } else {
+                backToTopBtn.style.display = "none";
+            }
+        }
+    }
+    
+    document.getElementById('scrollToTop').addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    document.getElementById('scrollToBottom').addEventListener('click', () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+    
+    
+async function fetchSales() {
+    try {
+        const vendasSnapshot = await db.collection('VendasID').get();
+        const tbody = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+
+        const administradoras = new Set();
+        const vendedores = new Set();
+        const responsaveis = new Set();
+
+        for (const vendaDoc of vendasSnapshot.docs) {
+            const data = vendaDoc.data();
+            const responsavel = (data.responsavel || 'undefined').toUpperCase();
+            const responsavelNomeArray = responsavel.split(' ');
+            const responsavelNomeFormatado = responsavelNomeArray.length > 1 
+                ? `${responsavelNomeArray[0]} ${responsavelNomeArray[responsavelNomeArray.length - 1]}` 
+                : responsavel;
+
+            administradoras.add(data.administradora.toUpperCase());
+            vendedores.add(data.vendedor.toUpperCase());
+            responsaveis.add(responsavelNomeFormatado);
+
+            const lanceBolso = data.lancebolso ? data.lancebolso.replace('%', '') : '';
+            const lanceEmbutido = data.lanceembutido ? data.lanceembutido.replace('%', '') : '';
+            const lanceStatus = data.lance || 'Pendente'; // Define o status padrão como "Pendente"
+
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; position: relative;">
+                        <span>${(data.nomeCompleto || '').toUpperCase()}</span>
+                        <div style="display: flex; align-items: center; width: 100%; position: relative;">
+                            <input type="text" class="custom-input" value="${(data.telefoneFinanceiro || '').toUpperCase()}" onchange="updateTelefoneFinanceiro(this, '${vendaDoc.id}')" style="padding-right: 25px;" disabled>
+                            <i class="fas fa-edit" style="position: absolute; right: 5px; cursor: pointer;" onclick="enableInput(this)"></i>
+                        </div>
+                    </div>
+                </td>
+                <td>${(data.administradora || '').toUpperCase()}</td>
+                <td>${(data.vendedor || '').toUpperCase()}</td>
+                <td>${(data.grupo || '').toUpperCase()}/${(data.cota || '').toUpperCase()}</td>
+                <td>
+                    <select class="select-field" onchange="markAsEdited(this)">
+                        <option value="" disabled ${!data.boleto ? 'selected' : ''}>Selecione</option>
+                        <option value="whatsapp" ${data.boleto === 'whatsapp' ? 'selected' : ''}>Whatsapp</option>
+                        <option value="email" ${data.boleto === 'email' ? 'selected' : ''}>E-mail</option>
+                        <option value="via_vendedor" ${data.boleto === 'via_vendedor' ? 'selected' : ''}>Via Vendedor</option>
+                        <option value="via_vendedor_impresso" ${data.boleto === 'via_vendedor_impresso' ? 'selected' : ''}>Via Vendedor (Impresso)</option>
+                    </select>
+                    <button class="toggle-button ${data.boletobaixado ? 'success' : 'error'}" onclick="toggleButton(this, 'boletobaixado')"><i class="fas ${data.boletobaixado ? 'fa-check' : 'fa-times'}"></i> Baixado</button>
+                </td>
+                <td>
+                    <select class="select-field" onchange="alterarStatusVenda('${vendaDoc.id}', this.value)">
+                        <option value="Ativa" ${data.status === 'Ativa' ? 'selected' : ''}>Ativa</option>
+                        <option value="Contemplada" ${data.status === 'Contemplada' ? 'selected' : ''}>Contemplada</option>
+                        <option value="Cancelada" ${data.status === 'Cancelada' ? 'selected' : ''}>Cancelada</option>
+                        <option value="Falta Pagar" ${data.status === 'Falta Pagar' ? 'selected' : ''}>Falta Pagar</option>
+                        <option value="Desistente" ${data.status === 'Desistente' ? 'selected' : ''}>Desistente</option>
+                    </select>
+                    <button class="toggle-button ${data.boletoenviado ? 'success' : 'error'}" onclick="toggleButton(this, 'boletoenviado')"><i class="fas ${data.boletoenviado ? 'fa-check' : 'fa-times'}"></i> Enviado</button>
+                </td>
+                <td>
+                    <div class="input-container">
+                        <input type="number" min="0" max="100" value="${lanceBolso}" class="input-field" onchange="updateLance('${vendaDoc.id}', 'lancebolso', this.value)">
+                        <span class="input-suffix">%</span>
+                    </div>
+                    <button class="toggle-button ${lanceStatus === 'Pendente' ? 'pendente' : lanceStatus === 'Ofertado' ? 'success' : lanceStatus === 'Atraso' ? 'warning' : 'error'}" onclick="toggleButton(this, 'lance')">
+                        <i class="fas ${lanceStatus === 'Pendente' ? 'fa-clock' : lanceStatus === 'Ofertado' ? 'fa-check' : lanceStatus === 'Atraso' ? 'fa-exclamation' : 'fa-times'}"></i> 
+                        ${lanceStatus === 'Pendente' ? 'Pendente' : lanceStatus === 'Ofertado' ? 'Ofertado' : lanceStatus === 'Atraso' ? 'Atraso' : 'Histórico'}
+                    </button>
+                </td>
+                <td>
+                    <div class="input-container">
+                        <input type="number" min="0" max="100" value="${lanceEmbutido}" class="input-field" onchange="updateLance('${vendaDoc.id}', 'lanceembutido', this.value)">
+                        <span class="input-suffix">%</span>
+                    </div>
+                    <button class="toggle-button ${data.calcao ? 'success' : 'error'}" onclick="toggleButton(this, 'calcao')"><i class="fas ${data.calcao ? 'fa-check' : 'fa-times'}"></i> Caução</button>
+                </td>
+                <td>${responsavelNomeFormatado}</td>`;
+            row.setAttribute('data-doc-path', vendaDoc.ref.path);
+        }
+
+        populateFilterOptions('filterAdministradora', administradoras);
+        populateFilterOptions('filterVendedor', vendedores);
+        populateFilterOptions('filterResponsavel', responsaveis);
+
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar dados: " + error.message);
+    }
+}
+function filterTable() {
+    const filters = {
+        nomeCompleto: document.getElementById("filterNomeCompleto").value.toLowerCase(),
+        administradora: document.getElementById("filterAdministradora").value.toLowerCase(),
+        vendedor: document.getElementById("filterVendedor").value.toLowerCase(),
+        grupoCota: document.getElementById("filterGrupoCota").value.toLowerCase(),
+        boleto: document.getElementById("filterBoleto").value,
+        status: document.getElementById("filterStatus").value,
+        lanceSugerido: document.getElementById("filterLanceSugerido").value.toLowerCase(),
+        lanceEmbutido: document.getElementById("filterLanceEmbutido").value,
+        responsavel: document.getElementById("filterResponsavel").value.toLowerCase()
+    };
+
+    const rows = document.getElementById("salesTable").getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const columns = row.getElementsByTagName("td");
+
+        const matches = Object.keys(filters).every((key) => {
+            if (key === 'nomeCompleto') {
+                return columns[0].textContent.toLowerCase().includes(filters[key]);
+            } else if (key === 'administradora') {
+                return columns[1].textContent.toLowerCase().includes(filters[key]);
+            } else if (key === 'vendedor') {
+                return columns[2].textContent.toLowerCase().includes(filters[key]);
+            } else if (key === 'grupoCota') {
+                return columns[3].textContent.toLowerCase().includes(filters[key]);
+            } else if (key === 'boleto') {
+                if (filters[key] === "true") {
+                    return columns[4].querySelector('button').classList.contains('success');
+                } else if (filters[key] === "false") {
+                    return columns[4].querySelector('button').classList.contains('error');
+                }
+            } else if (key === 'status') {
+                if (filters[key]) {
+                    return columns[5].querySelector('select').value === filters[key];
+                }
+            } else if (key === 'lanceSugerido') {
+                const button = columns[6].querySelector('button');
+                if (filters[key]) {
+                    return button.textContent.trim().toLowerCase() === filters[key];
+                }
+            } else if (key === 'lanceEmbutido') {
+                if (filters[key] === "true") {
+                    return columns[7].querySelector('button').classList.contains('success');
+                } else if (filters[key] === "false") {
+                    return columns[7].querySelector('button').classList.contains('error');
+                }
+            } else if (key === 'responsavel') {
+                return columns[8].textContent.toLowerCase().includes(filters[key]);
+            }
+            return true;
+        });
+
+        row.style.display = matches ? "" : "none";
+    }
+}
+
+        function editTelefoneFinanceiro(docId) {
+            const input = document.querySelector(`input[onchange="updateTelefoneFinanceiro(this, '${docId}')"]`);
+            if (input) {
+                input.focus();
+            }
+        }
+            function enableInput(icon) {
+                const input = icon.previousElementSibling;
+                if (input) {
+                    input.disabled = false;
+                    input.focus();
+                }
+            }
+            
+            document.addEventListener('click', function(event) {
+                const inputs = document.querySelectorAll('.custom-input');
+                inputs.forEach(input => {
+                    if (!input.contains(event.target) && !input.nextElementSibling.contains(event.target)) {
+                        input.disabled = true;
+                    }
+                });
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .root{
+            --sidebar-background: linear-gradient(135deg, #2c3e50, #3498db); /* Nova paleta de cores */
+            --sidebar-text-color: #ecf0f1;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-y: auto;
+            background-color: #f0f0f0;
+        }
+        .sidebar {
+            width: 60px;
+            background: linear-gradient(135deg, #4e4376, #6a5acd);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar:hover {
+            width: 240px;
+        }
+        
+        .sidebar a {
+            color: #ecf0f1;
+            text-decoration: none;
+            margin: 10px;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 1px;
+        }
+        .sidebar a i {
+            margin-right: 20px;
+            font-size: 1.2em;
+        }
+        
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+        
+        .sidebar:hover a span {
+            display: inline;
+        }
+        
+        .content {
+            margin-left: 60px;
+            padding: 20px;
+            flex: 1;
+            transition: margin-left 0.3s;
+        }
+        
+        .sidebar:hover ~ .content {
+            margin-left: 200px;
+        }
+        
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 40px;
+            padding-right: 4.5%;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+        
+        .form-container input, .form-container select, .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .form-container button {
+            background: #381e97;
+            color: black;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            color: white;
+        }
+        
+        .form-container button:hover {
+            background: #6a5acd;
+        }
+        .menu-item {
+        cursor: pointer;
+        }
+        
+        .submenu {
+    display: none;
+
+        }
+
+        .menu-item.active .submenu {
+        display: block;
+        }
+        .presentation {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .presentation h1 {
+            font-size: 2em;
+            color: #381e97;
+            margin-bottom: 10px;
+        }
+        
+        .presentation p {
+            font-size: 1em;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard.html" style="margin-left: 40px;"><i class="fas fa-home"></i><span> Home</span></a>
+        <div class="menu-item" onclick="toggleSubmenu(event)">
+            <a><i class="fas fa-chart-bar"></i><span> Comercial</span></a>
+            <div class="submenu">
+                <a href="relatorio_comercial_vendas.html"><i class="fas fa-shopping-cart"></i><span> Vendas</span></a>
+                <a href="relatorio_comercial_comissao.html"><i class="fas fa-money-bill-wave"></i><span> Comissão a Pagar</span></a>
+                <a href="relatorio_comercial_comissao_a_receber.html"><i class="fas fa-money-bill-wave"></i><span> Comissão a Receber</span></a>
+                <a href="relatorio_comercial_estorno.html"><i class="fas fa-undo-alt"></i><span> Estorno</span></a>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="presentation">
+            <h1>Bem-vindo ao Setor de Relatórios</h1>
+            <p>
+                Aqui você pode acessar e gerenciar relatórios detalhados sobre vendas, comissões, estornos e muito mais. 
+                Utilize o menu lateral para navegar entre as opções disponíveis e obter informações importantes para 
+                a tomada de decisões estratégicas.
+            </p>
+            <p>
+                Explore os relatórios para acompanhar o desempenho comercial e financeiro da sua equipe e empresa.
+            </p>
+        </div>
+    </div>
+    <script>
+        function toggleSubmenu(event) {
+    const menuItem = event.currentTarget;
+    menuItem.classList.toggle('active');
+}
+    </script>
+</body>
+</html>

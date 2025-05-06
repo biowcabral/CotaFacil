@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas por Produtos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a90e2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        input[type="datetime-local"],
+        input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Vendas por Produtos</h1>
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>Nome Completo</th>
+                    <th>CPF/CNPJ</th>
+                    <th>Administradora</th>
+                    <th>Produto</th>
+                    <th>Valor do Crédito</th>
+                    <th>Vendedor</th>
+                    <th>Grupo</th>
+                    <th>Cota</th>
+                    <th>Data e Hora do Cadastro</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- As vendas serão listadas aqui -->
+            </tbody>
+        </table>
+        <button onclick="saveAll()">Salvar Todos</button>
+        <button onclick="updateAllProductNames()">Atualizar Nomes dos Produtos</button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                fetchSales();
+            } else {
+                alert('Você precisa estar logado para acessar esta página.');
+                window.location.href = 'login.html'; // Redireciona para a página de login
+            }
+        });
+    
+        async function fetchSales() {
+            const snapshot = await db.collectionGroup('vendas').get();
+            const tbody = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
+    
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = new Date(data.dataHoraCadastro.toDate());
+                const formattedDate = date.toISOString().slice(0, 16); // Formato para input datetime-local
+                const row = tbody.insertRow();
+    
+                row.innerHTML = `
+                    <td>${data.nomeCompleto}</td>
+                    <td>${data.cpfCnpj}</td>
+                    <td>${data.administradora}</td>
+                    <td>${data.produto}</td>
+                    <td><input type="number" value="${data.valorCredito}" onchange="markAsEdited(this)"></td>
+                    <td>${data.vendedor}</td>
+                    <td>${data.grupo}</td>
+                    <td>${data.cota}</td>
+                    <td><input type="datetime-local" value="${formattedDate}" onchange="markAsEdited(this)"></td>
+                    <td><button onclick="saveData('${doc.ref.path}', this)">Salvar</button></td>
+                `;
+            });
+        }
+    
+        function markAsEdited(input) {
+            input.classList.add('edited');
+        }
+    
+        async function saveData(docPath, button) {
+            const row = button.closest('tr');
+            const dateInput = row.querySelector('input[type="datetime-local"]');
+            const valorCreditoInput = row.querySelector('input[type="number"]');
+            const vendedor = row.cells[5].textContent;
+            const produto = row.cells[3].textContent.replace(/50\/50/g, '50-50');
+    
+            const updates = {};
+    
+            if (valorCreditoInput) {
+                const newValorCredito = parseFloat(valorCreditoInput.value);
+                if (!isNaN(newValorCredito)) {
+                    updates.valorCredito = newValorCredito;
+                } else {
+                    alert('Valor do crédito inválido.');
+                    return;
+                }
+            }
+    
+            await db.doc(docPath).update(updates);
+            await updateRelatoriosProdutos(vendedor, produto, updates, new Date(dateInput.value));
+        }
+    
+        async function updateRelatoriosProdutos(vendedor, produto, updates, dataHoraCadastro) {
+            const dateKey = `${dataHoraCadastro.getFullYear()}-${String(dataHoraCadastro.getMonth() + 1).padStart(2, '0')}-${String(dataHoraCadastro.getDate()).padStart(2, '0')}`;
+    
+            // Substituir todos os caracteres problemáticos no nome do produto
+            const safeProduto = produto.replace(/50\/50/g, '50-50').replace(/\//g, '-');
+    
+            const relatorioRef = db.collection('relatorioprodutos').doc(vendedor).collection('produtos').doc(safeProduto);
+            const relatorioDoc = await relatorioRef.get();
+    
+            if (relatorioDoc.exists) {
+                const relatorioData = relatorioDoc.data();
+                relatorioData[dateKey] = (relatorioData[dateKey] || 0) + (updates.valorCredito || 0);
+                await relatorioRef.update(relatorioData);
+            } else {
+                const relatorioData = {};
+                relatorioData[dateKey] = updates.valorCredito || 0;
+                await relatorioRef.set(relatorioData);
+            }
+        }
+    
+        async function saveAll() {
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+            const batch = db.batch();
+    
+            const vendedores = {};
+            const produtos = {};
+    
+            // Zerar todos os valores de todos os meses
+            const snapshot = await db.collection('relatorioprodutos').get();
+            snapshot.forEach(doc => {
+                const vendedor = doc.id;
+                produtos[vendedor] = {};
+    
+                const subCollectionSnapshot = doc.ref.collection('produtos').get();
+                subCollectionSnapshot.forEach(subDoc => {
+                    const produto = subDoc.id;
+                    produtos[vendedor][produto] = {};
+    
+                    const startDate = new Date('2022-01-01');
+                    const endDate = new Date();
+                    for (let d = startDate; d <= endDate; d.setMonth(d.getMonth() + 1)) {
+                        const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        produtos[vendedor][produto][m] = 0;
+                    }
+                });
+            });
+    
+            // Somar e organizar as vendas nas datas, vendedores e produtos correspondentes
+            rows.forEach(row => {
+                const docPath = row.querySelector('button').getAttribute('onclick').match(/'([^']+)'/)[1];
+                const dateInput = row.querySelector('input[type="datetime-local"]');
+                const valorCreditoInput = row.querySelector('input[type="number"]');
+                const vendedor = row.cells[5].textContent;
+                const produto = row.cells[3].textContent.replace(/50\/50/g, '50-50');
+    
+                const updates = {};
+    
+                if (valorCreditoInput) {
+                    const newValorCredito = parseFloat(valorCreditoInput.value);
+                    if (!isNaN(newValorCredito)) {
+                        updates.valorCredito = newValorCredito;
+                    } else {
+                        alert('Valor do crédito inválido.');
+                        return;
+                    }
+                }
+    
+                const safeProduto = produto.replace(/\//g, '-');
+                const docRef = db.doc(docPath);
+                batch.update(docRef, updates);
+    
+                if (!produtos[vendedor]) {
+                    produtos[vendedor] = {};
+                }
+                if (!produtos[vendedor][safeProduto]) {
+                    produtos[vendedor][safeProduto] = {};
+                }
+    
+                const month = `${new Date(dateInput.value).getFullYear()}-${String(new Date(dateInput.value).getMonth() + 1).padStart(2, '0')}`;
+                if (!produtos[vendedor][safeProduto][month]) {
+                    produtos[vendedor][safeProduto][month] = 0;
+                }
+                produtos[vendedor][safeProduto][month] += updates.valorCredito;
+            });
+    
+            await batch.commit();
+    
+            // Atualizar os valores no banco de dados
+            for (const vendedor in produtos) {
+                for (const produto in produtos[vendedor]) {
+                    const relatorioProdutoRef = db.collection('relatorioprodutos').doc(vendedor).collection('produtos').doc(produto.replace(/\//g, '-'));
+                    await relatorioProdutoRef.set(produtos[vendedor][produto]);
+                }
+            }
+    
+            alert('Todos os dados foram atualizados com sucesso!');
+        }
+    
+        async function updateAllProductNames() {
+            const clientesSnapshot = await db.collection('clientes').get();
+    
+            for (const clienteDoc of clientesSnapshot.docs) {
+                const clienteId = clienteDoc.id;
+                const vendasSnapshot = await db.collection('clientes').doc(clienteId).collection('vendas').get();
+    
+                for (const vendaDoc of vendasSnapshot.docs) {
+                    const vendaId = vendaDoc.id;
+                    const vendaData = vendaDoc.data();
+                    const produto = vendaData.produto;
+                    const safeProduto = produto.replace(/50\/50/g, '50-50');
+    
+                    if (produto !== safeProduto) {
+                        await db.collection('clientes').doc(clienteId).collection('vendas').doc(vendaId).update({ produto: safeProduto });
+                        console.log(`Updated product name from "${produto}" to "${safeProduto}" for venda "${vendaId}" in cliente "${clienteId}"`);
+                    }
+                }
+            }
+    
+            alert('Nomes dos produtos atualizados com sucesso!');
+        }
+    </script>
+</body>
+</html>

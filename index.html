@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao Third Mind</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --background-color: #131338;
+            --text-color: #ffffff;
+            --header-background: #442e85;
+            --header-text-color: #ffffff;
+            --button-background: #41c3e8;
+            --button-hover-background: #cf25c8;
+            --button-text-color: #ffffff;
+            --card-background: #442e85;
+            --card-text-color: #ffffff;
+            --card-hover-background: #cf25c8;
+            --card-hover-text-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .header .logo img {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .header .logo h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: var(--header-text-color);
+        }
+
+        .header .login {
+            display: flex;
+            align-items: center;
+            margin-right: 40px; /* Ajuste para trazer os botões mais para dentro */
+        }
+
+        .header .login a {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .header .login a:hover {
+            background-color: var(--button-hover-background);
+            transform: scale(1.1);
+        }
+
+        .navbar {
+            background: var(--header-background);
+            padding: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 80px;
+            left: 0;
+            z-index: 999;
+        }
+
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar ul li {
+            position: relative;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: var(--header-text-color);
+            padding: 10px 20px;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            background-color: var(--button-hover-background);
+            color: var(--button-text-color);
+        }
+
+        .navbar ul li ul {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--header-background);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .navbar ul li:hover ul {
+            display: block;
+        }
+
+        .navbar ul li ul li {
+            width: 200px;
+        }
+
+        .main-content {
+            margin-top: 160px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .main-content h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .main-content p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease, background-color 0.3s, color 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            background-color: var(--card-hover-background);
+            color: var(--card-hover-text-color);
+        }
+
+        .feature-card img {
+            flex: 1;
+            max-width: 400px;
+            margin-right: 20px;
+            border-radius: 10px;
+        }
+
+        .feature-content {
+            flex: 2;
+            text-align: left;
+        }
+
+        .feature-content h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+            color: var(--card-text-color);
+        }
+
+        .feature-content p {
+            font-size: 1em;
+            color: var(--card-text-color);
+        }
+
+        .feature-content ul {
+            padding-left: 20px;
+            color: var(--card-text-color);
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="backgroundCanvas"></canvas>
+    <div class="header">
+        <div class="logo">
+            <img src="logo.jpeg" alt="Third Mind Logo">
+            <h1>Third Mind</h1>
+        </div>
+        <div class="login">
+            <a href="login.html">Login</a>
+            <a href="register.html" style="margin-left: 10px;">Registrar</a>
+        </div>
+    </div>
+    <div class="navbar">
+        <ul>
+            <li><a href="#">Produtos</a>
+                <ul>
+                    <li><a href="#">ConsorX</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Planos</a>
+                <ul>
+                    <li><a href="#">Comercial</a></li>
+                    <li><a href="#">Administrativo</a></li>
+                    <li><a href="#">Financeiro</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Parceiros</a>
+                <ul>
+                    <li><a href="#">Programa de Afiliados</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Aprenda</a>
+                <ul>
+                    <li><a href="#">Materiais Gratuitos</a></li>
+                    <li><a href="#">Cursos</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Contato</a>
+                <ul>
+                    <li><a href="#">Fale com a Gente</a></li>
+                    <li><a href="#">Suporte</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <h2>Potencializando mentes com tecnologia</h2>
+        <p>Bem-vindo ao sistema de gerenciamento do Third Mind. Aqui você pode gerenciar seus clientes, leads, vendas e muito mais.</p>
+        <p>Faça login ou registre-se para começar a usar o sistema.</p>
+        <div class="features">
+            <div class="feature-card" style="flex-direction: column; align-items: center;">
+                <img src="RelatorioResultado.jpeg" alt="ADM" style="width: 100%; max-width: 800px; margin-bottom: 20px;">
+                <div class="feature-cards-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+                    <div class="feature-card" style="flex: 1 1 calc(33.33% - 20px); max-width: calc(33.33% - 20px);">
+                        <div class="feature-content">
+                            <h3><i class="fas fa-chart-line"></i> Vendas Mês/Ano</h3>
+                            <p>Informações detalhadas sobre as vendas realizadas no mês e no ano.</p>
+                        </div>
+                    </div>
+                    <div class="feature-card" style="flex: 1 1 calc(33.33% - 20px); max-width: calc(33.33% - 20px);">
+                        <div class="feature-content">
+                            <h3><i class="fas fa-times-circle"></i> Cancelamento Mês/Ano</h3>
+                            <p>Dados sobre os cancelamentos ocorridos no mês e no ano.</p>
+                        </div>
+                    </div>
+                    <div class="feature-card" style="flex: 1 1 calc(33.33% - 20px); max-width: calc(33.33% - 20px);">
+                        <div class="feature-content">
+                            <h3><i class="fas fa-dollar-sign"></i> Comissão Mês/Ano</h3>
+                            <p>Relatórios de comissões geradas no mês e no ano.</p>
+                        </div>
+                    </div>
+                    <div class="feature-card" style="flex: 1 1 calc(33.33% - 20px); max-width: calc(33.33% - 20px);">
+                        <div class="feature-content">
+                            <h3><i class="fas fa-cogs"></i> ADM</h3>
+                            <p>Gerenciamento das operações administrativas.</p>
+                        </div>
+                    </div>
+                    <div class="feature-card" style="flex: 1 1 calc(33.33% - 20px); max-width: calc(33.33% - 20px);">
+                        <div class="feature-content">
+                            <h3><i class="fas fa-users"></i> Clientes</h3>
+                            <p>Informações e gerenciamento de clientes.</p>
+                        </div>
+                    </div>
+                    <div class="feature-card" style="flex: 1 1 calc(33.33% - 20px); max-width: calc(33.33% - 20px);">
+                        <div class="feature-content">
+                            <h3><i class="fas fa-box"></i> Produtos</h3>
+                            <p>Detalhes sobre os produtos oferecidos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('backgroundCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 2;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        drawBackground();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawBackground();
+        });
+    </script>
+</body>
+</html>

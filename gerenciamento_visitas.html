@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Visitas - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Variáveis de cores */
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #381e97;
+            --button-hover-background: #6a5acd;
+            --button-text-color: white;
+        }
+
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --button-text-color: white;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-toggle-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 1001; /* Ensure the button is above other elements */
+        }
+
+        .theme-toggle-button:hover {
+            background-color: #4e4376;
+            transform: scale(1.1);
+        }
+
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+
+        .sidebar:hover a span {
+            display: inline;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto; /* Adiciona barra lateral para rolagem */
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 80px; /* Espaçamento da aba lateral */
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 220px;
+        }
+        .subcategory-sidebar {
+        display: none; /* Esconde o submenu por padrão */
+        position: absolute; /* Posiciona em relação ao botão pai */
+        top: 0; /* Alinha ao topo do botão pai */
+        left: 100%; /* Posiciona ao lado direito do botão pai */
+        background: var(--sidebar-background);
+        color: var(--sidebar-text-color);
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+        width: 250px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 9999; /* Garante que os submenus fiquem acima de outros elementos */
+        position: absolute; /* Mantém o posicionamento relativo ao botão pai */
+        transition: all 0.3s ease;
+    }
+    #homeLink i.fas.fa-home {
+    margin-right: 30px; /* Aumenta o espaçamento entre o ícone e o texto */
+}
+#homeLink span {
+        margin-left: -21px; /* Move o texto mais para a esquerda */
+    }
+/* Ajusta o ícone "Cadastrar Cliente" para a direita */
+.sidebar a[href="cadastro_cliente.html"] i.fas.fa-user-plus {
+    margin-right: 5px; /* Reduz o espaçamento entre o ícone e o texto */
+}
+#relatoriosSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 29%; /* Alinha ao topo do item pai */
+    left: 100%; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+    top: 1%; /* Ajuste a posição vertical conforme necessário */
+    left: 100%; /* Ajuste a posição horizontal conforme necessário */
+    position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+    z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#relatoriosSubcategoriesSidebar {
+    position: fixed; /* Fixa o submenu na tela */
+    top: 200px; /* Ajuste para alinhar verticalmente com o botão "Relatórios" */
+    left: 200px; /* Ajuste para alinhar horizontalmente ao lado da sidebar expandida */
+    z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+    display: none; /* Esconde o submenu por padrão */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+#comercialSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao botão pai */
+    top: 0; /* Alinha ao topo do botão pai */
+    left: 100%; /* Posiciona ao lado direito do botão pai */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+
+    /* Centraliza os itens */
+    display: flex;
+    align-items: center; /* Alinha horizontalmente ao centro */
+    justify-content: center; /* Alinha verticalmente ao centro */
+}
+.sidebar:not(:hover) #homeChevron {
+    display: none; /* Esconde o ícone quando a sidebar está colapsada */
+}
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 80px); /* Espaçamento da aba lateral */
+            transition: background-color 0.3s, color 0.3s;
+            margin-bottom: 20px; /* Espaçamento entre o cabeçalho e o funil */
+        }
+
+        .sidebar:hover ~ .header {
+            width: calc(100% - 220px);
+        }
+
+        .header h1 {
+    font-family: 'Merriweather', serif; /* Mantém a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    position: relative; /* Necessário para posicionar as linhas */
+    display: inline-block; /* Garante que o texto seja tratado como bloco */
+    margin-left: 26%;
+    height: 55px;
+}
+
+.header h1::before,
+.header h1::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha, ajuste conforme necessário */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header h1::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+}
+
+.header h1::after {
+    right: -60px; /* Posiciona a linha à direita */
+}
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+
+        .form-container {
+            background: var(--card-background);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .form-container.hidden {
+            display: none;
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .form-container form input,
+        .form-container form button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .form-container form input {
+            flex: 1 1 calc(33.333% - 20px); /* Três colunas com espaçamento */
+            min-width: 150px; /* Largura mínima para os campos */
+        }
+
+        .form-container form button {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1 1 100%; /* Botão ocupa uma linha inteira */
+        }
+
+        .form-container form button:hover {
+            background-color: var(--button-hover-background);
+        }
+
+        .funnels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+            width: 100%;
+            z-index: 1; /* Garante que o funnels fique abaixo dos submenus */
+    position: relative; /* Define o contexto de empilhamento para o funnels */
+}
+        .funnel-titles {
+            display: flex;
+            gap: 20px;
+            flex-wrap: nowrap; /* Manter os estágios em uma única linha */
+            position: sticky;
+            top: 0;
+            background: var(--background-color);
+            z-index: 1000;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .funnel-leads {
+            display: flex;
+            gap: 20px;
+            flex-wrap: nowrap; /* Manter os estágios em uma única linha */
+        }
+
+        .funnel-stage {
+            flex-grow: 1;
+            min-width: 300px; /* Largura mínima para os estágios */
+            background: var(--card-background);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .funnel-titles .funnel-stage {
+            padding-top: 10px; /* Espaço para o cabeçalho fixo */
+        }
+
+        .funnel-titles h2 {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            padding: 10px;
+            margin: 0;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            width: 100%;
+            pointer-events: none; /* Impedir que os títulos sejam arrastáveis */
+        }
+
+        .lead-card {
+            background: var(--card-background);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 250px; /* Largura mínima para os cards */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .lead-card:hover {
+            background-color: #f0f0f0;
+        }
+
+        .lead-card p {
+            margin: 0;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        .lead-card .lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lead-card .lead-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        .lead-card .lead-header .lead-score {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .lead-card .lead-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .lead-card .lead-details p {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .lead-card .lead-details p span {
+            font-weight: bold;
+        }
+
+        .dropzone {
+            flex-grow: 1;
+            width: 100%;
+            min-height: 150px; /* Altura mínima para facilitar a área de soltura */
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            transition: background-color 0.3s;
+        }
+
+        .dropzone.dragover {
+            background-color: #e0e0e0;
+        }
+
+        .visita {
+            background: var(--card-background);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%; /* Garantir que os cards não fiquem mais largos que os estágios */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .visita:hover {
+            background-color: #f0f0f0;
+        }
+
+        .visita p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        .visita .delete-button {
+            background-color: transparent;
+            border: none;
+            color: #ff0000;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+
+        .visita .delete-button i {
+            font-size: 1.2em;
+        }
+
+        .toggle-form-button {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .toggle-form-button:hover {
+            background-color: var(--button-hover-background);
+            transform: scale(1.05);
+        }
+        .sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+    .step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.active {
+    background: var(--button-background);
+    color: var(--button-text-color);
+    margin-left: 50px;
+}
+.step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.disabled {
+    pointer-events: none;
+    opacity: 1;
+}
+.funnel-stage {
+        width: 100%; /* Garante que o funnel-stage ocupe toda a largura disponível */
+    }
+
+    .dropzone {
+        width: 100%; /* Garante que a dropzone ocupe toda a largura do funnel-stage */
+    }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_comercial_vendas.html">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_comercial_comissao.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_comercial_comissao_a_receber.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_comercial_estorno.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1>Gerenciamento de Visitas</h1>
+        </div>
+        <button class="toggle-form-button" onclick="toggleForm()">Adicionar Visita</button>
+        <div class="form-container hidden" id="formContainer">
+            <h2>Adicionar Visita</h2>
+            <form id="visitaForm">
+                <input type="text" id="nome" placeholder="Nome" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="text" id="telefone" placeholder="Telefone" required>
+                <input type="text" id="endereco" placeholder="Endereço" required>
+                <input type="date" id="data" placeholder="Data" required>
+                <input type="time" id="hora" placeholder="Hora" required>
+                <button type="submit">Adicionar Visita</button>
+            </form>
+        </div>
+        <div class="funnels">
+            <div class="funnel-titles">
+                <div class="funnel-stage">
+                    <h2>Agendadas</h2>
+                </div>
+                <div class="funnel-stage">
+                    <h2>Realizadas</h2>
+                </div>
+                <div class="funnel-stage">
+                    <h2>Realizadas/Vendidas</h2>
+                </div>
+                <div class="funnel-stage">
+                    <h2>Canceladas</h2>
+                </div>
+            </div>
+            <div class="funnel-leads">
+                <div class="funnel-stage" data-stage="agendadas">
+                    <div class="dropzone visita-container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="realizadas">
+                    <div class="dropzone visita-container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="realizadas-vendidas">
+                    <div class="dropzone visita-container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="canceladas">
+                    <div class="dropzone visita-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    db.collection('users').doc(user.email).get().then((doc) => {
+                        if (doc.exists) {
+                            document.getElementById('userName').textContent = doc.data().name;
+                        } else {
+                            console.log("Nenhum dado encontrado!");
+                        }
+                    }).catch((error) => {
+                        console.log("Erro ao obter documento:", error);
+                    });
+    
+                    carregarVisitas();
+                }
+            });
+            const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    sidebarLogoutButton.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+        }).catch((error) => {
+            console.error('Erro ao fazer logout:', error);
+        });
+    });
+            
+            function toggleForm() {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.toggle('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = document.getElementById('userName');
+            // Simulação de carregamento do nome do usuário
+            userName.textContent = 'Usuário Exemplo';
+        });
+
+        document.getElementById('visitaForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const nome = document.getElementById('nome').value;
+    const email = document.getElementById('email').value;
+    const telefone = document.getElementById('telefone').value;
+    const endereco = document.getElementById('endereco').value;
+    const data = document.getElementById('data').value;
+    const hora = document.getElementById('hora').value;
+    const dataHora = new Date(`${data}T${hora}`);
+
+    const visita = {
+        nome,
+        email,
+        telefone,
+        endereco,
+        dataHora: firebase.firestore.Timestamp.fromDate(dataHora),
+        status: 'agendadas' // Certifique-se de que o status está correto
+    };
+
+    db.collection('visitas').add(visita).then((docRef) => {
+        console.log("Visita adicionada com ID: ", docRef.id);
+        // Adiciona a visita ao DOM imediatamente
+        adicionarVisitaAoDOM(docRef.id, visita);
+    }).catch((error) => {
+        console.error("Erro ao adicionar visita: ", error);
+    });
+
+    this.reset(); // Limpa o formulário
+});
+        });
+    
+        function adicionarVisitaAoDOM(id, visita) {
+    const visitaElement = document.createElement('div');
+    visitaElement.classList.add('visita');
+    visitaElement.setAttribute('data-id', id);
+
+    const dataHora = visita.dataHora ? visita.dataHora.toDate() : null;
+    const data = dataHora ? dataHora.toLocaleDateString() : 'Data não definida';
+    const hora = dataHora ? dataHora.toLocaleTimeString() : 'Hora não definida';
+
+    visitaElement.innerHTML = `
+        <p><strong>Nome:</strong> ${visita.nome}</p>
+        <p><strong>Email:</strong> ${visita.email}</p>
+        <p><strong>Telefone:</strong> ${visita.telefone}</p>
+        <p><strong>Endereço:</strong> ${visita.endereco}</p>
+        <p><strong>Data:</strong> ${data}</p>
+        <p><strong>Hora:</strong> ${hora}</p>
+        <button class="delete-button" onclick="excluirVisita('${id}')"><i class="fas fa-trash-alt"></i></button>
+    `;
+
+    // Seleciona o container correto com base no status
+    const container = document.querySelector(`[data-stage="agendadas"] .visita-container`);
+    if (container) {
+        container.appendChild(visitaElement); // Adiciona a visita ao container
+    } else {
+        console.error('Container para "agendadas" não encontrado.');
+    }
+}
+    
+        function excluirVisita(visitaId) {
+            db.collection('visitas').doc(visitaId).delete().then(() => {
+                console.log('Visita excluída com sucesso!');
+                document.querySelector(`[data-id="${visitaId}"]`).remove();
+            }).catch((error) => {
+                console.error('Erro ao excluir visita:', error);
+            });
+        }
+    
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('expanded');
+        }
+    
+        function toggleForm() {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.toggle('hidden');
+        }
+    
+        document.querySelectorAll('.visita-container').forEach(container => {
+            new Sortable(container, {
+                group: 'visitas',
+                animation: 150,
+                onEnd: function (evt) {
+                    const visitaId = evt.item.dataset.id;
+                    const newStage = evt.to.closest('.funnel-stage').dataset.stage;
+                    db.collection('visitas').doc(visitaId).update({
+                        status: newStage
+                    }).then(() => {
+                        console.log('Visita movida com sucesso!');
+                    }).catch((error) => {
+                        console.error('Erro ao mover visita:', error);
+                    });
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+        if (sidebarLogoutButton) {
+            sidebarLogoutButton.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+                }).catch((error) => {
+                    console.error('Erro ao fazer logout:', error);
+                });
+            });
+        } else {
+            console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        if (chevron) {
+            chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = "none";
+        if (chevron) {
+            chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+        }
+    }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const relatoriosLink = document.getElementById('relatoriosLink');
+    
+        if (sidebar && relatoriosLink) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Simula o clique no botão "Relatórios"
+                relatoriosLink.click();
+            });
+        } else {
+            console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const allSubmenus = document.querySelectorAll('.subcategory-sidebar'); // Seleciona todos os submenus
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha outros submenus abertos
+        allSubmenus.forEach(otherSubmenu => {
+            if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+                otherSubmenu.style.display = 'none';
+                const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+                if (otherChevron) {
+                    otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+                }
+            }
+        });
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const allSubmenus = document.querySelectorAll('.subcategory-sidebar');
+    const allChevrons = document.querySelectorAll('.fas.fa-chevron-down');
+    
+    // Garante que todos os submenus estejam fechados e os ícones apontem para baixo ao carregar a página
+    allSubmenus.forEach(submenu => {
+        submenu.style.display = 'none';
+    });
+    allChevrons.forEach(chevron => {
+        chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+    });
+    
+    // Fecha os submenus e redefine os ícones ao sair da sidebar
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            allSubmenus.forEach(submenu => {
+                submenu.style.display = 'none';
+            });
+            allChevrons.forEach(chevron => {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            });
+        });
+    }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+        if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+            homeSubmenu.style.display = 'none';
+            const homeChevron = document.getElementById('homeChevron');
+            if (homeChevron) {
+                homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+        if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+            relatoriosSubmenu.style.display = 'none';
+            const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (relatoriosChevron) {
+                relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+        const homeChevron = document.getElementById('homeChevron');
+        const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        if (sidebar) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Fecha o submenu "Home" se estiver aberto
+                if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                    homeSubmenu.style.display = 'none';
+                    if (homeChevron) {
+                        homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Relatórios" se estiver aberto
+                if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Comercial" se estiver aberto
+                if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                    comercialSubmenu.style.display = 'none';
+                    if (comercialChevron) {
+                        comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+        } else {
+            console.error("Elemento 'sidebar' não encontrado.");
+        }
+    });
+    </script>
+</html>

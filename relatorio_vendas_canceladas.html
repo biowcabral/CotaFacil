@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas Canceladas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a90e2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        input[type="datetime-local"],
+        input[type="number"],
+        select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                padding: 5px;
+                font-size: 0.9em;
+            }
+
+            button {
+                padding: 5px 10px;
+                font-size: 0.9em;
+            }
+
+            input[type="datetime-local"],
+            input[type="number"],
+            select {
+                padding: 3px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Vendas Canceladas</h1>
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>Nome Completo</th>
+                    <th>CPF/CNPJ</th>
+                    <th>Administradora</th>
+                    <th>Produto</th>
+                    <th>Valor do Crédito</th>
+                    <th>Vendedor</th>
+                    <th>Grupo</th>
+                    <th>Cota</th>
+                    <th>Data e Hora do Cadastro</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- As vendas serão listadas aqui -->
+            </tbody>
+        </table>
+        <button onclick="saveAll()">Salvar Todos</button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                fetchSales();
+            } else {
+                alert('Você precisa estar logado para acessar esta página.');
+                window.location.href = 'login.html'; // Redireciona para a página de login
+            }
+        });
+    
+        async function fetchSales() {
+            const snapshot = await db.collectionGroup('vendas').get();
+            const tbody = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
+    
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = new Date(data.dataHoraCadastro.toDate());
+                const formattedDate = date.toISOString().slice(0, 16); // Formato para input datetime-local
+                const row = tbody.insertRow();
+    
+                row.innerHTML = `
+                    <td>${data.nomeCompleto}</td>
+                    <td>${data.cpfCnpj}</td>
+                    <td>${data.administradora}</td>
+                    <td>${data.produto}</td>
+                    <td><input type="number" value="${data.valorCredito}" disabled></td>
+                    <td>${data.vendedor}</td>
+                    <td>${data.grupo}</td>
+                    <td>${data.cota}</td>
+                    <td><input type="datetime-local" value="${formattedDate}" disabled></td>
+                    <td>
+                        <select onchange="markAsEdited(this)">
+                            <option value="Ativa" ${data.status === 'Ativa' ? 'selected' : ''}>Ativa</option>
+                            <option value="Contemplada" ${data.status === 'Contemplada' ? 'selected' : ''}>Contemplada</option>
+                            <option value="Cancelada" ${data.status === 'Cancelada' ? 'selected' : ''}>Cancelada</option>
+                            <option value="Falta pagar" ${data.status === 'Falta pagar' ? 'selected' : ''}>Falta pagar</option>
+                            <option value="Desistente" ${data.status === 'Desistente' ? 'selected' : ''}>Desistente</option>
+                        </select>
+                    </td>
+                    <td><button onclick="saveData('${doc.ref.path}', this)">Salvar</button></td>
+                `;
+            });
+        }
+    
+        function markAsEdited(input) {
+            input.classList.add('edited');
+        }
+    
+        async function saveData(docPath, button) {
+            const row = button.closest('tr');
+            const statusInput = row.querySelector('select');
+            const vendedor = row.cells[5].textContent;
+    
+            const updates = {};
+    
+            if (statusInput) {
+                const newStatus = statusInput.value;
+                updates.status = newStatus;
+            }
+    
+            await db.doc(docPath).update(updates);
+            if (updates.status === 'Cancelada') {
+                await updateRelatoriosCancelados(vendedor, updates);
+            }
+            alert('Dados atualizados com sucesso!');
+        }
+
+        async function updateRelatoriosCancelados(vendedor, updates) {
+            const relatorioRef = db.collection('relatoriocancelados').doc(vendedor);
+            const relatorioDoc = await relatorioRef.get();
+
+            const dataHoraCadastro = updates.dataHoraCadastro || new Date();
+            const month = `${dataHoraCadastro.getFullYear()}-${String(dataHoraCadastro.getMonth()).padStart(2, '0')}`;
+
+            if (relatorioDoc.exists) {
+                const relatorioData = relatorioDoc.data();
+                relatorioData[month] = (relatorioData[month] || 0) + (updates.valorCredito || 0);
+                await relatorioRef.update(relatorioData);
+            } else {
+                const relatorioData = {};
+                const startDate = new Date('2022-01-01');
+                const endDate = new Date();
+
+                for (let d = startDate; d <= endDate; d.setMonth(d.getMonth() + 1)) {
+                    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    relatorioData[m] = 0;
+                }
+
+                relatorioData[month] = updates.valorCredito || 0;
+                await relatorioRef.set(relatorioData);
+            }
+        }
+
+        async function saveAll() {
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+            const batch = db.batch();
+
+            const vendedores = {};
+
+            // Zerar todos os valores de todos os meses
+            const snapshot = await db.collection('relatoriocancelados').get();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const vendedor = doc.id;
+
+                vendedores[vendedor] = {};
+                const startDate = new Date('2022-01-01');
+                const endDate = new Date();
+                for (let d = startDate; d <= endDate; d.setMonth(d.getMonth() + 1)) {
+                    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    vendedores[vendedor][m] = 0;
+                }
+            });
+
+            // Somar e organizar as vendas nas datas e vendedores correspondentes
+            rows.forEach(row => {
+                const docPath = row.querySelector('button').getAttribute('onclick').match(/'([^']+)'/)[1];
+                const statusInput = row.querySelector('select');
+                const vendedor = row.cells[5].textContent;
+
+                const updates = {};
+
+                if (statusInput) {
+                    const newStatus = statusInput.value;
+                    updates.status = newStatus;
+                }
+
+                const docRef = db.doc(docPath);
+                batch.update(docRef, updates);
+
+                if (updates.status === 'Cancelada') {
+                    if (!vendedores[vendedor]) {
+                        vendedores[vendedor] = {};
+                    }
+
+                    const dateInput = row.querySelector('input[type="datetime-local"]');
+                    const valorCreditoInput = row.querySelector('input[type="number"]');
+
+                    if (dateInput) {
+                        const newDate = new Date(dateInput.value);
+                        updates.dataHoraCadastro = newDate;
+                    }
+
+                    if (valorCreditoInput) {
+                        const newValorCredito = parseFloat(valorCreditoInput.value);
+                        if (!isNaN(newValorCredito)) {
+                            updates.valorCredito = newValorCredito;
+                        } else {
+                            alert('Valor do crédito inválido.');
+                            return;
+                        }
+                    }
+
+                    const month = `${updates.dataHoraCadastro.getFullYear()}-${String(updates.dataHoraCadastro.getMonth() + 1).padStart(2, '0')}`;
+                    if (!vendedores[vendedor][month]) {
+                        vendedores[vendedor][month] = 0;
+                    }
+                    vendedores[vendedor][month] += updates.valorCredito;
+                }
+            });
+
+            await batch.commit();
+
+            // Atualizar os valores no banco de dados
+            for (const vendedor in vendedores) {
+                const relatorioRef = db.collection('relatoriocancelados').doc(vendedor);
+                await relatorioRef.set(vendedores[vendedor]);
+            }
+
+            await unifyDuplicateVendedores();
+
+            alert('Todos os dados foram atualizados com sucesso!');
+        }
+
+        async function unifyDuplicateVendedores() {
+            const snapshot = await db.collection('relatoriocancelados').get();
+            const vendedores = {};
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const vendedor = doc.id;
+
+                if (!vendedores[vendedor]) {
+                    vendedores[vendedor] = data;
+                } else {
+                    for (const month in data) {
+                        vendedores[vendedor][month] += data[month];
+                    }
+                }
+            });
+
+            for (const vendedor in vendedores) {
+                await db.collection('relatoriocancelados').doc(vendedor).set(vendedores[vendedor]);
+            }
+        }
+    </script>
+</body>
+</html>

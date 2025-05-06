@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Lead - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Variáveis de cores */
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #381e97;
+            --button-hover-background: #6a5acd;
+            --button-text-color: white;
+        }
+
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --button-text-color: white;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-toggle-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 1001; /* Ensure the button is above other elements */
+        }
+
+        .theme-toggle-button:hover {
+            background-color: #4e4376;
+            transform: scale(1.1);
+        }
+
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+
+        .sidebar:hover a span {
+            display: inline;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 60px;
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 200px;
+        }
+
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%;
+            transition: background-color 0.3s, color 0.3s;
+            height: 100px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--header-text-color);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            background-color: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--button-hover-background);
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .task {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: var(--card-background);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+    .step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.active {
+    background: var(--button-background);
+    color: var(--button-text-color);
+    margin-left: 50px;
+}
+.step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.disabled {
+    pointer-events: none;
+    opacity: 1;
+}
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+        // Inicializar o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        let isAdmin = false; // Variável para armazenar se o usuário é administrador
+    
+        function carregarEtapasFunil() {
+            const etapas = [
+                'sem_contato',
+                'contato_feito',
+                'em_negociacao',
+                'proposta_enviada',
+                'fechado_falta_pagar',
+                'vendido',
+                'negociacao_futura',
+                'perdidas_relad',
+                'cancelados'
+            ];
+            const etapaSelect = document.getElementById('etapaFunil');
+            etapas.forEach(etapa => {
+                const option = document.createElement('option');
+                option.value = etapa.toLowerCase().replace(/\s+/g, '_');
+                option.textContent = etapa;
+                etapaSelect.appendChild(option);
+            });
+        }
+    
+        // Função para atualizar a etapa do funil
+        function atualizarEtapaFunil(event) {
+            event.preventDefault();
+            const leadId = new URLSearchParams(window.location.search).get('id');
+            const novaEtapa = document.getElementById('etapaFunil').value;
+    
+            db.collection('leads').doc(leadId).update({
+                stage: novaEtapa
+            }).then(() => {
+                alert('Etapa do funil atualizada com sucesso!');
+                window.location.href = 'gerenciamento_leads.html'; // Redirecionar para a tela de gerenciamento de leads
+            }).catch(error => {
+                console.error('Erro ao atualizar a etapa do funil: ', error);
+                alert('Erro ao atualizar a etapa do funil.');
+            });
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const leadId = urlParams.get('id');
+    
+            if (leadId) {
+                carregarDetalhesDoLead(leadId);
+                carregarAnotacoes(leadId);
+                carregarTarefas(leadId); // Carregar tarefas na inicialização
+                carregarEtapasFunil(); // Carregar etapas do funil na inicialização
+            }
+    
+            document.getElementById('anotacaoForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const anotacao = document.getElementById('anotacao').value;
+                adicionarAnotacao(leadId, anotacao);
+                this.reset();
+            });
+    
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    db.collection('users').doc(user.email).get().then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            isAdmin = userData.role === 'admin';
+                            if (isAdmin) {
+                                // Mostrar botões de exclusão para administradores
+                                document.querySelectorAll('.delete-button').forEach(button => {
+                                    button.style.display = 'block';
+                                });
+                                // Mostrar campo de transferência de lead para administradores
+                                document.getElementById('transferenciaForm').style.display = 'block';
+                                // Mostrar botão de exclusão de lead para administradores
+                                document.getElementById('deleteLeadButton').style.display = 'block';
+                                carregarUsuarios();
+                            }
+                        }
+                    }).catch((error) => {
+                        console.error("Erro ao obter dados do usuário:", error);
+                    });
+                }
+                const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    sidebarLogoutButton.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+        }).catch((error) => {
+            console.error('Erro ao fazer logout:', error);
+        });
+    });
+        });
+    
+            const editLeadForm = document.getElementById('editLeadForm');
+    
+            // Carregar dados do lead
+            db.collection('leads').doc(leadId).get().then((doc) => {
+                if (doc.exists) {
+                    const lead = doc.data();
+                    document.getElementById('nome').value = lead.nome;
+                    document.getElementById('email').value = lead.email;
+                    document.getElementById('telefone').value = lead.telefone;
+                    document.getElementById('valorNegociacao').value = lead.valorNegociacao ? `R$ ${lead.valorNegociacao.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+                    document.getElementById('produto').value = lead.produto || 'AUTOMÓVEL';
+                    document.getElementById('origemLead').value = lead.origemLead || 'PROSPECÇÃO ATIVA';
+                } else {
+                    console.log("Nenhum dado encontrado!");
+                }
+            }).catch((error) => {
+                console.log("Erro ao obter documento:", error);
+            });
+    
+            // Atualizar dados do lead
+            editLeadForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+    
+                const nome = document.getElementById('nome').value;
+                const email = document.getElementById('email').value;
+                const telefone = document.getElementById('telefone').value;
+                const valorNegociacao = parseFloat(document.getElementById('valorNegociacao').value.replace('R$', '').replace(/\./g, '').replace(',', '.')); // Remover a máscara e converter para número
+                const produto = document.getElementById('produto').value;
+                const origemLead = document.getElementById('origemLead').value;
+    
+                db.collection('leads').doc(leadId).update({
+                    nome: nome,
+                    email: email,
+                    telefone: telefone,
+                    valorNegociacao: valorNegociacao,
+                    produto: produto,
+                    origemLead: origemLead
+                }).then(() => {
+                    alert("Dados do lead atualizados com sucesso!");
+                    document.getElementById('leadNome').textContent = nome;
+                    document.getElementById('leadEmail').textContent = email;
+                    document.getElementById('leadTelefone').textContent = telefone;
+                    toggleEditForm(); // Ocultar o formulário após salvar as alterações
+                }).catch((error) => {
+                    console.error("Erro ao atualizar lead: ", error);
+                    alert("Erro ao atualizar lead. Tente novamente.");
+                });
+            });
+        });
+    
+        function carregarDetalhesDoLead(leadId) {
+            db.collection('leads').doc(leadId).get().then((doc) => {
+                if (doc.exists) {
+                    const lead = doc.data();
+                    document.getElementById('leadNome').textContent = lead.nome;
+                    document.getElementById('leadEmail').textContent = lead.email;
+                    document.getElementById('leadTelefone').textContent = lead.telefone;
+                } else {
+                    console.log("Nenhum dado encontrado!");
+                }
+            }).catch((error) => {
+                console.error("Erro ao carregar detalhes do lead:", error);
+            });
+        }
+    
+        function carregarAnotacoes(leadId) {
+            db.collection('leads').doc(leadId).collection('anotacoes').orderBy('data', 'desc').get().then((querySnapshot) => {
+                const anotacoesContainer = document.getElementById('anotacoesContainer');
+                anotacoesContainer.innerHTML = ''; // Limpar anotações anteriores
+    
+                querySnapshot.forEach((doc) => {
+                    const anotacao = doc.data();
+                    const anotacaoElement = document.createElement('div');
+                    anotacaoElement.classList.add('note');
+                    anotacaoElement.innerHTML = `
+                        <p>${anotacao.texto}</p>
+                        <small>${new Date(anotacao.data.toDate()).toLocaleString()}</small>
+                        <button class="delete-button" onclick="deletarAnotacao('${leadId}', '${doc.id}')">Excluir</button>
+                    `;
+                    anotacoesContainer.appendChild(anotacaoElement);
+                });
+    
+                if (isAdmin) {
+                    // Mostrar botões de exclusão para administradores
+                    document.querySelectorAll('.delete-button').forEach(button => {
+                        button.style.display = 'block';
+                    });
+                }
+            }).catch((error) => {
+                console.error("Erro ao carregar anotações:", error);
+            });
+        }
+    
+        function verificarTarefas(leadId, stage) {
+            if (stage !== 'vendido' && stage !== 'perdido/relead' && stage !== 'cancelados') {
+                db.collection('leads').doc(leadId).collection('tarefas').where('concluida', '==', false).get().then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        alert('Este lead não possui tarefas pendentes. Por favor, adicione uma tarefa.');
+                    }
+                }).catch((error) => {
+                    console.error("Erro ao verificar tarefas:", error);
+                });
+            }
+        }
+    
+        function adicionarAnotacao(leadId, texto) {
+            const anotacao = {
+                texto,
+                data: new Date()
+            };
+    
+            db.collection('leads').doc(leadId).collection('anotacoes').add(anotacao).then(() => {
+                carregarAnotacoes(leadId);
+            }).catch((error) => {
+                console.error("Erro ao adicionar anotação:", error);
+            });
+        }
+        
+        function carregarTarefas(leadId) {
+            db.collection('leads').doc(leadId).collection('tarefas').orderBy('dataHora', 'asc').get().then((querySnapshot) => {
+                const tarefasContainer = document.getElementById('tarefasContainer');
+                tarefasContainer.innerHTML = ''; // Limpar tarefas anteriores
+    
+                querySnapshot.forEach((doc) => {
+                    const tarefa = doc.data();
+                    const tarefaElement = document.createElement('div');
+                    tarefaElement.classList.add('note');
+                    tarefaElement.innerHTML = `
+                        <p><strong>Descrição:</strong> ${tarefa.descricao}</p>
+                        <p><strong>Data e Hora:</strong> ${new Date(tarefa.dataHora.toDate()).toLocaleString()}</p>
+                        <p><strong>Tipo:</strong> ${tarefa.tipo}</p>
+                        <p><strong>Concluída:</strong> ${tarefa.concluida ? 'Sim' : 'Não'}</p>
+                        <button class="btn-submit" onclick="marcarComoConcluida('${leadId}', '${doc.id}')">Marcar como Concluída</button>
+                        <button class="btn-submit" onclick="editarTarefa('${leadId}', '${doc.id}', '${tarefa.descricao}', '${tarefa.dataHora.toDate().toISOString().split('T')[0]}', '${tarefa.dataHora.toDate().toISOString().split('T')[1].substring(0, 5)}', '${tarefa.tipo}')">Editar</button>
+                    `;
+                    tarefasContainer.appendChild(tarefaElement);
+                });
+            }).catch((error) => {
+                console.error("Erro ao carregar tarefas:", error);
+            });
+        }
+    
+        function marcarComoConcluida(leadId, tarefaId) {
+            db.collection('leads').doc(leadId).collection('tarefas').doc(tarefaId).update({
+                concluida: true
+            }).then(() => {
+                carregarTarefas(leadId);
+            }).catch((error) => {
+                console.error("Erro ao marcar tarefa como concluída:", error);
+            });
+        }
+        
+        function editarTarefa(leadId, tarefaId, descricao, data, hora, tipo) {
+            document.getElementById('tarefa').value = descricao;
+            document.getElementById('dataTarefa').value = data;
+            document.getElementById('horaTarefa').value = hora;
+            document.getElementById('tipoTarefa').value = tipo;
+    
+            const tarefaForm = document.getElementById('tarefaForm');
+            tarefaForm.onsubmit = function(event) {
+                event.preventDefault();
+                const novaDescricao = document.getElementById('tarefa').value;
+                const novaData = document.getElementById('dataTarefa').value;
+                const novaHora = document.getElementById('horaTarefa').value;
+                const novoTipo = document.getElementById('tipoTarefa').value;
+                const novaDataHora = new Date(`${novaData}T${novaHora}`);
+    
+                db.collection('leads').doc(leadId).collection('tarefas').doc(tarefaId).update({
+                    descricao: novaDescricao,
+                    dataHora: novaDataHora,
+                    tipo: novoTipo
+                }).then(() => {
+                    carregarTarefas(leadId);
+                    tarefaForm.reset();
+                    tarefaForm.onsubmit = adicionarTarefa;
+                }).catch((error) => {
+                    console.error("Erro ao editar tarefa:", error);
+                });
+            };
+    
+            mostrarFormulario('tarefaForm');
+        }
+    
+        function adicionarTarefa(event) {
+            event.preventDefault();
+            const leadId = new URLSearchParams(window.location.search).get('id');
+            const descricao = document.getElementById('tarefa').value;
+            const data = document.getElementById('dataTarefa').value;
+            const hora = document.getElementById('horaTarefa').value;
+            const tipo = document.getElementById('tipoTarefa').value;
+            const dataHora = new Date(`${data}T${hora}`);
+    
+            const user = firebase.auth().currentUser;
+    
+            db.collection('leads').doc(leadId).collection('tarefas')
+                .where('dataHora', '==', dataHora)
+                .where('usuario', '==', user.email)
+                .get()
+                .then((querySnapshot) => {
+                    if (!querySnapshot.empty) {
+                        alert('Você já tem uma tarefa agendada para este dia e horário.');
+                    } else {
+                        const tarefa = {
+                            descricao,
+                            dataHora,
+                            tipo,
+                            concluida: false,
+                            usuario: user.email
+                        };
+    
+                        db.collection('leads').doc(leadId).collection('tarefas').add(tarefa).then(() => {
+                            carregarTarefas(leadId);
+                        }).catch((error) => {
+                            console.error("Erro ao adicionar tarefa:", error);
+                        });
+                    }
+                }).catch((error) => {
+                    console.error("Erro ao verificar tarefas:", error);
+                });
+        }
+    
+        function deletarAnotacao(leadId, anotacaoId) {
+            db.collection('leads').doc(leadId).collection('anotacoes').doc(anotacaoId).delete().then(() => {
+                carregarAnotacoes(leadId);
+            }).catch((error) => {
+                console.error("Erro ao deletar anotação:", error);
+            });
+        }
+    
+        function carregarUsuarios() {
+            const usuarioSelect = document.getElementById('novoVendedor');
+            db.collection('users').get().then((querySnapshot) => {
+                usuarioSelect.innerHTML = ''; // Limpar opções anteriores
+                querySnapshot.forEach((doc) => {
+                    const user = doc.data();
+                    const option = document.createElement('option');
+                    option.value = user.email;
+                    option.textContent = user.name || user.nome;
+                    usuarioSelect.appendChild(option);
+                });
+            }).catch((error) => {
+                console.error("Erro ao carregar usuários:", error);
+            });
+        }
+    
+        function transferirLead(event) {
+            event.preventDefault();
+            const leadId = new URLSearchParams(window.location.search).get('id');
+            const novoVendedor = document.getElementById('novoVendedor').value;
+    
+            db.collection('leads').doc(leadId).update({
+                vendedorEmail: novoVendedor
+            }).then(() => {
+                alert('Lead transferido com sucesso!');
+            }).catch((error) => {
+                console.error("Erro ao transferir lead:", error);
+            });
+        }
+    
+        function deletarLead() {
+            const leadId = new URLSearchParams(window.location.search).get('id');
+            db.collection('leads').doc(leadId).delete().then(() => {
+                alert('Lead excluído com sucesso!');
+                window.location.href = 'gerenciamento_leads.html';
+            }).catch((error) => {
+                console.error("Erro ao excluir lead:", error);
+            });
+        }
+    
+        function toggleEditForm() {
+            const editLeadForm = document.getElementById('editLeadForm');
+            const toggleButton = document.getElementById('toggleEditFormButton');
+            if (editLeadForm.classList.contains('hidden')) {
+                editLeadForm.classList.remove('hidden');
+                toggleButton.textContent = 'Cancelar Edição';
+            } else {
+                editLeadForm.classList.add('hidden');
+                toggleButton.textContent = 'Editar Lead';
+            }
+        }
+    
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('expanded');
+        }
+        function mostrarFormulario(formId) {
+            const form = document.getElementById(formId);
+            form.classList.toggle('hidden');
+        }
+    </script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="relatorios.html"><i class="fas fa-chart-line"></i><span>Relatórios</span></a>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="#"><i class="fas fa-file-invoice"></i><span>Emitir Boletos</span></a>
+        <a href="#"><i class="fas fa-bullhorn"></i><span>Ofertar Lance em Lote</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="info-cards">
+                <div class="info-card">
+                    <h2><img src="DetalhesDoLead.jpeg" style="width: 500px; display: block; margin-left: 399px;" alt=""></h2>
+                </div>
+            </div>
+            <button id="toggleTheme" class="theme-toggle-button">Alternar Tema</button>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3>Detalhes do Lead</h3>
+                <p><strong>Nome:</strong> <span id="leadNome"></span></p>
+                <p><strong>Email:</strong> <span id="leadEmail"></span></p>
+                <p><strong>Telefone:</strong> <span id="leadTelefone"></span></p>
+                <button id="toggleEditFormButton" class="btn-submit" onclick="toggleEditForm()">Editar Lead</button>
+                <form id="editLeadForm" class="hidden">
+                    <div class="form-group">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone:</label>
+                        <input type="text" id="telefone" name="telefone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="valorNegociacao">Valor da Negociação:</label>
+                        <input type="text" id="valorNegociacao" name="valorNegociacao" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="produto">Produto:</label>
+                        <select id="produto" name="produto" required>
+                            <option value="AUTOMÓVEL">AUTOMÓVEL</option>
+                            <option value="IMÓVEL">IMÓVEL</option>
+                            <option value="SERVIÇO">SERVIÇO</option>
+                            <option value="ELETRO">ELETRO</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="origemLead">Origem do Lead:</label>
+                        <select id="origemLead" name="origemLead" required>
+                            <option value="PROSPECÇÃO ATIVA">PROSPECÇÃO ATIVA</option>
+                            <option value="INDICAÇÃO">INDICAÇÃO</option>
+                            <option value="MARKETING">MARKETING</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn-submit" value="Salvar Alterações">
+                    </div>
+                </form>
+            </div>
+            <div class="card">
+                <h3>Etapa do Funil</h3>
+                <form id="atualizarEtapaForm" onsubmit="atualizarEtapaFunil(event)">
+                    <input type="hidden" id="leadId" name="leadId" value="ID_DO_LEAD"> <!-- Substitua pelo ID real do lead -->
+                    <div class="form-group">
+                        <label for="etapaFunil">Etapa do Funil</label>
+                        <select id="etapaFunil" name="etapaFunil" required>
+                            <!-- Opções serão carregadas dinamicamente -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn-submit" value="Atualizar Etapa">
+                    </div>
+                </form>
+            </div>
+            <div class="card">
+                <h3>Anotações</h3>
+                <div class="notes" id="anotacoesContainer">
+                    <!-- Anotações serão carregadas aqui -->
+                </div>
+                <button class="btn-submit" onclick="mostrarFormulario('anotacaoForm')">Adicionar Anotação</button>
+                <form id="anotacaoForm" class="hidden">
+                    <div class="form-group">
+                        <label for="anotacao">Anotação</label>
+                        <textarea id="anotacao" name="anotacao" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn-submit" value="Adicionar Anotação">
+                    </div>
+                </form>
+            </div>
+            <div class="card">
+                <h3>Tarefas</h3>
+                <div class="tasks" id="tarefasContainer">
+                    <!-- Tarefas serão carregadas aqui -->
+                </div>
+                <button class="btn-submit" onclick="mostrarFormulario('tarefaForm')">Adicionar Tarefa</button>
+                <form id="tarefaForm" class="hidden" onsubmit="adicionarTarefa(event)">
+                    <div class="form-group">
+                        <label for="tarefa">Tarefa</label>
+                        <textarea id="tarefa" name="tarefa" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataTarefa">Data</label>
+                        <input type="date" id="dataTarefa" name="dataTarefa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="horaTarefa">Hora</label>
+                        <input type="time" id="horaTarefa" name="horaTarefa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoTarefa">Tipo de Tarefa</label>
+                        <select id="tipoTarefa" name="tipoTarefa" required>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="reuniao_visita">Reunião/Visita</option>
+                            <option value="ligacao">Ligação</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn-submit" value="Adicionar Tarefa">
+                    </div>
+                </form>
+            </div>
+            <form id="transferenciaForm" class="hidden" onsubmit="transferirLead(event)">
+                <div class="form-group">
+                    <label for="novoVendedor">Transferir Lead para:</label>
+                    <select id="novoVendedor" name="novoVendedor" required>
+                        <!-- Opções serão carregadas dinamicamente -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn-submit" value="Transferir Lead">
+                </div>
+            </form>
+            <button id="deleteLeadButton" class="btn-submit" style="display: none;" onclick="deletarLead()">Excluir Lead</button>
+        </div>
+    </div>
+</body>
+</html>

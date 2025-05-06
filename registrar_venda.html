@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Venda - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+       :root {
+        --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+        --text-color: #333;
+        --header-background: rgba(255, 255, 255, 0.9);
+        --header-text-color: #333;
+        --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+        --sidebar-text-color: #fff;
+        --card-background: rgba(255, 255, 255, 0.9);
+        --card-text-color: #333;
+        --button-background: #381e97;
+        --button-hover-background:  #9386ca;
+        --button-text-color: white;
+    }
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+        background: var(--background-color);
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .sidebar {
+        width: 60px;
+        background: linear-gradient(135deg, #4e4376, #6a5acd);
+        color: var(--sidebar-text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        transition: width 0.3s;
+    }
+        
+        .sidebar:hover {
+            width: 200px;
+        }
+        
+        .sidebar a {
+            color: #ecf0f1;
+            text-decoration: none;
+            margin: 10px;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 1px;
+        }
+        .sidebar a i {
+            margin-right: 0px;
+            font-size: 1.2em;
+        }
+        
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+        
+        .sidebar:hover a span {
+            display: inline;
+        }
+        
+        .content {
+        flex: 1;
+        padding: 20px;
+        transition: margin-left 0.3s;
+    }
+        
+        .sidebar:hover ~ .content {
+            margin-left: 200px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 200px); /* Reduzido de 250px para 200px */
+            margin-left: 70px; /* Reduzido de 250px para 200px */
+            transition: margin-left 0.3s ease;
+            overflow-y: auto;
+            margin-left: 10px;
+            }
+
+            .header {
+    background: var(--header-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto; /* Centraliza o header horizontalmente */
+    transition: background-color 0.3s, color 0.3s;
+    min-height: 100px; /* Ajuste a altura mínima para caber o nome completo */
+    flex-wrap: wrap; /* Permite que os elementos dentro do header se ajustem em várias linhas */
+}
+
+.header .info-cards {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    right: 20px;
+    text-align: center;
+    max-width: 150px; /* Ajuste conforme necessário */
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column; /* Alinha os elementos verticalmente em telas menores */
+        align-items: center;
+    }
+
+    .header .user-info {
+        position: static; /* Remove a posição absoluta em telas menores */
+        margin-top: 10px; /* Adiciona margem superior para espaçamento */
+    }
+}
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+            text-align: center;
+            max-width: 150px; /* Ajuste conforme necessário */
+            word-wrap: break-word;
+        }
+        
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+        
+        
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .card {
+                background-color: rgb(255, 255, 255); /* Cor de fundo do card */
+                border: 1px solid #ffffff; /* Borda do card */
+                border-radius: 8px; /* Bordas arredondadas */
+                padding: 20px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra do card */
+            }
+            .form-row {
+                display: flex;
+                flex-wrap: wrap;
+                margin-bottom: 15px;
+            }
+            .form-group {
+                flex: 1;
+                min-width: 200px;
+                margin-right: 15px;
+            }
+            .form-group:last-child {
+                margin-right: 0;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold; /* Negrito */
+                color: #000; /* Cor preta */
+            }
+            .form-group input,
+            .form-group select {
+                width: 100%;
+                padding: 8px;
+                box-sizing: border-box;
+            }
+            .form-row.centered {
+                justify-content: center;
+                text-align: center;
+            }
+            .form-row.centered .form-group {
+                flex: 0 0 auto;
+            }
+            .btn-submit {
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                cursor: pointer;
+            }
+            .btn-submit:hover {
+                background-color: #0056b3;
+            }
+        h2 {
+            text-align: center;
+            color: #000000;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #000000;
+        }
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            max-width: 400px;
+        }
+        .form-group input[type="text"]::-webkit-outer-spin-button,
+        .form-group input[type="text"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Remove setas de rolagem no Chrome, Safari e Edge */
+            margin: 0;
+        }
+        .form-group input[type="submit"] {
+            background-color: #381e97;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .form-group input[type="submit"]:hover {
+            background-color: #6a5acd;
+        }
+        
+        .btn-submit {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-submit:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .container {
+                padding: 30px;
+            }
+            .form-group {
+                flex-direction: column;
+            }
+            
+        }
+        .menu-item {
+        cursor: pointer;
+        }
+        
+        .submenu {
+    display: none;
+
+        }
+
+        .menu-item.active .submenu {
+        display: block;
+        }
+        .info-icon {
+        color: #000000;
+        font-size: 0.75em; /* Ajuste o tamanho conforme necessário */
+    }
+    .tooltip {
+        position: absolute;
+        background-color: #333;
+        color: #fff;
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 0.75em;
+        display: none;
+        z-index: 1000;
+    }
+        
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/vanilla-masker/build/vanilla-masker.min.js"></script>
+    <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        // Função para buscar e preencher administradoras
+        async function fetchAndPopulateAdministradoras() {
+            const administradoraSelect = document.getElementById('administradora');
+            administradoraSelect.innerHTML = ''; // Limpa a lista de administradoras antes de preenchê-la
+    
+            // Adiciona a opção "Selecione" como primeira opção
+            const optionSelect = document.createElement('option');
+            optionSelect.value = ''; // Nenhuma opção selecionada
+            optionSelect.textContent = 'Selecione'; // Texto da opção
+            administradoraSelect.appendChild(optionSelect);
+    
+            try {
+                const snapshot = await db.collection('administrators').get();
+                snapshot.forEach(doc => {
+                    const adminData = doc.data();
+                    const option = document.createElement('option');
+                    option.value = adminData.name;
+                    option.textContent = adminData.name;
+                    administradoraSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao buscar administradoras: ", error);
+            }
+        }
+    
+        // Função para buscar e preencher produtos com base na administradora selecionada
+        async function fetchAndPopulateProdutos(administradora) {
+            const produtoSelect = document.getElementById('produto');
+            produtoSelect.innerHTML = ''; // Limpa a lista de produtos antes de preenchê-la
+    
+            // Adiciona a opção "Selecione" como primeira opção
+            const optionSelect = document.createElement('option');
+            optionSelect.value = ''; // Nenhuma opção selecionada
+            optionSelect.textContent = 'Selecione'; // Texto da opção
+            produtoSelect.appendChild(optionSelect);
+    
+            try {
+                const snapshot = await db.collection('administrators').where('name', '==', administradora).get();
+                if (!snapshot.empty) {
+                    const adminData = snapshot.docs[0].data();
+                    adminData.products.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.name;
+                        option.textContent = product.name;
+                        produtoSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao buscar produtos: ", error);
+            }
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            // Função para carregar os dados do cliente do localStorage
+            function carregarDadosCliente() {
+                const nomeCompleto = localStorage.getItem('nomeCompleto');
+                const cpfCnpj = localStorage.getItem('cpfCnpj');
+        
+                console.log('Dados do cliente carregados do localStorage:', { nomeCompleto, cpfCnpj });
+        
+                if (nomeCompleto && cpfCnpj) {
+                    const clienteNomeElement = document.getElementById('clienteNome');
+                    const clienteCpfCnpjElement = document.getElementById('clienteCpfCnpj');
+        
+                    if (clienteNomeElement && clienteCpfCnpjElement) {
+                        clienteNomeElement.value = nomeCompleto;
+                        clienteCpfCnpjElement.value = cpfCnpj;
+        
+                        // Bloquear os campos para edição
+                        clienteNomeElement.readOnly = true;
+                        clienteCpfCnpjElement.readOnly = true;
+        
+                        console.log('Campos preenchidos e bloqueados.');
+                    } else {
+                        console.error('Elementos de entrada não encontrados.');
+                    }
+                } else {
+                    console.log('Dados do cliente não encontrados no localStorage.');
+                }
+            }
+        
+            // Chamar a função para carregar os dados do cliente
+            carregarDadosCliente();
+        
+            // Função para buscar e preencher administradoras
+            async function fetchAndPopulateAdministradoras() {
+                const administradoraSelect = document.getElementById('administradora');
+                administradoraSelect.innerHTML = ''; // Limpa a lista de administradoras antes de preenchê-la
+        
+                // Adiciona a opção "Selecione" como primeira opção
+                const optionSelect = document.createElement('option');
+                optionSelect.value = ''; // Nenhuma opção selecionada
+                optionSelect.textContent = 'Selecione'; // Texto da opção
+                administradoraSelect.appendChild(optionSelect);
+        
+                try {
+                    const snapshot = await db.collection('administrators').get();
+                    snapshot.forEach(doc => {
+                        const adminData = doc.data();
+                        const option = document.createElement('option');
+                        option.value = adminData.name;
+                        option.textContent = adminData.name;
+                        administradoraSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Erro ao buscar administradoras: ", error);
+                }
+            }
+        
+            // Função para buscar e preencher produtos com base na administradora selecionada
+            async function fetchAndPopulateProdutos(administradora) {
+                const produtoSelect = document.getElementById('produto');
+                produtoSelect.innerHTML = ''; // Limpa a lista de produtos antes de preenchê-la
+        
+                // Adiciona a opção "Selecione" como primeira opção
+                const optionSelect = document.createElement('option');
+                optionSelect.value = ''; // Nenhuma opção selecionada
+                optionSelect.textContent = 'Selecione'; // Texto da opção
+                produtoSelect.appendChild(optionSelect);
+        
+                try {
+                    const snapshot = await db.collection('administrators').where('name', '==', administradora).get();
+                    if (!snapshot.empty) {
+                        const adminData = snapshot.docs[0].data();
+                        adminData.products.forEach(product => {
+                            const option = document.createElement('option');
+                            option.value = product.name;
+                            option.textContent = product.name;
+                            produtoSelect.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar produtos: ", error);
+                }
+            }
+        
+            // Chamar a função para buscar e preencher administradoras
+            fetchAndPopulateAdministradoras();
+        
+            // Adicionar evento de mudança para o campo administradora
+            document.getElementById('administradora').addEventListener('change', function() {
+                const administradora = this.value;
+                if (administradora) {
+                    fetchAndPopulateProdutos(administradora);
+                } else {
+                    const produtoSelect = document.getElementById('produto');
+                    produtoSelect.innerHTML = ''; // Limpa a lista de produtos
+                    const optionSelect = document.createElement('option');
+                    optionSelect.value = ''; // Nenhuma opção selecionada
+                    optionSelect.textContent = 'Selecione'; // Texto da opção
+                    produtoSelect.appendChild(optionSelect);
+                }
+            });
+        
+            // Adicionar eventos de tooltip aos ícones de informação
+            const infoIcons = document.querySelectorAll('.info-icon');
+            infoIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', showTooltip);
+                icon.addEventListener('mouseleave', hideTooltip);
+            });
+        
+            // Função para aplicar a máscara de valor monetário
+            function aplicarMascara() {
+                const valorCreditoElement = document.getElementById("valorCredito");
+        
+                // Aplique a máscara de dinheiro com a configuração desejada
+                VMasker(valorCreditoElement).maskMoney({
+                    precision: 2,
+                    separator: ',',
+                    delimiter: '.',
+                    unit: 'R$',
+                    zeroCents: false
+                });
+        
+                // Inicializar o campo com R$ 0,00
+                valorCreditoElement.value = "R$ 0,00";
+            }
+        
+            // Chamar a função para aplicar a máscara quando o DOM estiver carregado
+            aplicarMascara();
+        });
+
+        // Função para aplicar a máscara de valor monetário
+        function aplicarMascara() {
+            const valorCreditoElement = document.getElementById("valorCredito");
+    
+            // Aplique a máscara de dinheiro com a configuração desejada
+            VMasker(valorCreditoElement).maskMoney({
+                precision: 2,
+                separator: ',',
+                delimiter: '.',
+                unit: 'R$',
+                zeroCents: false
+            });
+    
+            // Inicializar o campo com R$ 0,00
+            valorCreditoElement.value = "R$ 0,00";
+        }
+    
+        // Chamar a função para aplicar a máscara quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', aplicarMascara);
+    
+        // Verifica se o usuário está logado
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log("Usuário está logado:", user);
+                // Continue com a lógica de inicialização do aplicativo
+                fetchAndPopulateVendedores();
+            } else {
+                console.log("Nenhum usuário está logado.");
+                // Opcional: Redirecionar para a página de login ou mostrar uma mensagem
+            }
+        });
+    
+        // Função para buscar e preencher vendedores com base nos roles permitidos
+        async function fetchAndPopulateVendedores() {
+            const vendedorSelect = document.getElementById('vendedor');
+            vendedorSelect.innerHTML = ''; // Limpa a lista de vendedores antes de preenchê-la
+        
+            // Adiciona a opção "Selecione" como primeira opção
+            const optionSelect = document.createElement('option');
+            optionSelect.value = ''; // Nenhuma opção selecionada
+            optionSelect.textContent = 'Selecione'; // Texto da opção
+            vendedorSelect.appendChild(optionSelect);
+        
+            try {
+                // Buscar usuários com os roles permitidos
+                const snapshot = await db.collection("users")
+                    .where("role", "in", ["vendedor-interno", "vendedor-externo", "gestor-comercial"])
+                    .get();
+        
+                const vendedores = [];
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const name = user.nome || user.name; // Verifica se o campo 'nome' ou 'name' existe
+                    if (name && name.trim() !== "") { // Verifica se o nome não está vazio
+                        vendedores.push(name.trim());
+                    }
+                });
+        
+                // Ordena os vendedores em ordem alfabética
+                vendedores.sort((a, b) => a.localeCompare(b));
+        
+                // Preenche o dropdown com os vendedores ordenados
+                vendedores.forEach(vendedor => {
+                    const option = document.createElement('option');
+                    option.value = vendedor;
+                    option.textContent = vendedor;
+                    vendedorSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao buscar usuários: ", error);
+            }
+        }
+    
+        // Função para calcular a comissão com base nos dados da venda e no mês
+        async function calcularComissao(data, mes) {
+            const valorCredito = data.valorCredito;
+            const administradora = data.administradora;
+            const produto = data.produto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    
+            // Buscar as comissões da coleção 'administrators'
+            const adminSnapshot = await db.collection('administrators').where('name', '==', administradora).get();
+            if (!adminSnapshot.empty) {
+                const adminData = adminSnapshot.docs[0].data();
+                const product = adminData.products.find(p => p.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === produto);
+                if (product && product.commissions) {
+                    const commission = product.commissions.find(c => c.month === mes);
+                    if (commission) {
+                        console.log(`Comissão encontrada para o mês ${mes}: payable=${commission.payable}, receivable=${commission.receivable}`);
+                        return {
+                            payable: valorCredito * (commission.payable / 100),
+                            receivable: valorCredito * (commission.receivable / 100)
+                        };
+                    } else {
+                        console.log(`Nenhuma comissão encontrada para o mês ${mes}`);
+                    }
+                } else {
+                    console.log(`Nenhum produto encontrado com o nome ${produto}`);
+                }
+            } else {
+                console.log(`Nenhuma administradora encontrada com o nome ${administradora}`);
+            }
+    
+            return { payable: 0.0, receivable: 0.0 };
+        }
+    
+// Função para registrar comissões a pagar e a receber
+async function registrarComissao(vendaId, vendaData) {
+    try {
+        // Verificar se dataVenda é um objeto Timestamp do Firestore
+        const dataVenda = vendaData.dataVenda.toDate ? vendaData.dataVenda.toDate() : new Date(vendaData.dataVenda);
+        const valorCredito = vendaData.valorCredito;
+
+        // Buscar as comissões da coleção 'administrators'
+        const adminSnapshot = await db.collection('administrators').where('name', '==', vendaData.administradora).get();
+        if (adminSnapshot.empty) {
+            console.error(`Nenhuma administradora encontrada com o nome ${vendaData.administradora}`);
+            return;
+        }
+
+        const adminData = adminSnapshot.docs[0].data();
+        const product = adminData.products.find(p => p.name === vendaData.produto);
+        if (!product || !product.commissions) {
+            console.error(`Nenhum produto encontrado com o nome ${vendaData.produto}`);
+            return;
+        }
+
+        // Obter todas as comissões do produto
+        const commissions = product.commissions;
+
+        // Verificar se todos os campos necessários estão definidos
+        if (!vendaData.administradora || !dataVenda || !vendaData.produto || !valorCredito || !vendaData.vendedor || !vendaData.nomeCompleto || !vendaData.status || !vendaData.grupo || !vendaData.cota) {
+            console.error("Dados incompletos para registrar comissão:", vendaData);
+            return;
+        }
+
+        // Calcular o valor total das comissões a pagar e a receber
+        let valorTotalPayable = 0;
+        let valorTotalReceivable = 0;
+        let parcelasPayable = 0;
+        let parcelasReceivable = 0;
+
+        for (const commission of commissions) {
+            const mes = commission.month;
+            const comissao = await calcularComissao(vendaData, mes);
+            if (commission.payable > 0) {
+                valorTotalPayable += comissao.payable;
+                parcelasPayable++;
+            }
+            if (commission.receivable > 0) {
+                valorTotalReceivable += comissao.receivable;
+                parcelasReceivable++;
+            }
+            console.log(`Mês: ${mes}, Payable: ${comissao.payable}, Receivable: ${comissao.receivable}`);
+        }
+
+        // Criar documento principal na ComissaoID
+        const comissaoRef = db.collection('ComissaoID').doc(vendaId);
+        await comissaoRef.set({
+            administradora: vendaData.administradora,
+            dataVenda: dataVenda,
+            parcelas: parcelasPayable,
+            produto: vendaData.produto,
+            valorTotal: valorTotalPayable,
+            vendedor: vendaData.vendedor,
+            nomeCompleto: vendaData.nomeCompleto,
+            status: vendaData.status,
+            grupoCota: `${vendaData.grupo}/${vendaData.cota}`
+        });
+
+        // Criar documento principal na ComissaoreceberID
+        const comissaoReceberRef = db.collection('ComissaoreceberID').doc(vendaId);
+        await comissaoReceberRef.set({
+            administradora: vendaData.administradora,
+            dataVenda: dataVenda,
+            parcelas: parcelasReceivable,
+            produto: vendaData.produto,
+            valorTotal: valorTotalReceivable,
+            vendedor: vendaData.vendedor,
+            nomeCompleto: vendaData.nomeCompleto,
+            status: vendaData.status,
+            grupoCota: `${vendaData.grupo}/${vendaData.cota}`
+        });
+
+        // Gerar parcelas de comissão
+        let parcelaPayable = 1;
+        let parcelaReceivable = 1;
+        for (const commission of commissions) {
+            const mes = commission.month;
+            const comissao = await calcularComissao(vendaData, mes);
+
+            if (typeof mes === 'number') {
+                let dataParcela = new Date(dataVenda);
+                dataParcela.setMonth(dataParcela.getMonth() + mes);
+                dataParcela.setDate(10); // Comissões são sempre no dia 10
+
+                const ano = dataParcela.getFullYear();
+                const mesNome = dataParcela.toLocaleString('pt-BR', { month: 'long' });
+
+                if (comissao.payable > 0) {
+                    await comissaoRef
+                        .collection(ano.toString())
+                        .doc(mesNome)
+                        .set({
+                            valor: comissao.payable,
+                            parcela: `${parcelaPayable}/${parcelasPayable}`,
+                            dataVencimento: dataParcela,
+                            pago: false
+                        });
+                    parcelaPayable++;
+                }
+
+                if (comissao.receivable > 0) {
+                    await comissaoReceberRef
+                        .collection(ano.toString())
+                        .doc(mesNome)
+                        .set({
+                            valor: comissao.receivable,
+                            parcela: `${parcelaReceivable}/${parcelasReceivable}`,
+                            dataVencimento: dataParcela,
+                            recebido: false
+                        });
+                    parcelaReceivable++;
+                }
+            } else if (typeof mes === 'string') {
+                if (comissao.payable > 0) {
+                    await comissaoRef
+                        .collection(mes)
+                        .doc(mes)
+                        .set({
+                            valor: comissao.payable,
+                            parcela: mes,
+                            pago: false
+                        });
+                }
+
+                if (comissao.receivable > 0) {
+                    await comissaoReceberRef
+                        .collection(mes)
+                        .doc(mes)
+                        .set({
+                            valor: comissao.receivable,
+                            parcela: mes,
+                            recebido: false
+                        });
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error("Erro ao registrar comissão:", error);
+        alert("Erro ao registrar comissão: " + error.message);
+    }
+}
+    
+        async function registrarVenda(event) {
+    event.preventDefault();
+
+    const submitButton = document.querySelector('#registrarVendaForm input[type="submit"]');
+    submitButton.disabled = true; // Desativa o botão de envio
+
+    const clienteNome = document.getElementById('clienteNome').value;
+    const clienteCpfCnpj = document.getElementById('clienteCpfCnpj').value.replace(/\D/g, ''); // Remover caracteres não numéricos
+    const administradora = document.getElementById('administradora').value;
+    const produto = document.getElementById('produto').value;
+    const valorCredito = parseFloat(document.getElementById('valorCredito').value.replace('R$', '').replace(/\./g, '').replace(',', '.')); // Remover a máscara e converter para número
+    const vendedor = document.getElementById('vendedor').value;
+    const grupo = document.getElementById('grupo').value;
+    const cota = document.getElementById('cota').value;
+    const lancebolso = document.getElementById('lancebolso').value;
+    const lanceembutido = document.getElementById('lanceembutido').value;
+    const boleto = document.getElementById('boleto').value;
+    const segmentoVenda = document.getElementById('segmentoVenda').value;
+    const perfilVenda = document.getElementById('perfilVenda').value;
+    const dataVenda = new Date(document.getElementById('dataVenda').value);
+    const dataHoraCadastro = dataVenda;
+
+    if (clienteNome && administradora && produto && !isNaN(valorCredito) && vendedor && grupo && cota && lancebolso && lanceembutido && boleto && segmentoVenda && perfilVenda && dataVenda) {
+        const venda = {
+            nomeCompleto: clienteNome,
+            cpfCnpj: clienteCpfCnpj,
+            administradora,
+            produto,
+            valorCredito,
+            vendedor,
+            grupo,
+            cota,
+            lancebolso,
+            lanceembutido,
+            boleto,
+            segmentoVenda,
+            perfilVenda,
+            dataVenda,
+            dataHoraCadastro,
+            status: 'Falta Pagar' // Adiciona o status da venda
+        };
+
+        try {
+            // Adicionar a venda na coleção 'VendasID'
+            const vendaRef = await db.collection("VendasID").add(venda);
+
+            // Adicionar a venda na sub-coleção 'vendas' dentro da coleção 'clientes'
+            const clienteRef = db.collection("clientes").doc(clienteCpfCnpj);
+            await clienteRef.collection("vendas").doc(vendaRef.id).set(venda);
+
+            // Registrar comissões a pagar e a receber
+            await registrarComissao(vendaRef.id, venda);
+
+            alert("Venda cadastrada com sucesso!");
+            document.getElementById('registrarVendaForm').reset();
+        } catch (error) {
+            console.error("Erro ao cadastrar venda: ", error);
+            alert("Erro ao cadastrar venda.");
+        } finally {
+            submitButton.disabled = false; // Reativa o botão de envio
+        }
+    } else {
+        alert("Por favor, preencha todos os campos.");
+        submitButton.disabled = false; // Reativa o botão de envio
+    }
+}
+    
+        // Função para aplicar a máscara de CPF/CNPJ
+        function aplicarMascaraCpfCnpj() {
+            const cpfCnpjElement = document.getElementById("clienteCpfCnpj");
+        
+            cpfCnpjElement.addEventListener('input', function() {
+                const value = cpfCnpjElement.value.replace(/\D/g, '');
+        
+                if (value.length <= 11) {
+                    VMasker(cpfCnpjElement).maskPattern('999.999.999-99');
+                } else {
+                    VMasker(cpfCnpjElement).maskPattern('99.999.999/9999-99');
+                }
+            });
+        }
+        
+        // Função para capitalizar o nome
+        function capitalizarNome() {
+            const nomeElement = document.getElementById("clienteNome");
+        
+            nomeElement.addEventListener('input', function() {
+                // Remove caracteres que não sejam letras ou espaços
+                nomeElement.value = nomeElement.value.replace(/[^a-zA-Z\s]/g, '');
+        
+                const palavras = nomeElement.value.split(' ');
+                for (let i = 0; i < palavras.length; i++) {
+                    palavras[i] = palavras[i].charAt(0).toUpperCase() + palavras[i].slice(1).toLowerCase();
+                }
+                nomeElement.value = palavras.join(' ');
+            });
+        }
+        
+        // Chamar as funções para aplicar a máscara e capitalizar o nome quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            aplicarMascaraCpfCnpj();
+            capitalizarNome();
+        });
+    
+        // Função para atualizar a porcentagem dos lances
+        function updatePercentage(input) {
+            const value = parseFloat(input.value.replace('%', ''));
+            if (!isNaN(value)) {
+                input.value = value + '%';
+            } else {
+                input.value = '0%';
+            }
+        }
+    
+        // Chamar as funções para aplicar a máscara e capitalizar o nome quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            aplicarMascaraCpfCnpj();
+            capitalizarNome();
+        });
+    
+        // Função para mostrar tooltip
+        function showTooltip(event) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+    
+            // Define the tooltip text based on the icon's context
+            switch (event.target.parentElement.htmlFor) {
+                case 'segmentoVenda':
+                    tooltip.textContent = 'Informar o tipo de cota (Imóvel, Automóvel, Serviço, Eletro)';
+                    break;
+                case 'perfilVenda':
+                    tooltip.textContent = 'Informar o tipo de cliente (Logista, Imobiliária, Construtora, Etc ...)';
+                    break;
+                case 'produto':
+                    tooltip.textContent = 'Informar qual plano adquirido pelo cliente';
+                    break;
+                case 'lancebolso':
+                    tooltip.textContent = 'Lance total a ser ofertado mensalmente em %';
+                    break;
+                case 'lanceembutido':
+                    tooltip.textContent = 'Lance embutido que irá compor o lance total mensalmente em %';
+                    break;
+                case 'boleto':
+                    tooltip.textContent = 'Forma que o administrativo irá entrar em contato com o cliente';
+                    break;
+                case 'dataVenda':
+                    tooltip.textContent = 'Data de pagamento do boleto da primeira parcela.';
+                    break;
+                default:
+                    tooltip.textContent = 'Informação';
+            }
+    
+            document.body.appendChild(tooltip);
+    
+            const rect = event.target.getBoundingClientRect();
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+            tooltip.style.display = 'block';
+        }
+    
+        // Função para esconder tooltip
+        function hideTooltip() {
+            const tooltip = document.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        }
+    
+        // Função para alternar submenu
+        function toggleSubmenu(event) {
+            const menuItem = event.currentTarget;
+            menuItem.classList.toggle('active');
+        }
+    
+        // Função para alternar a visibilidade da sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+    </script>  
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="relatorios.html"><i class="fas fa-chart-line"></i><span>Relatórios</span></a>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="info-cards">
+                <div class="info-card">
+                    <h2><img src="RegistrarVenda.png" style="width: 500px;"></h2>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h2>Inserir Dados</h2>
+            <div class="card">
+                <form id="registrarVendaForm" onsubmit="registrarVenda(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clienteNome">Nome</label>
+                            <input type="text" id="clienteNome" name="clienteNome">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCpfCnpj">CPF/CNPJ</label>
+                            <input type="text" id="clienteCpfCnpj" name="clienteCpfCnpj">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="administradora">Administradora</label>
+                            <select id="administradora" name="administradora" required>
+                                <option value="">Selecione</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="segmentoVenda">Segmento da Venda <i class="fas fa-info-circle info-icon" title=""></i></label>
+                            <select id="segmentoVenda" name="segmentoVenda" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="imovel">Imóvel</option>
+                                <option value="automovel">Automóvel</option>
+                                <option value="serviço">Serviço</option>
+                                <option value="eletro">Eletro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="perfilVenda">Perfil da Venda <i class="fas fa-info-circle info-icon"></i></label>
+                            <select id="perfilVenda" name="perfilVenda" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="logista">Logista</option>
+                                <option value="construtora">Construtora</option>
+                                <option value="imobiliaria">Imobiliária</option>
+                                <option value="transportadora">Transportadora</option>
+                                <option value="locadora">Locadora</option>
+                                <option value="varejo">Varejo</option>
+                                <option value="investidor">Investidor</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="produto">Plano <i class="fas fa-info-circle info-icon"></i></label>
+                            <select id="produto" name="produto" required>
+                                <option value="">Selecione</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vendedor">Vendedor</label>
+                            <select id="vendedor" name="vendedor" required>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="valorCredito">Valor do Crédito</label>
+                            <input type="text" id="valorCredito" name="valorCredito" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="grupo">Grupo</label>
+                            <input type="text" id="grupo" name="grupo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cota">Cota</label>
+                            <input type="text" id="cota" name="cota" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lancebolso">Lance Sugerido <i class="fas fa-info-circle info-icon"></i></label>
+                            <input type="text" id="lancebolso" name="lancebolso" required oninput="updatePercentage(this)" placeholder="0%">
+                        </div>
+                        <div class="form-group">
+                            <label for="lanceembutido">Lance Embutido <i class="fas fa-info-circle info-icon"></i></label>
+                            <input type="text" id="lanceembutido" name="lanceembutido" required oninput="updatePercentage(this)" placeholder="0%">
+                        </div>
+                        <div class="form-group">
+                            <label for="boleto">Forma de Contato <i class="fas fa-info-circle info-icon"></i></label>
+                            <select id="boleto" name="boleto" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="whatsapp">Whatsapp</option>
+                                <option value="email">E-mail</option>
+                                <option value="vai_vendedor">Via Vendedor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row centered">
+                        <div class="form-group">
+                            <label for="dataVenda">Data da Venda <i class="fas fa-info-circle info-icon"></i></label>
+                            <input type="date" id="dataVenda" name="dataVenda" required>
+                        </div>
+                    </div>
+                    <div class="form-row centered">
+                        <div class="form-group">
+                            <input type="submit" class="btn-submit" value="Registrar Venda">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

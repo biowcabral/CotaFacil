@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Leads - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Variáveis de cores */
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #0d3c6e;
+            --button-hover-background: #0056b3;
+            --button-text-color: white;
+        }
+    
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --button-text-color: white;
+        }
+    
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+    
+        .theme-toggle-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 1001; /* Ensure the button is above other elements */
+        }
+    
+        .theme-toggle-button:hover {
+            background-color: #4e4376;
+            transform: scale(1.1);
+        }
+    
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+    
+        .sidebar:hover {
+            width: 230px;
+        }
+    
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+    
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+    
+        .sidebar:hover a span {
+            display: inline;
+        }
+    
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 80px; /* Espaçamento da aba lateral */
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+    
+        .sidebar:hover ~ .main-content {
+            margin-left: 220px;
+        }
+    
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 80px); /* Espaçamento da aba lateral */
+            transition: background-color 0.3s, color 0.3s;
+            margin-bottom: 20px; /* Espaçamento entre o cabeçalho e o funil */
+        }
+    
+        .sidebar:hover ~ .header {
+            width: calc(100% - 220px);
+        }
+    
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--header-text-color);
+        }
+    
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    
+        .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+    
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+    
+        .form-container {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            width: calc(100% - 80px); /* Espaçamento da aba lateral */
+            max-width: none;
+        }
+    
+        .sidebar:hover ~ .form-container {
+            width: calc(100% - 220px);
+        }
+    
+        .form-container h2 {
+            margin-top: 0;
+        }
+    
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    
+        .form-container form input,
+        .form-container form button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+    
+        .form-container form button {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        .form-container form button:hover {
+            background-color: var(--button-hover-background);
+        }
+    
+        .filters {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            width: calc(100% - 80px); /* Espaçamento da aba lateral */
+            max-width: none;
+        }
+    
+        .sidebar:hover ~ .filters {
+            width: calc(100% - 220px);
+        }
+    
+        .filters label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    
+        .filters input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+        }
+    
+        .funnels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+            width: 100%;
+        }
+    
+        .funnel-titles {
+            display: flex;
+            gap: 20px;
+            flex-wrap: nowrap; /* Manter os estágios em uma única linha */
+            position: sticky;
+            top: 0;
+            background: var(--background-color);
+            z-index: 1000;
+            transition: background-color 0.3s, color 0.3s;
+        }
+    
+        .funnel-processos {
+            display: flex;
+            gap: 20px;
+            flex-wrap: nowrap; /* Manter os estágios em uma única linha */
+        }
+    
+        .funnel-stage {
+            flex-grow: 1;
+            min-width: 300px; /* Largura mínima para os estágios */
+            background: var(--card-background);
+            padding: px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+    
+        .funnel-titles .funnel-stage {
+            padding-top: 10px; /* Espaço para o cabeçalho fixo */
+        }
+    
+        .funnel-titles h2 {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            padding: 10px;
+            margin: 0;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            width: 100%;
+            cursor: pointer; /* Permitir clique no título */
+        }
+
+            .lead-card {
+                background: var(--card-background);
+                border: 2px solid black;
+                padding: 15px;
+                margin: 10px 0;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                min-height: 80px; /* Altura mínima aumentada */
+                max-width: 100%; /* Garante que a largura do card não ultrapasse a largura do funil */
+                width: 85%;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                transition: background-color 0.3s, color 0.3s;
+            }
+        
+            .lead-card:hover {
+                background-color: #f0f0f0;
+            }
+        
+            .lead-card p {
+                margin: 0;
+                font-size: 0.9em;
+                color: var(--text-color);
+            }
+        
+            .lead-card .lead-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+        
+            .lead-card .lead-header h3 {
+                margin: 0;
+                font-size: 1.1em;
+                color: var(--text-color);
+            }
+        
+            .lead-card .lead-details {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+        
+            .lead-card .lead-details p {
+                display: flex;
+                justify-content: space-between;
+            }
+        
+            .lead-card .status-circle {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                border: 2px solid black;
+                margin-bottom: 10px; /* Espaçamento para evitar sobreposição */
+            }
+        
+            .status-circle.green {
+                background-color: green;
+            }
+        
+            .status-circle.yellow {
+                background-color: yellow;
+                color: black; /* Para melhor contraste */
+            }
+        
+            .status-circle.red {
+                background-color: red;
+            }
+        
+            .lead-card .responsavel-circle {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background-color: var(--button-background);
+                border: 2px solid black;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8em;
+                font-weight: bold;
+            }
+    
+        .status-circle.green {
+            background-color: green;
+        }
+    
+        .status-circle.yellow {
+            background-color: yellow;
+            color: black; /* Para melhor contraste */
+        }
+    
+        .status-circle.red {
+            background-color: red;
+        }
+    
+        .lead-card .responsavel-circle {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--button-background);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 10px; /* Espaçamento para evitar sobreposição */
+        }
+    
+        .dropzone {
+            flex-grow: 1;
+            width: 100%;
+            min-height: 400px; /* Altura mínima para facilitar a área de soltura */
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            transition: background-color 0.3s;
+        }
+    
+        .dropzone.dragover {
+            background-color: #e0e0e0;
+        }
+    
+        .lead-card.red {
+            background-color: #ffcccc;
+        }
+    
+        .status-indicators {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-right: 20px; /* Aumenta a margem direita para afastar dos botões */
+        }
+    
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Aumenta o espaço entre o círculo e o texto */
+        }
+    
+        .status-indicator .circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid black; /* Adiciona a borda preta */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+    
+        .status-indicator.green .circle {
+            background-color: rgb(150, 238, 150);
+            color: black;
+        }
+    
+        .status-indicator.yellow .circle {
+            background-color: rgb(238, 238, 133);
+            color: black; /* Para melhor contraste */
+        }
+    
+        .status-indicator.red .circle {
+            background-color: rgb(233, 120, 120);
+            color: black;
+        }
+    
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Aumenta o espaço entre os botões e os indicadores */
+        }
+    
+        .toggle-button {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center; /* Centraliza o texto dentro dos botões */
+            flex: 1; /* Faz com que os botões tenham o mesmo tamanho */
+        }
+    
+        .toggle-button:hover {
+            background-color: var(--button-hover-background);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1800;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 950px;
+            border-radius: 10px;
+        }
+        
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .modal-text {
+            text-align: center;
+            font-size: 1.5em;
+            text-transform: uppercase;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .progress {
+            width: 0;
+            height: 20px;
+            background-color: #4caf50;
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+        
+        .checklist-button {
+            background-color: #0d3c6e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .checklist-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .modal-body {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .checklist-section,
+        .occurrence-section {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            position: relative;
+            width: 450px;
+        }
+        
+        .checklist-section h3,
+        .occurrence-section h3 {
+            text-align: center;
+        }
+        
+        .checklist-section ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .checklist-section ul li {
+            margin: 10px 0;
+        }
+        
+        .occurrence-section label {
+            display: block;
+            margin-top: 10px;
+        }
+        
+        .occurrence-section select,
+        .occurrence-section textarea {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .checklist-section .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+    .step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.active {
+    background: var(--button-background);
+    color: var(--button-text-color);
+    margin-left: 50px;
+}
+.step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.disabled {
+    pointer-events: none;
+    opacity: 1;
+}
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard_administrativo.html"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="gerenciamento_processos.html"><i class="fas fa-tasks"></i><span>CRM de Processos</span></a>
+        <a href="relatorio_vendas_clientes.html"><i class="fas fa-chart-bar"></i><span>Relatório de Vendas</span></a>
+        <a href="rotina_lance_boleto.html"><i class="fas fa-bullhorn"></i><span>Rotina Lance Boleto</span></a>
+        <a href="pos_vendas.html"><i class="fas fa-users"></i><span>Pós Vendas</span></a>
+        <a href="conferencia_comissao.html"><i class="fas fa-file-alt"></i><span>Conferência de Comissão</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1 style="text-align: center; width: 100%;">Gerenciamento de Processos</h1>
+            <!-- ...existing code... -->
+            <div class="header-buttons">
+                <div class="status-indicators">
+                    <div class="status-indicator green">
+                        <span class="circle">10</span>
+                        <span>Em dia</span>
+                    </div>
+                    <div class="status-indicator yellow">
+                        <span class="circle">5</span>
+                        <span>Atrasado</span>
+                    </div>
+                    <div class="status-indicator red">
+                        <span class="circle">2</span>
+                        <span>Atrasado+</span>
+                    </div>
+                </div>
+                <button class="toggle-button" onclick="toggleSection('form-container')">Adicionar Processo</button>
+                <button class="toggle-button" onclick="toggleSection('filters')">Consultar Processo</button>
+                <button class="toggle-button" onclick="toggleSection('batch-transfer')">Transferir Processo</button>
+                                <button class="toggle-button" onclick="window.location.href='criar_checklist.html'">Novo CheckList</button>
+            </div>
+            <!-- ...existing code... -->
+        </div>
+        <div class="form-container" id="form-container" style="display: none;">
+            <h2>Adicionar Processo</h2>
+            <form id="leadForm">
+                <input type="text" id="nome" placeholder="Nome do Cliente" required>
+                <input type="text" id="administradora" placeholder="Administradora" required>
+                <input type="text" id="grupo" placeholder="Grupo" required>
+                <input type="text" id="cota" placeholder="Cota" required>
+                <input type="text" id="responsavel" placeholder="Responsável" required>
+                <input type="text" id="vendedor" placeholder="Vendedor" required>
+                <select id="produto" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em;">
+                    <option value="" disabled selected>Selecione o Produto</option>
+                    <option value="imovel">Imóvel</option>
+                    <option value="automovel">Automóvel</option>
+                    <option value="servico">Serviço</option>
+                </select>
+                <button type="submit">Adicionar Processo</button>
+            </form>
+        </div>
+        <div class="filters" id="filters" style="display: none;">
+            <h2>Consultar Processo</h2>
+            <form id="consultar-processo-form">
+                <label for="nome">Nome:</label>
+                <input type="text" id="searchInput1" name="nome" onkeyup="filterLeads()">
+                
+                <label for="status">Status:</label>
+                <select id="status" name="status" onchange="filterLeads()">
+                    <option value="">Todos</option>
+                    <option value="green">Verde</option>
+                    <option value="yellow">Amarelo</option>
+                    <option value="red">Vermelho</option>
+                </select>
+                
+                <label for="responsavel">Responsável:</label>
+                <input type="text" id="searchInput2" name="responsavel" onkeyup="filterLeads()">
+            </form>
+        </div>
+        <div class="funnels">
+            <div class="funnel-titles">
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('contemplado')">Contemplado - Iniciar<span id="aguardando_doc_count"></span> <span id="aguardando_doc_value"></span></h3>
+                    <div id="contemplado_details" style="display: none;">
+                        <p id="contemplado_imovel">Imóvel: 10</p>
+                        <p id="contemplado_auto">Auto: 10</p>
+                        <p id="contemplado_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('aguardando_doc')">Aguardando Doc <span id="aguardando_doc_count"></span> <span id="aguardando_doc_value"></span></h3>
+                    <div id="aguardando_doc_details" style="display: none;">
+                        <p id="aguardando_doc_imovel">Imóvel: 10</p>
+                        <p id="aguardando_doc_auto">Auto: 10</p>
+                        <p id="aguardando_doc_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('analise_cred')">Analise de Crédito <span id="analise_cred_count"></span> <span id="analise_cred_value"></span></h3>
+                    <div id="analise_cred_details" style="display: none;">
+                        <p id="analise_cred_imovel">Imóvel: 10</p>
+                        <p id="analise_cred_auto">Auto: 10</p>
+                        <p id="analise_cred_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('regularizar')">Regularizar <span id="regularizar_count"></span> <span id="regularizar_value"></span></h3>
+                    <div id="regularizar_details" style="display: none;">
+                        <p id="regularizar_imovel">Imóvel: 10</p>
+                        <p id="regularizar_auto">Auto: 10</p>
+                        <p id="regularizar_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('aprovado_aguardando_bem')">Aguardando Bem <span id="aprovado_aguardando_bem_count"></span> <span id="aprovado_aguardando_bem_value"></span></h3>
+                    <div id="aprovado_aguardando_bem_details" style="display: none;">
+                        <p id="aprovado_aguardando_bem_imovel">Imóvel: 10</p>
+                        <p id="aprovado_aguardando_bem_auto">Auto: 10</p>
+                        <p id="aprovado_aguardando_bem_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('analise_do_bem')">Analise do Bem <span id="analise_do_bem_count"></span> <span id="analise_do_bem_value"></span></h3>
+                    <div id="analise_do_bem_details" style="display: none;">
+                        <p id="analise_do_bem_imovel">Imóvel: 10</p>
+                        <p id="analise_do_bem_auto">Auto: 10</p>
+                        <p id="analise_do_bem_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('faturamento_aprovado')">Faturamento Aprovado <span id="faturamento_aprovado_count"></span> <span id="faturamento_aprovado_value"></span></h3>
+                    <div id="faturamento_aprovado_details" style="display: none;">
+                        <p id="faturamento_aprovado_imovel">Imóvel: 10</p>
+                        <p id="faturamento_aprovado_auto">Auto: 10</p>
+                        <p id="faturamento_aprovado_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('aguardando_pag')">Aguardando Pag <span id="aguardando_pag_count"></span> <span id="aguardando_pag_value"></span></h3>
+                    <div id="aguardando_pag_details" style="display: none;">
+                        <p id="aguardando_pag_imovel">Imóvel: 10</p>
+                        <p id="aguardando_pag_auto">Auto: 10</p>
+                        <p id="aguardando_pag_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('processo_pago')">Processo Pago <span id="processo_pago_count"></span> <span id="processo_pago_value"></span></h3>
+                    <div id="processo_pago_details" style="display: none;">
+                        <p id="processo_pago_imovel">Imóvel: 10</p>
+                        <p id="processo_pago_auto">Auto: 10</p>
+                        <p id="processo_pago_servico">Serviço: 10</p>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <h3 onclick="toggleDetails('processo_negado')">Processo Negado <span id="processo_negado_count"></span> <span id="processo_negado_value"></span></h3>
+                    <div id="processo_negado_details" style="display: none;">
+                        <p id="processo_negado_imovel">Imóvel: 10</p>
+                        <p id="processo_negado_auto">Auto: 10</p>
+                        <p id="processo_negado_servico">Serviço: 10</p>
+                    </div>
+                </div>
+            </div>
+            <div class="funnel-processos">
+                <div class="funnel-stage" data-stage="contemplado">
+                    <div class="dropzone lead-container" id="contemplado_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="aguardando_doc">
+                    <div class="dropzone lead-container" id="aguardando_doc_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="analise_cred">
+                    <div class="dropzone lead-container" id="analise_cred_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="regularizar">
+                    <div class="dropzone lead-container" id="regularizar_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="aprovado_aguardando_bem">
+                    <div class="dropzone lead-container" id="aprovado_aguardando_bem_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="analise_do_bem">
+                    <div class="dropzone lead-container" id="analise_do_bem_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="faturamento_aprovado">
+                    <div class="dropzone lead-container" id="faturamento_aprovado_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="aguardando_pag">
+                    <div class="dropzone lead-container" id="aguardando_pag_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="processo_pago">
+                    <div class="dropzone lead-container" id="processo_pago_container"></div>
+                </div>
+                <div class="funnel-stage" data-stage="processo_negado">
+                    <div class="dropzone lead-container" id="processo_negado_container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <select id="checklistSelect" class="checklistSelect">
+                <option value="" disabled selected>Selecione um CheckList</option>
+                <!-- Opções de checklist serão adicionadas aqui -->
+            </select>
+            <button class="checklist-button" onclick="addChecklistSection()">CheckList</button>
+            <div class="modal-body">
+                <div id="checklistContainer">
+                    <!-- Seções de checklist serão adicionadas aqui -->
+                </div>
+                <div class="occurrence-section">
+                    <h3>Ocorrência do Processo</h3>
+                    <label for="motivo">Motivo da Ocorrência:</label>
+                    <select id="motivo">
+                        <option value="" disabled selected>Selecione o Motivo</option>
+                        <option value="documentacao">Documentação</option>
+                        <option value="pagamento">Pagamento</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                    <label for="observacoes">Observações:</label>
+                    <textarea id="observacoes" rows="4" placeholder="Digite as observações aqui..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+    <!-- Adicione os scripts do Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <!-- Adicione o script do SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Função para alternar a visibilidade dos detalhes
+            function toggleDetails(stage) {
+                const details = document.getElementById(`${stage}_details`);
+                if (details.style.display === 'none') {
+                    details.style.display = 'block';
+                } else {
+                    details.style.display = 'none';
+                }
+            }
+    
+            // Adiciona a função toggleDetails ao escopo global
+            window.toggleDetails = toggleDetails;
+    
+            // Função para alternar a visibilidade de uma seção
+            function toggleSection(sectionId) {
+                const section = document.getElementById(sectionId);
+                if (section.style.display === 'none' || section.style.display === '') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            }
+    
+            // Adiciona a função toggleSection ao escopo global
+            window.toggleSection = toggleSection;
+    
+            // Inicializa os detalhes dos funis como ocultos
+            const stages = ['contemplado','aguardando_doc', 'analise_cred', 'regularizar', 'aprovado_aguardando_bem', 'analise_do_bem', 'faturamento_aprovado', 'aguardando_pag', 'processo_pago', 'processo_negado'];
+            stages.forEach(stage => {
+                document.getElementById(`${stage}_details`).style.display = 'none';
+            });
+    
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+            const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    sidebarLogoutButton.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+        }).catch((error) => {
+            console.error('Erro ao fazer logout:', error);
+        });
+    });
+            // Inicializar o Firebase
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+    
+            document.getElementById('leadForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const nome = document.getElementById('nome').value;
+                const administradora = document.getElementById('administradora').value;
+                const grupo = document.getElementById('grupo').value;
+                const cota = document.getElementById('cota').value;
+                const responsavel = document.getElementById('responsavel').value;
+                const vendedor = document.getElementById('vendedor').value;
+                const produto = document.getElementById('produto').value;
+                const dataHora = new Date().toLocaleString();
+    
+                // Salvar os dados no banco de dados Firebase
+                db.collection('processos').add({
+                    nome,
+                    administradora,
+                    grupo,
+                    cota,
+                    responsavel,
+                    vendedor,
+                    produto,
+                    dataHora,
+                    status: 'contemplado' // Define o status inicial como 'contemplado'
+                }).then(() => {
+                    console.log('Processo adicionado com sucesso!');
+                    // Limpar o formulário após o envio
+                    document.getElementById('leadForm').reset();
+                    // Fechar o formulário após o envio
+                    toggleSection('form-container');
+                    // Atualizar a lista de processos
+                    loadProcessos();
+                }).catch((error) => {
+                    console.error('Erro ao adicionar processo: ', error);
+                });
+            });
+    
+            // Função para abrir a janela modal
+            function openModal(nome, grupoCota, administradora, processoId) {
+                document.getElementById('modalContent').innerHTML = `
+                    <div class="modal-text">
+                        <strong>${nome.toUpperCase()}</strong> | <strong>${grupoCota.toUpperCase()}</strong> | <strong>${administradora.toUpperCase()}</strong>
+                    </div>
+                `;
+                document.getElementById('modal').setAttribute('data-processo-id', processoId);
+                document.getElementById('modal').style.display = 'block';
+                updateProgressBar(50); // Exemplo de atualização da barra de progresso
+                loadChecklistSections(processoId); // Carregar os checklists disponíveis
+            }
+    
+            // Função para fechar a janela modal
+            function closeModal() {
+                document.getElementById('modal').style.display = 'none';
+            }
+    
+            // Adiciona a função closeModal ao escopo global
+            window.closeModal = closeModal;
+    
+            // Função para carregar os processos do banco de dados
+            function loadProcessos() {
+                const stages = ['aguardando_doc', 'analise_cred', 'regularizar', 'aprovado_aguardando_bem', 'analise_do_bem', 'faturamento_aprovado', 'aguardando_pag', 'processo_pago', 'processo_negado'];
+                stages.forEach(stage => {
+                    const container = document.getElementById(`${stage}_container`);
+                    if (container) {
+                        container.innerHTML = ''; // Limpar o container antes de adicionar os novos processos
+                    }
+                });
+            
+                db.collection('processos').get().then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        const processo = doc.data();
+                        const status = processo.status || 'aguardando_doc'; // Define o status padrão como 'aguardando_doc' se não estiver presente
+                        const card = document.createElement('div');
+                        card.classList.add('lead-card');
+                        card.innerHTML = `
+                            <div class="lead-header">
+                                <div class="status-circle ${getStatusColor(status)}"></div>
+                                <h3>${processo.nome}</h3>
+                            </div>
+                            <div class="lead-details">
+                                <p>${processo.grupo}/${processo.cota} (${processo.administradora})</p>
+                            </div>
+                            <div class="responsavel-circle">${getInitials(processo.responsavel)}</div>
+                        `;
+                        card.addEventListener('click', () => {
+                            openModal(processo.nome, `${processo.grupo}/${processo.cota}`, processo.administradora, doc.id);
+                        });
+                        const container = document.getElementById(`${status}_container`);
+                        if (container) {
+                            container.appendChild(card);
+                        }
+                    });
+                }).catch((error) => {
+                    console.error('Erro ao carregar processos: ', error);
+                });
+            }
+    
+            // Função para obter a cor do status
+            function getStatusColor(status) {
+                switch (status) {
+                    case 'aguardando_doc':
+                        return 'green';
+                    case 'analise_cred':
+                        return 'yellow';
+                    case 'regularizar':
+                        return 'red';
+                    default:
+                        return 'gray';
+                }
+            }
+    
+            // Função para obter as iniciais do responsável
+            function getInitials(name) {
+                return name.split(' ').map(word => word[0]).join('');
+            }
+    
+            // Função para atualizar a barra de progresso
+            function updateProgressBar(percentage) {
+                const progressBar = document.querySelector('.progress');
+                progressBar.style.width = `${percentage}%`;
+            }
+    
+            // Função para carregar os checklists disponíveis
+            function loadChecklists() {
+                const checklistSelects = document.querySelectorAll('.checklistSelect');
+                checklistSelects.forEach(select => {
+                    select.innerHTML = '<option value="" disabled selected>Selecione um CheckList</option>'; // Limpar as opções existentes
+                });
+    
+                db.collection('checklists').get().then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        const checklist = doc.data();
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.textContent = checklist.nome;
+                        checklistSelects.forEach(select => {
+                            select.appendChild(option.cloneNode(true));
+                        });
+                    });
+                }).catch((error) => {
+                    console.error('Erro ao carregar checklists: ', error);
+                });
+            }
+    
+            // Função para carregar os itens do checklist selecionado
+            function loadChecklistItems(checklistSection, checklistId, processoId) {
+    const checklistItemsContainer = checklistSection.querySelector('.checklistItems');
+    const checklistTitle = checklistSection.querySelector('.checklist-title');
+    const sectionId = checklistSection.getAttribute('data-id');
+
+    if (!checklistId || !sectionId) {
+    console.error('Erro: ID do checklist ou da seção não encontrado.');
+    return;
+}
+
+checklistItemsContainer.innerHTML = ''; // Limpar os itens existentes
+
+db.collection('checklists').doc(checklistId).get().then((doc) => {
+    if (doc.exists) {
+        const checklist = doc.data();
+        checklistTitle.textContent = checklist.nome; // Definir o título da seção com o nome do checklist
+        checklist.itens.forEach((item, index) => {
+            let dataMaxima = 'Prazo inválido'; // Inicializa dataMaxima corretamente
+            if (item.dataMaxima && item.dataMaxima.toDate) {
+                console.log('Data máxima original:', item.dataMaxima); // Adiciona o console.log aqui
+                try {
+                    dataMaxima = item.dataMaxima.toDate().toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch (error) {
+                    console.error('Erro ao converter dataMaxima:', error);
+                }
+            }
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <input type="checkbox" id="item-${checklistId}-${index}" onchange="markItemAsCompleted(this, '${checklistId}', ${index}, '${processoId}')">
+                <label for="item-${checklistId}-${index}">${item.item} (Prazo: ${dataMaxima})</label>
+            `;
+            checklistItemsContainer.appendChild(listItem);
+        });
+
+        // Carregar os itens marcados como concluídos
+        db.collection('processos').doc(processoId).collection('checklistSections').doc(sectionId).collection('items').get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const itemData = doc.data();
+                const checkbox = document.getElementById(`item-${checklistId}-${itemData.index}`);
+                if (checkbox) {
+                    checkbox.checked = itemData.completed;
+                    const label = checkbox.nextElementSibling;
+                    if (itemData.completed) {
+                        label.style.textDecoration = 'line-through';
+                        label.innerHTML += ` (Concluído em: ${itemData.completedAt})`;
+                        // Verificar se o tempo de conclusão é maior que 10 minutos
+                        const completedAt = new Date(itemData.completedAt);
+                        const now = new Date();
+                        const diff = (now - completedAt) / 60000; // Diferença em minutos
+                        if (diff > 10 && !isAdmin()) {
+                            checkbox.disabled = true; // Desabilitar o checkbox se o tempo for maior que 10 minutos e o usuário não for admin
+                        }
+                    }
+                }
+            });
+        }).catch((error) => {
+            console.error('Erro ao carregar itens concluídos: ', error);
+        });
+    }
+}).catch((error) => {
+    console.error('Erro ao carregar itens do checklist: ', error);
+});
+            }
+    
+            // Função para carregar as seções de checklist do Firebase
+            function loadChecklistSections(processoId) {
+                const checklistContainer = document.getElementById('checklistContainer');
+                checklistContainer.innerHTML = ''; // Limpar as seções existentes
+    
+                if (!processoId) {
+                    console.error('Erro: ID do processo não encontrado.');
+                    return;
+                }
+    
+                db.collection('processos').doc(processoId).collection('checklistSections').orderBy('createdAt').get().then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        const checklistSection = document.createElement('div');
+                        checklistSection.classList.add('checklist-section');
+                        checklistSection.setAttribute('data-id', doc.id);
+                        checklistSection.innerHTML = `
+                            <span class="close-button" onclick="removeChecklistSection(this)">&times;</span>
+                            <h3 class="checklist-title"></h3>
+                            <ul class="checklistItems">
+                                <!-- Itens de checklist serão adicionados aqui -->
+                            </ul>
+                        `;
+                        checklistContainer.appendChild(checklistSection);
+    
+                        // Carregar o checklist selecionado
+                        const selectedChecklistId = doc.data().checklistId;
+                        if (selectedChecklistId) {
+                            loadChecklistItems(checklistSection, selectedChecklistId, processoId);
+                        }
+                    });
+                }).catch((error) => {
+                    console.error('Erro ao carregar seções de checklist: ', error);
+                });
+            }
+    
+            // Função para marcar um item como concluído
+            function markItemAsCompleted(checkbox, checklistId, index, processoId) {
+                const label = checkbox.nextElementSibling;
+                const completedAt = new Date().toLocaleString();
+                if (checkbox.checked) {
+                    label.style.textDecoration = 'line-through';
+                    label.innerHTML += ` (Concluído em: ${completedAt})`;
+                } else {
+                    label.style.textDecoration = 'none';
+                    label.innerHTML = label.innerHTML.replace(/ \(Concluído em: .*\)/, '');
+                }
+    
+                // Salvar o estado do item no Firebase
+                const checklistSection = checkbox.closest('.checklist-section');
+                const sectionId = checklistSection.getAttribute('data-id');
+    
+                if (!sectionId) {
+                    console.error('Erro: ID da seção de checklist não encontrado.');
+                    return;
+                }
+    
+                db.collection('processos').doc(processoId).collection('checklistSections').doc(sectionId).collection('items').doc(`item-${index}`).set({
+                    index: index,
+                    completed: checkbox.checked,
+                    completedAt: checkbox.checked ? completedAt : null
+                }).then(() => {
+                    if (checkbox.checked) {
+                        // Atualizar o status do processo com a ação da seção de checklist
+                        db.collection('processos').doc(processoId).collection('checklistSections').doc(sectionId).get().then((doc) => {
+                            const checklistSectionData = doc.data();
+                            const action = checklistSectionData.checklistData.itens[index].action;
+                            if (action) {
+                                db.collection('processos').doc(processoId).update({
+                                    status: action
+                                }).then(() => {
+                                    console.log('Status do processo atualizado com sucesso!');
+                                    loadProcessos(); // Atualizar a lista de processos
+                                }).catch((error) => {
+                                    console.error('Erro ao atualizar status do processo: ', error);
+                                });
+                            }
+                        }).catch((error) => {
+                            console.error('Erro ao obter dados da seção de checklist: ', error);
+                        });
+                    }
+                }).catch((error) => {
+                    console.error('Erro ao salvar estado do item: ', error);
+                });
+            }
+    
+            // Função para adicionar uma nova seção de checklist
+            function addChecklistSection() {
+                const checklistSelect = document.getElementById('checklistSelect');
+                const checklistId = checklistSelect.value;
+            
+                if (!checklistId) {
+                    alert('Selecione um CheckList');
+                    return;
+                }
+            
+                const checklistContainer = document.getElementById('checklistContainer');
+                const checklistSection = document.createElement('div');
+                checklistSection.classList.add('checklist-section');
+                checklistSection.innerHTML = `
+                    <span class="close-button" onclick="removeChecklistSection(this)">&times;</span>
+                    <h3 class="checklist-title"></h3>
+                    <ul class="checklistItems">
+                        <!-- Itens de checklist serão adicionados aqui -->
+                    </ul>
+                `;
+                checklistContainer.appendChild(checklistSection);
+            
+                // Salvar a nova seção de checklist no Firebase
+                const processoId = document.querySelector('.modal').getAttribute('data-processo-id');
+                if (!processoId) {
+                    console.error('Erro: ID do processo não encontrado.');
+                    return;
+                }
+            
+                // Ler o checklist da coleção 'checklists' e salvar na subcoleção 'checklistSections' dentro da coleção 'processos'
+                db.collection('checklists').doc(checklistId).get().then((doc) => {
+                    if (doc.exists) {
+                        const checklistData = doc.data();
+                        const dataHora = new Date();
+                        checklistData.itens.forEach(item => {
+                            const prazo = parseInt(item.prazo, 10); // Converte a string para número
+                            if (!isNaN(prazo)) {
+                                item.dataMaxima = firebase.firestore.Timestamp.fromDate(new Date(dataHora.getTime() + prazo * 24 * 60 * 60 * 1000));
+                            } else {
+                                item.dataMaxima = null; // Define como null se o prazo for inválido
+                            }
+                        });
+                        db.collection('processos').doc(processoId).collection('checklistSections').add({
+                            checklistId: checklistId,
+                            checklistData: checklistData,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then((docRef) => {
+                            checklistSection.setAttribute('data-id', docRef.id);
+                            loadChecklistItems(checklistSection, checklistId, processoId);
+                        }).catch((error) => {
+                            console.error('Erro ao adicionar seção de checklist: ', error);
+                        });
+                    } else {
+                        console.error('Erro: Checklist não encontrado.');
+                    }
+                }).catch((error) => {
+                    console.error('Erro ao ler checklist: ', error);
+                });
+            }
+    
+            // Função para remover uma seção de checklist
+            function removeChecklistSection(button) {
+                const checklistSection = button.parentElement;
+                const sectionId = checklistSection.getAttribute('data-id');
+                const processoId = document.querySelector('.modal').getAttribute('data-processo-id');
+    
+                if (!sectionId) {
+                    console.error('Erro: ID da seção de checklist não encontrado.');
+                    return;
+                }
+    
+                if (!processoId) {
+                    console.error('Erro: ID do processo não encontrado.');
+                    return;
+                }
+    
+                // Remover a seção de checklist do Firebase
+                db.collection('processos').doc(processoId).collection('checklistSections').doc(sectionId).delete().then(() => {
+                    checklistSection.remove();
+                }).catch((error) => {
+                    console.error('Erro ao remover seção de checklist: ', error);
+                });
+            }
+    
+            // Função para verificar se o usuário é admin
+            function isAdmin() {
+                // Implementar a lógica para verificar se o usuário é admin
+                // Retornar true se for admin, caso contrário, false
+                return false; // Exemplo: retornar false por padrão
+            }
+    
+            // Adiciona as funções ao escopo global
+            window.loadChecklists = loadChecklists;
+            window.loadChecklistItems = loadChecklistItems;
+            window.markItemAsCompleted = markItemAsCompleted;
+            window.addChecklistSection = addChecklistSection;
+            window.removeChecklistSection = removeChecklistSection;
+            window.loadChecklistSections = loadChecklistSections; // Adicione esta linha
+            
+            // Carregar os checklists ao iniciar a página
+            loadChecklists();
+            
+            // Carregar os processos ao iniciar a página
+            loadProcessos();
+        });
+    </script>
+</body>
+</html>

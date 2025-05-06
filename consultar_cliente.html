@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <title>Consultar Cliente - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #381e97;
+            --button-hover-background: #6a5acd;
+            --button-text-color: white;
+            --input-background: #f5f5f5;
+            --input-border: #ccc;
+            --input-focus-border: #6a5acd;
+        }
+
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --input-background: #333;
+            --input-border: #555;
+            --input-focus-border: #6a5acd;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+
+        .sidebar:hover a span {
+            display: inline;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 60px;
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 200px;
+        }
+
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            transition: background-color 0.3s, color 0.3s;
+            height: 120px;
+        }
+
+        .header h1 {
+    font-family: 'Merriweather', serif; /* Aplica a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    position: relative; /* Necessário para posicionar as linhas */
+    display: inline-block; /* Garante que o texto seja tratado como bloco */
+}
+
+.header h1::before,
+.header h1::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha, ajuste conforme necessário */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header h1::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+}
+
+.header h1::after {
+    right: -60px; /* Posiciona a linha à direita */
+}
+
+        .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    right: 20px;
+}
+.profile-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--header-text-color);
+}
+
+.profile-link img {
+    margin-bottom: 5px;
+}
+
+        .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1.2em;
+            color: var(--header-text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            margin-top: 6%;
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 2em;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            background-color: var(--input-background);
+            font-size: 1em;
+            color: var(--text-color);
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="submit"] {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1.2em;
+        }
+
+        .form-group input[type="submit"]:hover {
+            background: var(--button-hover-background);
+        }
+
+        .btn-submit {
+            background: var(--button-background);
+            color: var(--button-text-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1.2em;
+        }
+
+        .btn-submit:hover {
+            background: var(--button-hover-background);
+        }
+
+        .cliente-info-container {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Alterado de 2 para 3 colunas */
+    gap: 20px;
+}
+
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+            color: var(--text-color);
+        }
+
+        .card .info-group {
+            margin-bottom: 10px;
+        }
+
+        .card .info-group label {
+            font-weight: bold;
+        }
+
+        .card .info-group span {
+            display: block;
+            margin-top: 5px;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .card a {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            background: var(--button-background);
+            color: var(--button-text-color);
+            padding: 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            font-size: 1.2em;
+        }
+
+        .card a:hover {
+            background: var(--button-hover-background);
+        }
+        .menu-item {
+    position: relative;
+}
+
+.subcategory-sidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 0; /* Alinha ao topo do item pai */
+    left: 174px; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.sidebar:not(:hover) .subcategory-sidebar {
+    display: none !important; /* Garante que o submenu seja ocultado */
+}
+
+#homeChevron {
+    transition: transform 0.3s ease;
+}
+
+.sidebar a#homeLink {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinha o conteúdo à esquerda */
+    padding: 15px 20px; /* Aumenta o espaço interno */
+    width: 100%; /* Garante que o botão ocupe toda a largura disponível */
+    box-sizing: border-box; /* Inclui o padding na largura total */
+    overflow: hidden; /* Evita que o conteúdo transborde */
+    gap: 1px; /* Adiciona espaço entre o ícone e o texto */
+}
+
+.sidebar:not(:hover) #homeChevron {
+    display: none; /* Esconde o ícone quando a sidebar está colapsada */
+}
+
+/* Mantém o submenu visível enquanto o mouse está sobre o item principal ou o submenu */
+.menu-item:hover .subcategory-sidebar,
+.subcategory-sidebar:hover {
+    display: none;
+}
+.sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+    .step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.active {
+    background: var(--button-background);
+    color: var(--button-text-color);
+    margin-left: 50px;
+}
+.step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.disabled {
+    pointer-events: none;
+    opacity: 1;
+}
+.subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#relatoriosSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao elemento pai */
+top: 29%; /* Alinha ao topo do item pai */
+left: 100%; /* Ajusta para a largura da sidebar expandida */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+top: 10%; /* Ajuste a posição vertical conforme necessário */
+left: 117%; /* Ajuste a posição horizontal conforme necessário */
+position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#comercialSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+
+/* Centraliza os itens */
+display: flex;
+align-items: center; /* Alinha horizontalmente ao centro */
+justify-content: center; /* Alinha verticalmente ao centro */
+}
+
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    window.location.href = 'login.html'; // Redirecionar para a página de login se não estiver autenticado
+                } else {
+                    db.collection('users').doc(user.email).get().then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            document.getElementById('userName').textContent = userData.name;
+
+                            // Aplicar tema armazenado no banco de dados
+                            const currentTheme = userData.theme || 'clean';
+                            document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+                        } else {
+
+                        }
+                    }).catch((error) => {
+                        console.log("Erro ao obter documento:", error);
+                    });
+                }
+            });
+
+            const sidebar = document.getElementById('sidebar');
+            sidebar.addEventListener('mouseenter', () => {
+                sidebar.classList.remove('hidden');
+                document.getElementById('mainContent').classList.remove('expanded');
+            });
+            sidebar.addEventListener('mouseleave', () => {
+                sidebar.classList.add('hidden');
+                document.getElementById('mainContent').classList.add('expanded');
+            });
+        });
+
+        function normalizarTexto(texto) {
+            return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        async function buscarClientePorCpf(cpfCnpj) {
+            try {
+                // Remover pontos, traços e barras do CPF/CNPJ
+                const cpfCnpjNormalizado = cpfCnpj.replace(/[.\-\/]/g, '');
+        
+                // Buscar o cliente pelo CPF/CNPJ
+                const clienteDoc = await db.collection("clientes").doc(cpfCnpjNormalizado).get();
+                if (clienteDoc.exists) {
+                    const clienteData = clienteDoc.data();
+        
+                    // Verificar se o cliente está no formato antigo ou no formato atual
+                    if (clienteData.endereco && clienteData.dadosBancarios) {
+                        // Formato atual
+                        return {
+                            nomeCompleto: clienteData.nomeCompleto,
+                            cpfCnpj: clienteData.cpfCnpj,
+                            numeroTelefone: clienteData.telefone,
+                            endereco: `${clienteData.endereco.rua}, ${clienteData.endereco.numero}, ${clienteData.endereco.complemento || ''}, ${clienteData.endereco.cidade}, ${clienteData.endereco.estado}, ${clienteData.endereco.cep}`,
+                        };
+                    } else {
+                        // Formato antigo
+                        return {
+                            nomeCompleto: clienteData.nomeCompleto || clienteData.nome,
+                            cpfCnpj: clienteData.cpfCnpj || clienteData.cpf,
+                            numeroTelefone: clienteData.numeroTelefone || clienteData.telefone,
+                            endereco: `${clienteData.rua || ''}, ${clienteData.numeroCasa || ''}, ${clienteData.complemento || ''}, ${clienteData.cidade || ''}, ${clienteData.estado || ''}, ${clienteData.cep || ''}`,
+                        };
+                    }
+                } else {
+                    alert("Nenhum cliente encontrado.");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Erro ao buscar cliente por CPF/CNPJ: ", error);
+            }
+        }
+
+        async function buscarClientePorNome(nome) {
+            try {
+                const nomeNormalizado = normalizarTexto(nome);
+                const query = db.collection("clientes")
+                    .where("nomeCompletoNormalizado", ">=", nomeNormalizado)
+                    .where("nomeCompletoNormalizado", "<=", nomeNormalizado + '\uf8ff');
+                const snapshot = await query.get();
+        
+                if (snapshot.empty) {
+                    return [];
+                }
+        
+                return snapshot.docs.map(doc => {
+                    const clienteData = doc.data();
+        
+                    // Verificar se o cliente está no formato antigo ou no formato atual
+                    if (clienteData.endereco && clienteData.dadosBancarios) {
+                        // Formato atual
+                        return {
+                            nomeCompleto: clienteData.nomeCompleto,
+                            cpfCnpj: clienteData.cpfCnpj,
+                            numeroTelefone: clienteData.telefone,
+                            endereco: `${clienteData.endereco.rua}, ${clienteData.endereco.numero}, ${clienteData.endereco.complemento || ''}, ${clienteData.endereco.cidade}, ${clienteData.endereco.estado}, ${clienteData.endereco.cep}`,
+                        };
+                    } else {
+                        // Formato antigo
+                        return {
+                            nomeCompleto: clienteData.nomeCompleto || clienteData.nome,
+                            cpfCnpj: clienteData.cpfCnpj || clienteData.cpf,
+                            numeroTelefone: clienteData.numeroTelefone || clienteData.telefone,
+                            endereco: `${clienteData.rua || ''}, ${clienteData.numeroCasa || ''}, ${clienteData.complemento || ''}, ${clienteData.cidade || ''}, ${clienteData.estado || ''}, ${clienteData.cep || ''}`,
+                        };
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao buscar cliente por nome: ", error);
+                return [];
+            }
+        }
+
+        async function buscarCliente(event) {
+            event.preventDefault();
+            const input = document.getElementById('cpf').value.trim();
+        
+            if (input === "") {
+                alert("Por favor, informe o CPF ou Nome.");
+                return;
+            }
+        
+            // Limpar o cache do navegador
+            localStorage.clear();
+        
+            let clientes = [];
+            const primeiroDigito = input.charAt(0);
+            if (!isNaN(primeiroDigito)) {
+                const cliente = await buscarClientePorCpf(input);
+                if (cliente) {
+                    clientes.push(cliente);
+                }
+            } else {
+                clientes = await buscarClientePorNome(input);
+            }
+        
+            const clienteInfoContainer = document.querySelector('.cliente-info-container');
+            clienteInfoContainer.innerHTML = ''; // Limpar informações anteriores
+        
+            if (clientes.length > 0) {
+                clientes.forEach(cliente => {
+                    const clienteCard = document.createElement('div');
+                    clienteCard.classList.add('card');
+                    clienteCard.innerHTML = `
+                        <h3>Dados do Cliente</h3>
+                        <div class="info-group">
+                            <label>Nome Completo:</label>
+                            <span>${cliente.nomeCompleto}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>CPF/CNPJ:</label>
+                            <span>${cliente.cpfCnpj || cliente.cpf}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>Telefone:</label>
+                            <span>${cliente.numeroTelefone}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>Endereço:</label>
+                            <span>${cliente.endereco}</span>
+                        </div>
+                        <a href="cliente_detalhes.html?cpfCnpj=${cliente.cpfCnpj || cliente.cpf}" onclick="armazenarDadosCliente('${cliente.cpfCnpj || cliente.cpf}', '${cliente.nomeCompleto}', '${cliente.numeroTelefone}', '${cliente.endereco}')">Ver Detalhes do Cliente</a>
+                    `;
+                    clienteInfoContainer.appendChild(clienteCard);
+                });
+                clienteInfoContainer.style.display = 'grid';
+            } else {
+                alert("Nenhum cliente encontrado. Tente buscar utilizando o CPF ou CNPJ.");
+            }
+        }
+        
+        function armazenarDadosCliente(cpfCnpj, nomeCompleto, numeroTelefone, endereco) {
+            localStorage.setItem('cpfCnpjCliente', cpfCnpj);
+            localStorage.setItem('nomeCompletoCliente', nomeCompleto);
+            localStorage.setItem('telefoneCliente', numeroTelefone);
+            localStorage.setItem('enderecoCliente', endereco);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('expanded');
+        }
+        function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = document.getElementById('homeChevron');
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+    } else {
+        submenu.style.display = "none";
+        chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            const submenu = document.getElementById('homeSubcategoriesSidebar');
+            const chevron = document.getElementById('homeChevron');
+
+            if (submenu && submenu.style.display === "block") {
+                toggleSubmenu('homeSubcategoriesSidebar'); // Fecha o submenu chamando a função diretamente
+            }
+        });
+    } else {
+        console.error("Elemento com ID 'sidebar' não encontrado.");
+    }
+});
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+        if (sidebarLogoutButton) {
+            sidebarLogoutButton.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+                }).catch((error) => {
+                    console.error('Erro ao fazer logout:', error);
+                });
+            });
+        } else {
+            console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        if (submenu.style.display === "none" || submenu.style.display === "") {
+            submenu.style.display = "block";
+            chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+        } else {
+            submenu.style.display = "none";
+            chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const relatoriosLink = document.getElementById('relatoriosLink');
+    
+        if (sidebar && relatoriosLink) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Simula o clique no botão "Relatórios"
+                relatoriosLink.click();
+            });
+        } else {
+            console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const allSubmenus = document.querySelectorAll('.subcategory-sidebar'); // Seleciona todos os submenus
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha outros submenus abertos
+        allSubmenus.forEach(otherSubmenu => {
+            if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+                otherSubmenu.style.display = 'none';
+                const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+                if (otherChevron) {
+                    otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+                }
+            }
+        });
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const relatoriosChevron = document.getElementById('homeChevron');
+    
+        if (sidebar && relatoriosSubmenu) {
+            sidebar.addEventListener('mouseleave', () => {
+                if (relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+    
+            sidebar.addEventListener('mouseenter', () => {
+                // Não reabre automaticamente o submenu ao retornar
+                if (relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+        } else {
+            console.error("Elemento 'sidebar' ou 'relatoriosSubcategoriesSidebar' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+        if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+            homeSubmenu.style.display = 'none';
+            const homeChevron = document.getElementById('homeChevron');
+            if (homeChevron) {
+                homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+        if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+            relatoriosSubmenu.style.display = 'none';
+            const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (relatoriosChevron) {
+                relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+        const homeChevron = document.getElementById('homeChevron');
+        const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        if (sidebar) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Fecha o submenu "Home" se estiver aberto
+                if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                    homeSubmenu.style.display = 'none';
+                    if (homeChevron) {
+                        homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Relatórios" se estiver aberto
+                if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Comercial" se estiver aberto
+                if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                    comercialSubmenu.style.display = 'none';
+                    if (comercialChevron) {
+                        comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+        } else {
+            console.error("Elemento 'sidebar' não encontrado.");
+        }
+    });
+    </script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_vendas_mensal.html" class="subcategory">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="title">
+                <h1>Consultar Clientes</h1>
+            </div>
+        </div>
+        <div class="container">
+            <h2>Buscar Cliente</h2>
+            <div class="form-container">
+                <form id="buscarClienteForm" onsubmit="buscarCliente(event)">
+                    <div class="form-group">
+                        <label for="cpf">CPF ou Nome</label>
+                        <input type="text" id="cpf" name="cpf" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn-submit" value="Buscar">
+                    </div>
+                </form>
+                <div class="cliente-info-container"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

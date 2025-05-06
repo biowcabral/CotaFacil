@@ -1,0 +1,1511 @@
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Clientes - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6/jquery.inputmask.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #381e97;
+            --button-hover-background:  #381e97;
+            --button-text-color: rgb(255, 255, 255);
+        }
+        
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar:hover {
+            width: 200px;
+        }
+        
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+        
+        .sidebar:hover a span {
+            display: inline;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 60px;
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+        
+        .sidebar:hover ~ .main-content {
+            margin-left: 200px;
+        }
+        
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100px; /* Ajuste a altura mínima para caber o nome completo */
+        }
+        
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 80px); /* Espaçamento da aba lateral */
+            transition: background-color 0.3s, color 0.3s;
+            margin-bottom: 20px; /* Espaçamento entre o cabeçalho e o funil */
+            height: 80px;
+        }
+    
+        
+    
+        .header h1 {
+    font-family: 'Merriweather', serif; /* Mantém a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    position: relative; /* Necessário para posicionar as linhas */
+    display: inline-block; /* Garante que o texto seja tratado como bloco */
+    margin-left: 29%;
+}
+
+.header h1::before,
+.header h1::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha, ajuste conforme necessário */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header h1::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+}
+
+.header h1::after {
+    right: -60px; /* Posiciona a linha à direita */
+}
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+            text-align: center;
+            max-width: 150px; /* Ajuste conforme necessário */
+            word-wrap: break-word;
+        }
+        
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+        
+        .header .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+        }
+        
+        .header .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+        
+        .header .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+        
+        .form-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        width: 30%;
+        margin: auto;
+        padding: 20px;
+        background: var(--card-background);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin-top: 20px; /* Espaçamento entre o cabeçalho e o formulário */
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%; /* Ajuste a largura dos campos para 100% */
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 100px;
+        box-sizing: border-box;
+    }
+        
+        .form-group .error-message {
+            display: none;
+            color: red;
+            font-size: 0.9em;
+        }
+        .form-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px; /* Ajuste o espaço entre os itens conforme necessário */
+    margin-top: 20px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-row .form-group-small {
+    flex: 0.1; /* Ajuste o tamanho do campo Estado */
+}
+
+.form-row .form-group:last-child {
+    margin-right: 0;
+}
+.form-group-medium {
+    flex: 1;
+}
+
+.form-group-small {
+    flex: 0.3;
+}
+    .steps {
+        display: flex;
+        justify-content: space-around; /* Distribui os botões uniformemente */
+        margin-bottom: 20px;
+        width: 100%; /* Certifique-se de que a largura é 100% para centralizar corretamente */
+    }
+
+    .step {
+        background: var(--card-background);
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .step:hover {
+        background: var(--button-hover-background);
+        transform: scale(1.1);
+    }
+        
+    .btn-submit {
+    background-color: var(--button-background);
+    text-decoration-color: var(--button-text-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    margin-top: 20px;
+    float: right;
+}
+
+.btn-submit:hover {
+    background-color: var(--button-hover-background);
+    text-decoration-color: var(--button-text-color);
+    transform: scale(1.1);
+}
+.btn-voltar {
+        background-color: transparent;
+        color: black;
+        border: none;
+        font-size: 12px;
+        text-align: right; /* Alinha o texto à direita */
+        align-self: flex-end; /* Alinha o botão ao fim */
+        margin-bottom: 5px;
+    }
+    .btn-voltar:hover {
+        background-color: transparent;
+        color: black;
+    }
+
+.btn-common {
+    width: 500%; /* Ajuste a largura dos botões para 100% */
+    max-width: 89px; /* Defina um valor máximo para a largura */
+}
+.button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 2px; /* Espaçamento entre os botões */
+        width: 100%;
+    }
+        
+        .success-message {
+            display: none;
+            text-align: center;
+            color: green;
+            font-size: 1.2em;
+        }
+        
+        
+        .steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            background: var(--card-background);
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-left: 10px;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        .step.disabled {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+    .form-section {
+    display: none;
+}
+
+.form-section.active {
+    display: block;
+}
+.sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+    .step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.active {
+    background: var(--button-background);
+    color: var(--button-text-color);
+    margin-left: 50px;
+}
+.step.no-hover:hover {
+    background: var(--card-background);
+    transform: none;
+}
+.step.disabled {
+    pointer-events: none;
+    opacity: 1;
+}
+.form-group i.fa-info-circle {
+        font-size: 0.8em; /* Ajuste o tamanho do ícone */
+        margin-left: 5px; /* Espaçamento entre o ícone e o texto */
+        color: #000000; /* Cor do ícone (opcional) */
+    }
+.header h1 {
+    font-family: 'Merriweather', serif; /* Aplica a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+}
+.menu-item {
+    position: relative;
+}
+
+.subcategory-sidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 0; /* Alinha ao topo do item pai */
+    left: 174px; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.sidebar:not(:hover) .subcategory-sidebar {
+    display: none !important; /* Garante que o submenu seja ocultado */
+}
+
+#homeChevron {
+    transition: transform 0.3s ease;
+}
+
+.sidebar a#homeLink {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinha o conteúdo à esquerda */
+    padding: 15px 20px; /* Aumenta o espaço interno */
+    width: 100%; /* Garante que o botão ocupe toda a largura disponível */
+    box-sizing: border-box; /* Inclui o padding na largura total */
+    overflow: hidden; /* Evita que o conteúdo transborde */
+    gap: 1px; /* Adiciona espaço entre o ícone e o texto */
+}
+
+.sidebar:not(:hover) #homeChevron {
+    display: none; /* Esconde o ícone quando a sidebar está colapsada */
+}
+
+/* Mantém o submenu visível enquanto o mouse está sobre o item principal ou o submenu */
+.menu-item:hover .subcategory-sidebar,
+.subcategory-sidebar:hover {
+    display: none;
+}
+.subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#relatoriosSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao elemento pai */
+top: 29%; /* Alinha ao topo do item pai */
+left: 100%; /* Ajusta para a largura da sidebar expandida */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+top: 10%; /* Ajuste a posição vertical conforme necessário */
+left: 123%; /* Ajuste a posição horizontal conforme necessário */
+position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#comercialSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+
+/* Centraliza os itens */
+display: flex;
+align-items: center; /* Alinha horizontalmente ao centro */
+justify-content: center; /* Alinha verticalmente ao centro */
+}
+    </style>
+    <!-- Adicione os scripts do Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+        
+        
+        // Inicializar o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth(); // Certifique-se de que o módulo de autenticação está importado
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    db.collection('users').doc(user.email).get().then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            const userNameElement = document.getElementById('userName');
+                            
+                            // Apenas define o texto se o elemento existir
+                            if (userNameElement) {
+                                userNameElement.textContent = userData.name;
+                            }
+                        } else {
+                            console.log("Nenhum dado encontrado para o usuário.");
+                        }
+                    }).catch((error) => {
+                        console.error("Erro ao obter documento:", error);
+                    });
+                } else {
+                    console.log("Usuário não autenticado!");
+                }
+            });
+        });
+        function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const chevron = document.getElementById('homeChevron');
+
+        if (submenu.style.display === "none" || submenu.style.display === "") {
+            submenu.style.display = "block";
+            chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+        } else {
+            submenu.style.display = "none";
+            chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+        }
+    }
+
+    document.getElementById('sidebar').addEventListener('mouseleave', () => {
+    const submenu = document.getElementById('homeSubcategoriesSidebar');
+    const chevron = document.getElementById('homeChevron');
+
+    if (submenu && submenu.style.display === "block") {
+        toggleSubmenu('homeSubcategoriesSidebar'); // Fecha o submenu chamando a função diretamente
+    }
+});
+</script>
+<script>
+    function toggleVisibility(buttonId, sectionId) {
+        const section = document.getElementById(sectionId);
+        const infoCards = section.querySelectorAll('.info-card p');
+        const toggleButton = document.getElementById(buttonId);
+        infoCards.forEach(card => {
+            if (card.classList.contains('blurred')) {
+                card.classList.remove('blurred');
+                toggleButton.style.backgroundImage = "url('olhoaberto.png')";
+            } else {
+                card.classList.add('blurred');
+                toggleButton.style.backgroundImage = "url('olhofechado.png')";
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            const submenu = document.getElementById('homeSubcategoriesSidebar');
+            const chevron = document.getElementById('homeChevron');
+
+            if (submenu && submenu.style.display === "block") {
+                toggleSubmenu('homeSubcategoriesSidebar'); // Fecha o submenu chamando a função diretamente
+            }
+        });
+    } else {
+        console.error("Elemento com ID 'sidebar' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const button = submenu.previousElementSibling; // Botão pai (Home ou Relatórios)
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+
+        // Posiciona o submenu ao lado do botão
+        const buttonRect = button.getBoundingClientRect();
+        submenu.style.top = `${buttonRect.top}px`;
+        submenu.style.left = `${buttonRect.right}px`;
+    } else {
+        submenu.style.display = "none";
+    }
+}
+    document.getElementById('sidebar').addEventListener('mouseleave', () => {
+    const submenu = document.getElementById('homeSubcategoriesSidebar');
+    const chevron = document.getElementById('homeChevron');
+
+    if (submenu && submenu.style.display === "block") {
+        toggleSubmenu('homeSubcategoriesSidebar'); // Fecha o submenu chamando a função diretamente
+    }
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    if (sidebarLogoutButton) {
+        sidebarLogoutButton.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+            }).catch((error) => {
+                console.error('Erro ao fazer logout:', error);
+            });
+        });
+    } else {
+        console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+    } else {
+        submenu.style.display = "none";
+        chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const relatoriosLink = document.getElementById('relatoriosLink');
+
+    if (sidebar && relatoriosLink) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Simula o clique no botão "Relatórios"
+            relatoriosLink.click();
+        });
+    } else {
+        console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const allSubmenus = document.querySelectorAll('.subcategory-sidebar'); // Seleciona todos os submenus
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    // Fecha outros submenus abertos
+    allSubmenus.forEach(otherSubmenu => {
+        if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+            otherSubmenu.style.display = 'none';
+            const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (otherChevron) {
+                otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    });
+
+    // Alterna o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (chevron) {
+            chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = 'none';
+        if (chevron) {
+            chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const relatoriosChevron = document.getElementById('homeChevron');
+
+    if (sidebar && relatoriosSubmenu) {
+        sidebar.addEventListener('mouseleave', () => {
+            if (relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+
+        sidebar.addEventListener('mouseenter', () => {
+            // Não reabre automaticamente o submenu ao retornar
+            if (relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+    } else {
+        console.error("Elemento 'sidebar' ou 'relatoriosSubcategoriesSidebar' não encontrado.");
+    }
+});
+function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+    if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+        homeSubmenu.style.display = 'none';
+        const homeChevron = document.getElementById('homeChevron');
+        if (homeChevron) {
+            homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+        }
+    }
+
+    // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+    if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+        relatoriosSubmenu.style.display = 'none';
+        const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        if (relatoriosChevron) {
+            relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+        }
+    }
+
+    // Alterna o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (chevron) {
+            chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = 'none';
+        if (chevron) {
+            chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+    const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+    const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+    const homeChevron = document.getElementById('homeChevron');
+    const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            // Fecha o submenu "Home" se estiver aberto
+            if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                homeSubmenu.style.display = 'none';
+                if (homeChevron) {
+                    homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+
+            // Fecha o submenu "Relatórios" se estiver aberto
+            if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                relatoriosSubmenu.style.display = 'none';
+                if (relatoriosChevron) {
+                    relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+
+            // Fecha o submenu "Comercial" se estiver aberto
+            if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                comercialSubmenu.style.display = 'none';
+                if (comercialChevron) {
+                    comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                }
+            }
+        });
+    } else {
+        console.error("Elemento 'sidebar' não encontrado.");
+    }
+});
+    </script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_vendas_mensal.html" class="subcategory">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Cadastro de Clientes</h1>
+        </div>
+        <div class="form-container">
+            <div class="steps">
+                <div class="step active no-hover disabled">Dados Pessoais</div>
+                <div class="step no-hover disabled">Dados de Endereço</div>
+                <div class="step no-hover disabled">Dados Bancários</div>
+            </div>
+            <form id="cadastroForm" onsubmit="salvarCliente(event)">
+                
+                
+                <div class="form-section active" id="section1">
+                    <h3>Dados Pessoais</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nomeCompleto">Nome Completo</label>
+                            <i class="fas fa-info-circle" title="Obrigatório"></i>
+                            <input type="text" id="nomeCompleto" name="nomeCompleto" required pattern="[A-Za-zÀ-ÿ\s]+" title="Apenas letras são permitidas" oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\s]/g, ''); checkFormCompletion()">
+                            <span class="error-message" id="nomeCompletoError">Insira um nome e sobrenome válido.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="cpfCnpj">CPF/CNPJ</label>
+                            <i class="fas fa-info-circle" title="Obrigatório"></i>
+                            <input type="text" id="cpfCnpj" name="cpfCnpj" required oninput="mascaraCpfCnpj(this); checkFormCompletion()">
+                            <span class="error-message" id="cpfCnpjError">Insira um CPF/CNPJ válido.</span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="RG">RG</label>
+                            <input type="text" id="rg" name="rg" maxlength="50" oninput="mascaraRg(this)">
+                        </div>
+                        <div class="form-group">
+                            <label for="dataNascimento">Data de Nascimento</label>
+                            <input type="date" id="dataNascimento" name="dataNascimento">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nomePai">Nome do Pai</label>
+                            <input type="text" id="nomePai" name="nomePai" pattern="[A-Za-zÀ-ÿ\s]+" title="Apenas letras são permitidas" oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\s]/g, '')">
+                            <span class="error-message" id="nomePaiError">O nome do pai deve ter pelo menos 10 caracteres.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="nomeMae">Nome da Mãe</label>
+                            <input type="text" id="nomeMae" name="nomeMae" pattern="[A-Za-zÀ-ÿ\s]+" title="Apenas letras são permitidas" oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\s]/g, '')">
+                            <span class="error-message" id="nomeMaeError">O nome da mãe deve ter pelo menos 10 caracteres.</span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone">Telefone Pessoal</label>
+                            <i class="fas fa-info-circle" title="Obrigatório"></i>
+                            <input type="tel" id="telefone" name="telefone" required oninput="mascaraTelefone(this); checkFormCompletion()">
+                            <span class="error-message" id="telefoneError">Insira um Telefone válido.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefoneFinanceiro">Telefone Financeiro</label>
+                            <i class="fas fa-info-circle" title="Telefone onde receberá os boletos"></i>
+                            <input type="tel" id="telefoneFinanceiro" name="telefoneFinanceiro" required oninput="mascaraTelefone(this); checkFormCompletion()">
+                            <span class="error-message" id="telefoneFinanceiroError">Insira um Telefone Financeiro válido.</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-submit" id="nextButton" onclick="validateAndShowSection(2)" disabled>Próximo</button>
+                </div>
+                <div class="form-group">
+                    </div>
+                
+                <div class="form-section" id="section2">
+                    <h3>Dados de Endereço</h3>
+                    <div class="form-row">
+                 <div class="form-group">
+                    <label for="cep">CEP</label>
+                    <input type="text" id="cep" name="cep" maxlength="9" oninput="pesquisacep(this.value)">
+                    <span class="error-message" id="cepError">O CEP deve ter 8 caracteres.</span>
+                </div>
+
+<script>
+    function limpa_formulário_cep() {
+        // Limpa valores do formulário de cep.
+        document.getElementById('rua').value = "";
+        document.getElementById('bairro').value = "";
+        document.getElementById('cidade').value = "";
+        document.getElementById('uf').value = "";
+    }
+
+    function meu_callback(conteudo) {
+        if (!("erro" in conteudo)) {
+            // Atualiza os campos com os valores.
+            document.getElementById('rua').value = conteudo.logradouro;
+            document.getElementById('bairro').value = conteudo.bairro;
+            document.getElementById('cidade').value = conteudo.localidade;
+            document.getElementById('uf').value = conteudo.uf;
+        } else {
+            // CEP não encontrado.
+            limpa_formulário_cep();
+            alert("CEP não encontrado.");
+        }
+    }
+
+    function pesquisacep(valor) {
+        // Nova variável "cep" somente com dígitos.
+        var cep = valor.replace(/\D/g, '');
+
+        // Verifica se campo cep possui valor informado.
+        if (cep != "") {
+            // Expressão regular para validar o CEP.
+            var validacep = /^[0-9]{8}$/;
+
+            // Valida o formato do CEP.
+            if (validacep.test(cep)) {
+                // Preenche os campos com "..." enquanto consulta webservice.
+                document.getElementById('rua').value = "...";
+                document.getElementById('bairro').value = "...";
+                document.getElementById('cidade').value = "...";
+                document.getElementById('uf').value = "...";
+
+                // Cria um elemento javascript.
+                var script = document.createElement('script');
+
+                // Sincroniza com o callback.
+                script.src = 'https://viacep.com.br/ws/' + cep + '/json/?callback=meu_callback';
+
+                // Insere script no documento e carrega o conteúdo.
+                document.body.appendChild(script);
+            } else {
+                // cep é inválido.
+                limpa_formulário_cep();
+                
+            }
+        } else {
+            // cep sem valor, limpa formulário.
+            limpa_formulário_cep();
+        }
+    }
+</script>
+                        <div class="form-group">
+                            <label for="cidade">Cidade</label>
+                            <input type="text" id="cidade" name="cidade">
+                        </div>
+                        <div class="form-group form-group-small">
+                            <label for="uf">Estado</label>
+                            <input type="text" id="uf" name="uf">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bairro">Bairro</label>
+                            <input type="text" id="bairro" name="bairro">
+                        </div>
+                        <div class="form-group">
+                            <label for="rua">Rua</label>
+                            <input type="text" id="rua" name="rua">
+                        </div>
+                        <div class="form-group form-group-small">
+                            <label for="uf">Número</label>
+                            <input type="text" id="numero" name="numero">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group button-container">
+                            <button type="button" class="btn-voltar" onclick="showSection(1)">Voltar</button>
+                            <button type="button" class="btn-submit btn-fixed-size" onclick="showSection(3)" id="nextButton2" disabled>Próximo</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seção Dados Bancários -->
+                <div class="form-section" id="section3">
+                    <h3>Dados Bancários</h3>
+    <div class="form-row">
+        <div class="form-group form-group-medium">
+            <label for="banco">Banco</label>
+            <select id="banco" name="banco">
+                <option value="">Selecione o banco</option>
+                <option value="banco_abc_brasil">Banco ABC Brasil</option>
+                <option value="banco_agibank">Banco Agibank</option>
+                <option value="banco_alfa">Banco Alfa</option>
+                <option value="banco_amazonia">Banco da Amazônia</option>
+                <option value="banco_banrisul">Banco Banrisul</option>
+                <option value="banco_bmg">Banco BMG</option>
+                <option value="banco_bnb">Banco do Nordeste</option>
+                <option value="banco_bnp_paribas">Banco BNP Paribas Brasil</option>
+                <option value="banco_brb">Banco BRB</option>
+                <option value="banco_bs2">Banco BS2</option>
+                <option value="banco_c6">Banco C6</option>
+                <option value="banco_caixa_economica">Caixa Econômica Federal</option>
+                <option value="banco_crefisa">Banco Crefisa</option>
+                <option value="banco_daycoval">Banco Daycoval</option>
+                <option value="banco_digio">Banco Digio</option>
+                <option value="banco_do_brasil">Banco do Brasil</option>
+                <option value="banco_fibra">Banco Fibra</option>
+                <option value="banco_industrial">Banco Industrial do Brasil</option>
+                <option value="banco_inter">Banco Inter</option>
+                <option value="banco_itau">Itaú Unibanco</option>
+                <option value="banco_jp_morgan">J.P. Morgan</option>
+                <option value="banco_mercantil">Banco Mercantil do Brasil</option>
+                <option value="banco_modal">Banco Modal</option>
+                <option value="banco_neon">Banco Neon</option>
+                <option value="banco_next">Banco Next</option>
+                <option value="banco_original">Banco Original</option>
+                <option value="banco_pagbank">Banco PagBank</option>
+                <option value="banco_pan">Banco PAN</option>
+                <option value="banco_pine">Banco Pine</option>
+                <option value="banco_rabobank">Banco Rabobank</option>
+                <option value="banco_safra">Banco Safra</option>
+                <option value="banco_santander">Santander Brasil</option>
+                <option value="banco_sicoob">Sicoob</option>
+                <option value="banco_sicredi">Sicredi</option>
+                <option value="banco_sofisa">Banco Sofisa</option>
+                <option value="banco_votorantim">Banco Votorantim (BV)</option>
+                <option value="citibank">Citibank Brasil</option>
+            </select>
+        </div>
+        <div class="form-group form-group-medium">
+            <label for="tipoConta">Tipo de Conta</label>
+            <select id="tipoConta" name="tipoConta">
+                <option value="">Selecione o tipo de conta</option>
+                <option value="corrente">Conta Corrente</option>
+                <option value="poupanca">Conta Poupança</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group form-group-medium">
+            <label for="conta">Conta</label>
+            <input type="text" id="conta" name="conta" pattern="\d*" title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')">
+        </div>
+        <div class="form-group form-group-small">
+            <label for="digito">Dígito</label>
+            <input type="text" id="digito" name="digito" pattern="\d*" title="Apenas números são permitidos" oninput="this.value = this.value.replace(/\D/g, '')">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group button-container">
+            <button type="button" class="btn-voltar" onclick="showSection(2)">Voltar</button>
+            <input type="submit" class="btn-submit btn-common" value="Cadastrar" id="submitButton" disabled>
+        </div>
+                    </div>
+                </div>
+                <script>
+                    function validateAndShowSection(section) {
+                        const nomeCompleto = document.getElementById('nomeCompleto').value.trim();
+                        const cpfCnpj = document.getElementById('cpfCnpj').value.trim();
+                        const telefone = document.getElementById('telefone').value.trim();
+                
+                        if (!nomeCompleto || !cpfCnpj || !telefone) {
+                            alert("Os campos Nome Completo, CPF/CNPJ e Telefone são obrigatórios.");
+                            return;
+                        }
+                
+                        showSection(section);
+                    }
+                
+                    function checkFormCompletion() {
+        const nomeCompleto = document.getElementById('nomeCompleto').value.trim();
+        const cpfCnpj = document.getElementById('cpfCnpj').value.trim();
+        const telefone = document.getElementById('telefone').value.trim();
+        const telefoneFinanceiro = document.getElementById('telefoneFinanceiro').value.trim();
+
+        const allFilled = nomeCompleto && cpfCnpj && telefone && telefoneFinanceiro;
+
+        const steps = document.querySelectorAll('.step');
+        steps[1].classList.toggle('disabled', !allFilled);
+        steps[2].classList.toggle('disabled', !allFilled);
+
+        document.getElementById('nextButton').disabled = !allFilled;
+        document.getElementById('nextButton2').disabled = !allFilled;
+        document.getElementById('submitButton').disabled = !allFilled;
+
+        return allFilled;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const requiredFields = ['nomeCompleto', 'cpfCnpj', 'telefone', 'telefoneFinanceiro'];
+        requiredFields.forEach(fieldId => {
+            document.getElementById(fieldId).addEventListener('input', checkFormCompletion);
+        });
+
+        const campos = [
+            { id: 'nomeCompleto', errorId: 'nomeCompletoError' },
+            { id: 'cpfCnpj', errorId: 'cpfCnpjError' },
+            { id: 'telefone', errorId: 'telefoneError' },
+            { id: 'telefoneFinanceiro', errorId: 'telefoneFinanceiroError' }
+        ];
+
+        campos.forEach(campo => {
+            const input = document.getElementById(campo.id);
+            if (input) {
+                input.addEventListener('blur', () => {
+                    if (input.value.trim() === '') {
+                        document.getElementById(campo.errorId).style.display = 'block';
+                    } else {
+                        document.getElementById(campo.errorId).style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+
+    async function salvarCliente(event) {
+        event.preventDefault(); // Impede o comportamento padrão do formulário
+    
+        // Obter os valores dos campos do formulário
+        const nomeCompleto = document.getElementById('nomeCompleto').value.trim();
+        const cpfCnpj = document.getElementById('cpfCnpj').value.replace(/\D/g, ''); // Remove caracteres não numéricos
+        const telefone = document.getElementById('telefone').value.trim();
+        const telefoneFinanceiro = document.getElementById('telefoneFinanceiro').value.trim();
+        const rg = document.getElementById('rg') ? document.getElementById('rg').value.trim() : '';
+        const dataNascimento = document.getElementById('dataNascimento') ? document.getElementById('dataNascimento').value : '';
+        const nomePai = document.getElementById('nomePai') ? document.getElementById('nomePai').value.trim() : '';
+        const nomeMae = document.getElementById('nomeMae') ? document.getElementById('nomeMae').value.trim() : '';
+        const cep = document.getElementById('cep') ? document.getElementById('cep').value.trim() : '';
+        const rua = document.getElementById('rua') ? document.getElementById('rua').value.trim() : '';
+        const numero = document.getElementById('numero') ? document.getElementById('numero').value.trim() : '';
+        const complemento = document.getElementById('complemento') ? document.getElementById('complemento').value.trim() : '';
+        const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+        const estado = document.getElementById('estado') ? document.getElementById('estado').value.trim() : '';
+        const banco = document.getElementById('banco') ? document.getElementById('banco').value.trim() : '';
+        const agencia = document.getElementById('agencia') ? document.getElementById('agencia').value.trim() : '';
+        const conta = document.getElementById('conta') ? document.getElementById('conta').value.trim() : '';
+        const digito = document.getElementById('digito') ? document.getElementById('digito').value.trim() : '';
+        const tipoConta = document.getElementById('tipoConta') ? document.getElementById('tipoConta').value.trim() : '';
+    
+        // Verificar se os campos obrigatórios estão preenchidos
+        if (!nomeCompleto || !cpfCnpj || !telefone || !telefoneFinanceiro) {
+            alert("Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+    
+        try {
+            // Verificar se o CPF/CNPJ já existe no Firestore
+            const docRef = db.collection("clientes").doc(cpfCnpj);
+            const doc = await docRef.get();
+            if (doc.exists) {
+                alert("CPF/CNPJ já cadastrado!");
+                return;
+            }
+    
+            // Dados a serem salvos no Firestore
+            const clienteData = {
+                nomeCompleto,
+                cpfCnpj,
+                rg,
+                dataNascimento,
+                nomePai,
+                nomeMae,
+                telefone,
+                telefoneFinanceiro,
+                endereco: {
+                    cep,
+                    rua,
+                    numero,
+                    complemento,
+                    cidade,
+                    estado
+                },
+                dadosBancarios: {
+                    banco,
+                    agencia,
+                    conta,
+                    digito,
+                    tipoConta
+                }
+            };
+    
+            // Salvar os dados no Firestore
+            await docRef.set(clienteData);
+    
+            // Exibir mensagem de sucesso e resetar o formulário
+            alert("Cliente cadastrado com sucesso!");
+            document.getElementById('cadastroForm').reset();
+            showSection(1); // Voltar para a primeira seção do formulário
+        } catch (error) {
+            console.error("Erro ao cadastrar cliente:", error);
+            alert("Erro ao cadastrar cliente. Verifique as permissões do banco de dados.");
+        }
+    }
+                
+                    function showSection(section) {
+                        document.querySelectorAll('.form-section').forEach((sec, index) => {
+                            sec.classList.toggle('active', index + 1 === section);
+                            document.querySelectorAll('.step')[index].classList.toggle('active', index + 1 === section);
+                        });
+                    }
+                
+                    function normalizarTexto(texto) {
+                        return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                    }
+                
+                    function mascaraCpfCnpj(input) {
+                        let value = input.value.replace(/\D/g, '');
+                        if (value.length > 14) {
+                            value = value.slice(0, 14);
+                        }
+                        if (value.length <= 11) {
+                            input.value = value.replace(/(\d{3})(\d)/, '$1.$2')
+                                               .replace(/(\d{3})(\d)/, '$1.$2')
+                                               .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                        } else {
+                            input.value = value.replace(/(\d{2})(\d)/, '$1.$2')
+                                               .replace(/(\d{3})(\d)/, '$1.$2')
+                                               .replace(/(\d{3})(\d{4})(\d{1,2})$/, '$1/$2-$3');
+                        }
+                    }
+                
+                    function mascaraRg(input) {
+                        let value = input.value.replace(/\D/g, '');
+                        if (value.length > 10) {
+                            value = value.slice(0, 10);
+                        }
+                        input.value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+                    }
+                
+                    function mascaraTelefone(input) {
+                        let value = input.value.replace(/\D/g, '');
+                        if (value.length > 11) {
+                            value = value.slice(0, 11);
+                        }
+                        if (value.length <= 10) {
+                            input.value = value.replace(/(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+                        } else {
+                            input.value = value.replace(/(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+                        }
+                    }
+                
+document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            db.collection('users').doc(user.email).get().then((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+
+                    // Aplicar tema armazenado no banco de dados
+                    const currentTheme = userData.theme || 'clean';
+                    document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+                } else {
+                    console.log("Nenhum dado encontrado para o usuário.");
+                }
+            }).catch((error) => {
+                console.error("Erro ao obter documento:", error);
+            });
+        } else {
+            console.log("Usuário não autenticado!");
+        }
+    });
+
+    // Validação dos campos
+    const campos = [
+        { id: 'nomeCompleto', errorId: 'nomeCompletoError' },
+        { id: 'cpfCnpj', errorId: 'cpfCnpjError' },
+        { id: 'telefone', errorId: 'telefoneError' },
+    ];
+
+    campos.forEach(campo => {
+        const input = document.getElementById(campo.id);
+        if (input) {
+            input.addEventListener('blur', () => {
+                const errorElement = document.getElementById(campo.errorId);
+                if (input.value.trim() === '') {
+                    errorElement.style.display = 'block';
+                } else {
+                    errorElement.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    // Adicione o código do botão de logout aqui
+    const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    if (sidebarLogoutButton) {
+        sidebarLogoutButton.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error("Erro ao fazer logout:", error);
+            });
+        });
+    }
+
+    // Máscara para o campo CEP
+    const cepInput = document.getElementById('cep');
+    if (cepInput) {
+        cepInput.addEventListener('input', () => {
+            let cep = cepInput.value.replace(/\D/g, '');
+            if (cep.length > 5) {
+                cep = cep.replace(/^(\d{5})(\d)/, '$1-$2');
+            }
+            cepInput.value = cep;
+        });
+    }
+});
+        function checkFormCompletion() {
+        const requiredFields = document.querySelectorAll('#section1 input[required]');
+        let allFilled = true;
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                allFilled = false;
+            }
+        });
+        document.getElementById('nextButton').disabled = !allFilled;
+        document.getElementById('nextButton2').disabled = !allFilled;
+        document.getElementById('submitButton').disabled = !allFilled;
+    }
+
+    function showSection(section) {
+        document.querySelectorAll('.form-section').forEach((sec, index) => {
+            sec.classList.toggle('active', index + 1 === section);
+            document.querySelectorAll('.step')[index].classList.toggle('active', index + 1 === section);
+        });
+    }
+
+    function normalizarTexto(texto) {
+        return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    function mascaraCpfCnpj(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 14) {
+            value = value.slice(0, 14);
+        }
+        if (value.length <= 11) {
+            input.value = value.replace(/(\d{3})(\d)/, '$1.$2')
+                               .replace(/(\d{3})(\d)/, '$1.$2')
+                               .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        } else {
+            input.value = value.replace(/(\d{2})(\d)/, '$1.$2')
+                               .replace(/(\d{3})(\d)/, '$1.$2')
+                               .replace(/(\d{3})(\d{4})(\d{1,2})$/, '$1/$2-$3');
+        }
+    }
+
+    function mascaraRg(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 10) {
+            value = value.slice(0, 10);
+        }
+        input.value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+    }
+
+    function mascaraTelefone(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+        if (value.length <= 10) {
+            input.value = value.replace(/(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+        } else {
+            input.value = value.replace(/(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        auth.onAuthStateChanged((user) => {
+        });
+    });
+    </script>
+    <script>
+        function limpa_formulário_cep() {
+            // Limpa valores do formulário de cep.
+            document.getElementById('rua').value = "";
+            document.getElementById('bairro').value = "";
+            document.getElementById('cidade').value = "";
+            document.getElementById('uf').value = "";
+        }
+    
+        function meu_callback(conteudo) {
+            if (!("erro" in conteudo)) {
+                // Atualiza os campos com os valores.
+                document.getElementById('rua').value = conteudo.logradouro;
+                document.getElementById('bairro').value = conteudo.bairro;
+                document.getElementById('cidade').value = conteudo.localidade;
+                document.getElementById('uf').value = conteudo.uf;
+            } else {
+                // CEP não encontrado.
+                limpa_formulário_cep();
+                alert("CEP não encontrado.");
+            }
+        }
+    
+        function pesquisacep(valor) {
+            // Nova variável "cep" somente com dígitos.
+            var cep = valor.replace(/\D/g, '');
+    
+            // Verifica se campo cep possui valor informado.
+            if (cep != "") {
+                // Expressão regular para validar o CEP.
+                var validacep = /^[0-9]{8}$/;
+    
+                // Valida o formato do CEP.
+                if (validacep.test(cep)) {
+                    // Preenche os campos com "..." enquanto consulta webservice.
+                    document.getElementById('rua').value = "...";
+                    document.getElementById('bairro').value = "...";
+                    document.getElementById('cidade').value = "...";
+                    document.getElementById('uf').value = "...";
+    
+                    // Cria um elemento javascript.
+                    var script = document.createElement('script');
+    
+                    // Sincroniza com o callback.
+                    script.src = 'https://viacep.com.br/ws/' + cep + '/json/?callback=meu_callback';
+    
+                    // Insere script no documento e carrega o conteúdo.
+                    document.body.appendChild(script);
+                } else {
+                    // cep é inválido.
+                    limpa_formulário_cep();
+                }
+            } else {
+                // cep sem valor, limpa formulário.
+                limpa_formulário_cep();
+            }
+        }
+    </script>
+</body>
+</html>

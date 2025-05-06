@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Cliente - FR Consórcio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <style>
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #081bc4;
+            --button-hover-background: #007bff;
+            --button-text-color: white;
+        }
+        
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .sidebar {
+        width: 60px;
+        background: var(--sidebar-background);
+        color: var(--sidebar-text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transition: width 0.3s ease, background 0.3s;
+        z-index: 1000;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+        
+    .sidebar:hover {
+        width: 220px;
+    }
+        
+    .sidebar a {
+        color: var(--sidebar-text-color);
+        text-decoration: none;
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s, width 0.3s;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar a i {
+        margin-right: 10px;
+        font-size: 1.2em;
+    }
+
+    .sidebar a span {
+        display: none;
+        transition: display 0.3s;
+    }
+
+    .sidebar:hover a span {
+        display: inline;
+    }
+    .sidebar:hover ~ .main-content {
+        margin-left: 200px;
+    }
+        .content {
+        flex: 1;
+        padding: 20px;
+        transition: margin-left 0.3s;
+    }
+        
+        .sidebar:hover ~ .content {
+            margin-left: 200px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 200px); /* Reduzido de 250px para 200px */
+            margin-left: 70px; /* Reduzido de 250px para 200px */
+            transition: margin-left 0.3s ease;
+            overflow-y: auto;
+            margin-left: 10px;
+            }
+        .header {
+            background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100px; /* Ajuste a altura mínima para caber o nome completo */
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--header-text-color);
+        }
+        
+        .header-card h1 {
+    font-family: 'Merriweather', serif; /* Mantém a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto horizontalmente */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    position: relative; /* Necessário para posicionar as linhas */
+    display: flex; /* Define o layout flex */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100%; /* Garante que o elemento ocupe toda a altura disponível */
+}
+
+.header-card h1::before,
+.header-card h1::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha, ajuste conforme necessário */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header-card h1::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+}
+
+.header-card h1::after {
+    right: -60px; /* Posiciona a linha à direita */
+}
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+            text-align: center;
+            max-width: 150px; /* Ajuste conforme necessário */
+            word-wrap: break-word;
+        }
+        
+        .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+        
+        .header .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 20px;
+        }
+        
+        .header .user-info i {
+            font-size: 2em;
+            color: #6a5acd;
+        }
+        
+        .header .user-info span {
+            margin-top: 5px;
+            font-size: 1em;
+            color: var(--header-text-color);
+        }
+        .container {
+    max-width: 98%; /* Aumenta a largura máxima para preencher mais a tela */
+    margin: 20px 1%; /* Reduz a margem lateral para preencher mais a direita */
+    background: var(--card-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+    margin-left: 80px;
+        }
+        h2 {
+            text-align: center;
+        }
+        .cliente-detalhes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .cliente-detalhes .info-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .cliente-detalhes .info-group label {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .cliente-detalhes .info-group span {
+            color: #555;
+        }
+        .cliente-detalhes .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .cliente-detalhes .actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .cliente-detalhes .actions button.edit {
+            background: var(--button-background);
+            color: var(--button-text-color);
+        }
+        .cliente-detalhes .actions button.edit:hover {
+            background: var(--button-hover-background);
+        }
+        .cliente-detalhes .actions button.delete {
+            background-color: #FF0000;
+            color: white;
+        }
+        .cliente-detalhes .actions button.delete:hover {
+            background-color: #cc0000;
+        }
+        .cliente-detalhes .actions button.venda,
+        .cliente-detalhes .actions button.boleto,
+        .cliente-detalhes .actions button.lance {
+            background-color: #28a745;
+            color: white;
+        }
+        .cliente-detalhes .actions button.venda:hover,
+        .cliente-detalhes .actions button.boleto:hover,
+        .cliente-detalhes .actions button.lance:hover {
+            background-color: #218838;
+        }
+        .modifications, .sales {
+            margin-top: 20px;
+        }
+        .modifications h3, .sales h3 {
+            margin-bottom: 10px;
+        }
+        .modifications ul, .sales ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .modifications ul li, .sales ul li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modifications ul li .delete-note {
+            background: none;
+            border: none;
+            color: #FF0000;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        .notes {
+            margin-top: 20px;
+        }
+        .notes textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        .notes input[type="file"] {
+            margin-top: 10px;
+        }
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .sales-table th, .sales-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .sales-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .sales-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .sales-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #381e97;
+            color: white;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        td.actions {
+        border: none; /* Remove a borda */
+    }
+        
+        .btn-action {
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-delete {
+            background-color: #FF4C4C;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: #FF0000;
+        }
+        
+        .btn-status {
+            background-color: #007BFF;
+            color: white;
+        }
+        
+        .btn-status:hover {
+            background-color: #0056b3;
+        }
+        #salvarAnotacaoBtn {
+    background-color: #381e97; /* Cor de fundo verde */
+    color: white; /* Cor do texto */
+    border: none; /* Remove a borda */
+    padding: 10px 20px; /* Ajusta o espaçamento interno */
+    border-radius: 5px; /* Bordas arredondadas */
+    cursor: pointer; /* Mostra o cursor de ponteiro ao passar o mouse */
+    transition: background-color 0.3s ease; /* Transição suave para hover */
+    width: 90px;
+    height: 35px;
+    display: flex; /* Define o layout flex */
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+}
+
+#salvarAnotacaoBtn:hover {
+    background-color: #6a5acd; /* Cor de fundo ao passar o mouse */
+}
+.sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+
+    .menu-item {
+        position: relative;
+    }
+
+    .sidebar:not(:hover) .subcategory-sidebar {
+        display: none !important; /* Garante que o submenu seja ocultado */
+    }
+
+    #homeChevron {
+        transition: transform 0.3s ease;
+    }
+    .sidebar a#homeLink {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start; /* Alinha o conteúdo à esquerda */
+        padding: 15px 20px; /* Aumenta o espaço interno */
+        width: 100%; /* Garante que o botão ocupe toda a largura disponível */
+        box-sizing: border-box; /* Inclui o padding na largura total */
+        overflow: hidden; /* Evita que o conteúdo transborde */
+        gap: 1px; /* Adiciona espaço entre o ícone e o texto */
+    }
+
+    .sidebar:not(:hover) #homeChevron {
+        display: none; /* Esconde o ícone quando a sidebar está colapsada */
+    }
+
+    .subcategory-sidebar {
+        display: none; /* Esconde o submenu por padrão */
+        position: absolute; /* Posiciona em relação ao botão pai */
+        top: 0; /* Alinha ao topo do botão pai */
+        left: 100%; /* Posiciona ao lado direito do botão pai */
+        background: var(--sidebar-background);
+        color: var(--sidebar-text-color);
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+        width: 250px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+
+/* Mantém o submenu visível enquanto o mouse está sobre o item principal ou o submenu */
+.menu-item:hover .subcategory-sidebar,
+.subcategory-sidebar:hover {
+display: none;
+}
+
+.subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+.header-card {
+    background: var(--header-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 80px); /* Espaçamento da aba lateral */
+            transition: background-color 0.3s, color 0.3s;
+            margin-bottom: 20px; /* Espaçamento entre o cabeçalho e o funil */
+            height: 80px;
+            margin-left: 3%;
+}
+.fas.fa-chevron-down {
+    transform: rotate(0deg); /* Inicialmente aponta para baixo */
+    transition: transform 0.3s ease; /* Transição suave */
+}
+
+.subcategory-sidebar {
+    display: none; /* Esconde o submenu por padrão */
+}
+
+.subcategory-sidebar[style*="display: block"] ~ .fas.fa-chevron-down {
+    transform: rotate(-90deg); /* Aponta para a direita quando o submenu está visível */
+}
+#relatoriosSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 29%; /* Alinha ao topo do item pai */
+    left: 100%; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+    top: 10%; /* Ajuste a posição vertical conforme necessário */
+    left: 123%; /* Ajuste a posição horizontal conforme necessário */
+    position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+    z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#relatoriosSubcategoriesSidebar {
+    position: fixed; /* Fixa o submenu na tela */
+    top: 200px; /* Ajuste para alinhar verticalmente com o botão "Relatórios" */
+    left: 219px; /* Ajuste para alinhar horizontalmente ao lado da sidebar expandida */
+    z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+    display: none; /* Esconde o submenu por padrão */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+#comercialSubcategoriesSidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao botão pai */
+    top: 0; /* Alinha ao topo do botão pai */
+    left: 100%; /* Posiciona ao lado direito do botão pai */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+
+    /* Centraliza os itens */
+    display: flex;
+    align-items: center; /* Alinha horizontalmente ao centro */
+    justify-content: center; /* Alinha verticalmente ao centro */
+}
+
+    </style>
+    <!-- Adicione os scripts do Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+        
+        // Inicializar o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+        
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Usuário está autenticado, buscar vendas e anotações
+                const cpfCnpj = localStorage.getItem('cpfCnpjCliente') || localStorage.getItem('cpfCliente');
+                if (cpfCnpj) {
+                    listarAnotacoes(cpfCnpj);
+                } else {
+                    console.error('CPF/CNPJ do cliente não encontrado no localStorage.');
+                }
+            } else {
+                // Redirecionar para a página de login se o usuário não estiver autenticado
+                window.location.href = 'login.html';
+            }
+        });
+        
+        // Função para salvar os dados do cliente no localStorage
+        function salvarDadosCliente(nomeCompleto, cpfCnpj) {
+            localStorage.setItem('nomeCompleto', nomeCompleto);
+            localStorage.setItem('cpfCnpj', cpfCnpj);
+            console.log('Dados do cliente salvos no localStorage:', { nomeCompleto, cpfCnpj });
+        
+            // Verificar se os dados foram salvos corretamente
+            const nomeCompletoSalvo = localStorage.getItem('nomeCompleto');
+            const cpfCnpjSalvo = localStorage.getItem('cpfCnpj');
+            console.log('Verificação dos dados salvos no localStorage:', { nomeCompletoSalvo, cpfCnpjSalvo });
+        }
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Aplicar tema armazenado no banco de dados
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    db.collection('users').doc(user.email).get().then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            const currentTheme = userData.theme || 'clean';
+                            document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+                        } else {
+                            console.log("Nenhum dado encontrado!");
+                        }
+                    }).catch((error) => {
+                        console.log("Erro ao obter documento:", error);
+                    });
+                } else {
+                    console.log("Usuário não autenticado!");
+                }
+            });
+        
+            // Recuperar dados do localStorage
+            const cpfCnpj = localStorage.getItem('cpfCnpjCliente') || localStorage.getItem('cpfCliente');
+            const nome = localStorage.getItem('nomeCompletoCliente');
+            const telefone = localStorage.getItem('telefoneCliente');
+            const endereco = localStorage.getItem('enderecoCliente');
+        
+            // Verificar se os elementos existem antes de definir suas propriedades
+            const clienteCpfCnpjElement = document.getElementById('clienteCpfCnpj');
+            const clienteNomeElement = document.getElementById('clienteNome');
+            const clienteTelefoneElement = document.getElementById('clienteTelefone');
+            const clienteEnderecoElement = document.getElementById('clienteEndereco');
+        
+            if (clienteCpfCnpjElement) clienteCpfCnpjElement.innerText = cpfCnpj;
+            if (clienteNomeElement) clienteNomeElement.innerText = nome;
+            if (clienteTelefoneElement) clienteTelefoneElement.innerText = telefone;
+            if (clienteEnderecoElement) clienteEnderecoElement.innerText = endereco;
+        
+            if (cpfCnpj) {
+                // Salvar dados do cliente no localStorage
+                salvarDadosCliente(nome, cpfCnpj);
+        
+                // Buscar e exibir vendas
+                listarVendas(cpfCnpj);
+        
+                // Buscar e exibir anotações
+                listarAnotacoes(cpfCnpj);
+            } else {
+                console.error('CPF/CNPJ do cliente não encontrado no localStorage.');
+            }
+        
+            document.getElementById('salvarAnotacaoBtn').addEventListener('click', () => {
+                const anotacao = document.getElementById('anotacoes').value;
+                if (anotacao.trim() !== '') {
+                    salvarAnotacao(cpfCnpj, anotacao);
+                } else {
+                    alert('Por favor, escreva uma anotação.');
+                }
+            });
+        
+            document.getElementById('anexos').addEventListener('change', (event) => {
+                const arquivos = event.target.files;
+                if (arquivos.length > 0) {
+                    for (const arquivo of arquivos) {
+                        salvarArquivo(cpfCnpj, arquivo);
+                    }
+                }
+            });
+        
+            // Adicionar eventos para recolher e expandir a sidebar
+            const sidebar = document.getElementById('sidebar');
+            sidebar.addEventListener('mouseenter', () => {
+                sidebar.classList.remove('hidden');
+            });
+            sidebar.addEventListener('mouseleave', () => {
+                sidebar.classList.add('hidden');
+            });
+        
+        });
+        
+        // Função para listar vendas do cliente
+        async function listarVendas(cpfCnpjCliente) {
+            const vendasTableBody = document.getElementById('vendasTable').querySelector('tbody');
+            vendasTableBody.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+        
+            const snapshot = await db.collection('clientes').doc(cpfCnpjCliente).collection('vendas').get();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = new Date(data.dataHoraCadastro.toDate());
+                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.administradora}</td>
+                    <td>${data.produto}</td>
+                    <td>${data.valorCredito}</td>
+                    <td>${data.vendedor}</td>
+                    <td>${data.grupo}</td>
+                    <td>${data.cota}</td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <select onchange="alterarStatusVenda('${cpfCnpjCliente}', '${doc.id}', this.value)">
+                            <option value="Ativa" ${data.status === 'Ativa' ? 'selected' : ''}>Ativa</option>
+                            <option value="Contemplada" ${data.status === 'Contemplada' ? 'selected' : ''}>Contemplada</option>
+                            <option value="Cancelada" ${data.status === 'Cancelada' ? 'selected' : ''}>Cancelada</option>
+                            <option value="Falta pagar" ${data.status === 'Falta pagar' ? 'selected' : ''}>Falta pagar</option>
+                            <option value="Desistente" ${data.status === 'Desistente' ? 'selected' : ''}>Desistente</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="100" step="0.01" placeholder="% Lance Embutido" value="${data.lanceEmbutido || ''}" onchange="updateLance('${doc.id}', 'lanceembutido', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="100" step="0.01" placeholder="% Lance do Bolso" value="${data.lanceBolso || ''}" onchange="updateLance('${doc.id}', 'lancebolso', this.value)">
+                    </td>
+                    <td class="actions">
+                        <button class="btn-action btn-delete" onclick="excluirVenda('${cpfCnpjCliente}', '${doc.id}')">
+     Excluir <i class="fas fa-trash"></i>
+</button>
+                    </td>
+                `;
+                vendasTableBody.appendChild(row);
+            });
+        }
+
+        async function updateLance(docId, field, value) {
+            try {
+                const updates = {};
+                updates[field] = parseFloat(value); // Converte o valor para número
+                await db.collection('clientes').doc(localStorage.getItem('cpfCnpjCliente')).collection('vendas').doc(docId).update(updates);
+                alert('Lance atualizado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao atualizar lance:', error);
+                alert('Erro ao atualizar lance: ' + error.message);
+            }
+        }
+        
+        function alterarStatusVenda(cpfCnpjCliente, vendaId, status) {
+            db.collection('clientes').doc(cpfCnpjCliente).collection('vendas').doc(vendaId).update({ status })
+                .then(() => {
+                    console.log('Status da venda atualizado com sucesso.');
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar status da venda:', error);
+                });
+        }
+        
+        function atualizarLance(cpfCnpjCliente, vendaId, campo, valor) {
+            const updateData = {};
+            updateData[campo] = parseFloat(valor);
+            db.collection('clientes').doc(cpfCnpjCliente).collection('vendas').doc(vendaId).update(updateData)
+                .then(() => {
+                    console.log(`Campo ${campo} atualizado com sucesso.`);
+                })
+                .catch(error => {
+                    console.error(`Erro ao atualizar campo ${campo}:`, error);
+                });
+        }
+        
+        // Função para listar anotações
+        async function listarAnotacoes(cpfCnpjCliente) {
+            if (!cpfCnpjCliente) {
+                console.error('CPF/CNPJ do cliente não fornecido.');
+                return;
+            }
+        
+            const anotacoesContainer = document.getElementById('anotacoesContainer');
+            if (!anotacoesContainer) {
+                console.error('Elemento anotacoesContainer não encontrado.');
+                return;
+            }
+        
+            anotacoesContainer.innerHTML = ''; // Limpa o container antes de preenchê-lo
+        
+            const snapshot = await db.collection('clientes').doc(cpfCnpjCliente).collection('anotacoes').get();
+            snapshot.forEach(doc => {
+                const anotacao = doc.data();
+                const anotacaoElement = document.createElement('div');
+                anotacaoElement.classList.add('anotacao');
+                anotacaoElement.innerHTML = `
+                    <p>${anotacao.anotacao}</p>
+                    <p>Data: ${new Date(anotacao.timestamp.toDate()).toLocaleDateString()}</p>
+                `;
+                anotacoesContainer.appendChild(anotacaoElement);
+            });
+        }
+        
+        async function salvarAnotacao(cpfCnpjCliente, anotacao) {
+            try {
+                await db.collection('clientes').doc(cpfCnpjCliente).collection('anotacoes').add({
+                    anotacao: anotacao,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert('Anotação salva com sucesso!');
+                listarAnotacoes(cpfCnpjCliente); // Atualiza a lista de anotações
+            } catch (error) {
+                console.error('Erro ao salvar anotação:', error);
+                alert('Erro ao salvar anotação. Tente novamente.');
+            }
+        }
+        
+        async function salvarArquivo(cpfCnpjCliente, arquivo) {
+            try {
+                const storageRef = storage.ref();
+                const fileRef = storageRef.child(`clientes/${cpfCnpjCliente}/${arquivo.name}`);
+                await fileRef.put(arquivo);
+                const fileURL = await fileRef.getDownloadURL();
+                await db.collection('clientes').doc(cpfCnpjCliente).collection('arquivos').add({
+                    nome: arquivo.name,
+                    url: fileURL,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert('Arquivo salvo com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar arquivo:', error);
+                alert('Erro ao salvar arquivo. Tente novamente.');
+            }
+        }
+        
+        function registrarVenda() {
+            window.location.href = 'registrar_venda.html';
+        }
+        
+        function editarCliente() {
+            // Captura os dados do cliente
+            const nome = document.getElementById('clienteNome').textContent;
+            const cpfCnpj = document.getElementById('clienteCpfCnpj').textContent;
+            const telefone = document.getElementById('clienteTelefone').textContent;
+            const endereco = document.getElementById('clienteEndereco').textContent;
+        
+            // Armazenar os dados no localStorage
+            localStorage.setItem('clienteNome', nome);
+            localStorage.setItem('clienteCpfCnpj', cpfCnpj);
+            localStorage.setItem('clienteTelefone', telefone);
+            localStorage.setItem('clienteEndereco', endereco);
+        
+            // Verificar se os dados foram salvos corretamente
+            const nomeSalvo = localStorage.getItem('clienteNome');
+            const cpfCnpjSalvo = localStorage.getItem('clienteCpfCnpj');
+            const telefoneSalvo = localStorage.getItem('clienteTelefone');
+            const enderecoSalvo = localStorage.getItem('clienteEndereco');
+            console.log('Verificação dos dados salvos no localStorage:', { nomeSalvo, cpfCnpjSalvo, telefoneSalvo, enderecoSalvo });
+        
+            // Redirecionar para a página de edição
+            window.location.href = 'editar_cliente.html';
+        }
+        
+        async function excluirCliente() {
+            const cpfCnpj = localStorage.getItem('cpfCnpjCliente') || localStorage.getItem('cpfCliente');
+
+            if (!cpfCnpj) {
+                alert('CPF/CNPJ do cliente não encontrado.');
+                return;
+            }
+
+            if (!confirm('Tem certeza que deseja excluir este cliente?')) {
+                return;
+            }
+
+            try {
+                // Verificar a role do usuário
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Usuário não autenticado.');
+                    return;
+                }
+
+                const userDoc = await db.collection('users').doc(user.email).get();
+                if (!userDoc.exists) {
+                    alert('Dados do usuário não encontrados.');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                const allowedRoles = ['gestor-comercial', 'proprietario-socio'];
+                if (!allowedRoles.includes(userData.role)) {
+                    alert('Você não tem permissão para excluir este cliente.');
+                    return;
+                }
+
+                // Obter os dados do cliente
+                const clienteDoc = await db.collection('clientes').doc(cpfCnpj).get();
+                if (!clienteDoc.exists) {
+                    alert('Cliente não encontrado.');
+                    return;
+                }
+
+                const clienteData = clienteDoc.data();
+
+                // Clonar o cliente na coleção "clientesExcluidos"
+                await db.collection('clientesExcluidos').doc(cpfCnpj).set(clienteData);
+
+                // Excluir o cliente da coleção "clientes"
+                await db.collection('clientes').doc(cpfCnpj).delete();
+
+                alert('Cliente excluído com sucesso!');
+                window.location.href = 'consultar_cliente.html'; // Redirecionar após exclusão
+            } catch (error) {
+                console.error('Erro ao excluir cliente:', error);
+                alert('Erro ao excluir cliente. Tente novamente.');
+            }
+        }
+        
+        function emitirBoleto() {
+            // Implementar funcionalidade de emissão de boleto
+            alert('Funcionalidade de emissão de boleto ainda não implementada.');
+        }
+        
+        function ofertarLance() {
+            // Implementar funcionalidade de oferta de lance
+            alert('Funcionalidade de oferta de lance ainda não implementada.');
+        }
+        
+        async function atualizarEtapaFunil(event) {
+            event.preventDefault();
+            const cpfCnpj = localStorage.getItem('cpfCnpjCliente') || localStorage.getItem('cpfCliente');
+            const funnelStage = document.getElementById('funnelStage').value;
+        
+            try {
+                await db.collection('clientes').doc(cpfCnpj).update({
+                    etapaFunil: funnelStage
+                });
+                alert('Etapa do funil atualizada com sucesso!');
+            } catch (error) {
+                console.error('Erro ao atualizar etapa do funil:', error);
+                alert('Erro ao atualizar etapa do funil. Tente novamente.');
+            }
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+        }
+
+        async function excluirVenda(cpfCnpjCliente, vendaId) {
+            if (!confirm('Tem certeza que deseja excluir esta venda?')) {
+                return;
+            }
+
+            try {
+                // Verificar a role do usuário
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Usuário não autenticado.');
+                    return;
+                }
+
+                const userDoc = await db.collection('users').doc(user.email).get();
+                if (!userDoc.exists) {
+                    alert('Dados do usuário não encontrados.');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                const allowedRoles = ['gestor-comercial', 'proprietario-socio'];
+                if (!allowedRoles.includes(userData.role)) {
+                    alert('Você não tem permissão para excluir esta venda.');
+                    return;
+                }
+
+                // Obter os dados da venda
+                const vendaDoc = await db.collection('clientes').doc(cpfCnpjCliente).collection('vendas').doc(vendaId).get();
+                if (!vendaDoc.exists) {
+                    alert('Venda não encontrada.');
+                    return;
+                }
+
+                const vendaData = vendaDoc.data();
+                const { grupo, cota, nomeCompleto } = vendaData;
+                const grupoCota = `${grupo}/${cota}`;
+
+                // Excluir da coleção "ComissaoID"
+                const comissaoSnapshot = await db.collection('ComissaoID')
+                    .where('grupoCota', '==', grupoCota)
+                    .where('nomeCompleto', '==', nomeCompleto)
+                    .get();
+                comissaoSnapshot.forEach(doc => doc.ref.delete());
+
+                // Excluir da coleção "ComissaoReceberID"
+                const comissaoReceberSnapshot = await db.collection('ComissaoReceberID')
+                    .where('grupoCota', '==', grupoCota)
+                    .where('nomeCompleto', '==', nomeCompleto)
+                    .get();
+                comissaoReceberSnapshot.forEach(doc => doc.ref.delete());
+
+                // Excluir da coleção "VendasID"
+                const vendasSnapshot = await db.collection('VendasID')
+                    .where('nomeCompleto', '==', nomeCompleto)
+                    .where('grupo', '==', grupo)
+                    .where('cota', '==', cota)
+                    .get();
+                vendasSnapshot.forEach(doc => doc.ref.delete());
+
+                // Excluir da coleção "Clientes > Vendas"
+                await db.collection('clientes').doc(cpfCnpjCliente).collection('vendas').doc(vendaId).delete();
+
+                alert('Venda excluída com sucesso!');
+                listarVendas(cpfCnpjCliente); // Atualizar a lista de vendas na tela
+            } catch (error) {
+                console.error('Erro ao excluir venda:', error);
+                alert('Erro ao excluir venda. Tente novamente.');
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+        if (sidebarLogoutButton) {
+            sidebarLogoutButton.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+                }).catch((error) => {
+                    console.error('Erro ao fazer logout:', error);
+                });
+            });
+        } else {
+            console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        if (chevron) {
+            chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+        }
+    } else {
+        submenu.style.display = "none";
+        if (chevron) {
+            chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+        }
+    }
+}
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const relatoriosLink = document.getElementById('relatoriosLink');
+    
+        if (sidebar && relatoriosLink) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Simula o clique no botão "Relatórios"
+                relatoriosLink.click();
+            });
+        } else {
+            console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const allSubmenus = document.querySelectorAll('.subcategory-sidebar'); // Seleciona todos os submenus
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha outros submenus abertos
+        allSubmenus.forEach(otherSubmenu => {
+            if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+                otherSubmenu.style.display = 'none';
+                const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+                if (otherChevron) {
+                    otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+                }
+            }
+        });
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const allSubmenus = document.querySelectorAll('.subcategory-sidebar');
+    const allChevrons = document.querySelectorAll('.fas.fa-chevron-down');
+
+    // Garante que todos os submenus estejam fechados e os ícones apontem para baixo ao carregar a página
+    allSubmenus.forEach(submenu => {
+        submenu.style.display = 'none';
+    });
+    allChevrons.forEach(chevron => {
+        chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+    });
+
+    // Fecha os submenus e redefine os ícones ao sair da sidebar
+    if (sidebar) {
+        sidebar.addEventListener('mouseleave', () => {
+            allSubmenus.forEach(submenu => {
+                submenu.style.display = 'none';
+            });
+            allChevrons.forEach(chevron => {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            });
+        });
+    }
+});
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+        if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+            homeSubmenu.style.display = 'none';
+            const homeChevron = document.getElementById('homeChevron');
+            if (homeChevron) {
+                homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+        if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+            relatoriosSubmenu.style.display = 'none';
+            const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (relatoriosChevron) {
+                relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+        const homeChevron = document.getElementById('homeChevron');
+        const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        if (sidebar) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Fecha o submenu "Home" se estiver aberto
+                if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                    homeSubmenu.style.display = 'none';
+                    if (homeChevron) {
+                        homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Relatórios" se estiver aberto
+                if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Comercial" se estiver aberto
+                if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                    comercialSubmenu.style.display = 'none';
+                    if (comercialChevron) {
+                        comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+        } else {
+            console.error("Elemento 'sidebar' não encontrado.");
+        }
+    });
+    </script>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_comercial_vendas.html">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_comercial_comissao.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_comercial_comissao_a_receber.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_comercial_estorno.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header-card">
+            <h1 style="margin-left: 33.5%;">Detalhes do Cliente</h1>
+        </div>
+        <div class="container">
+            <div class="cliente-detalhes">
+                <div class="info-group">
+                    <label>Nome Completo:</label>
+                    <span id="clienteNome"></span>
+                </div>
+                <div class="info-group">
+                    <label>CPF/CNPJ:</label>
+                    <span id="clienteCpfCnpj"></span>
+                </div>
+                <div class="info-group">
+                    <label>Telefone:</label>
+                    <span id="clienteTelefone"></span>
+                </div>
+                <div class="info-group">
+                    <label>Endereço:</label>
+                    <span id="clienteEndereco"></span>
+                </div>
+                <div class="info-group">
+                    <label>Etapa no Funil:</label>
+                    <form id="funnelStageForm" onsubmit="atualizarEtapaFunil(event)">
+                        <select id="funnelStage" name="funnelStage" required>
+                            <option value="Lead">Lead</option>
+                            <option value="Contato Realizado">Contato Realizado</option>
+                            <option value="Proposta Enviada">Proposta Enviada</option>
+                        </select>
+                        <button type="submit">Atualizar</button>
+                    </form>
+                </div>
+                <div class="actions">
+                    <button class="edit" onclick="editarCliente()">Editar</button>
+                    <button class="delete" onclick="excluirCliente()">Excluir</button>
+                    <button class="venda" onclick="registrarVenda()">Registrar Venda</button>
+                </div>
+                <h3>Vendas</h3>
+                <table id="vendasTable" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Administradora</th>
+                            <th>Produto</th>
+                            <th>Valor do Crédito</th>
+                            <th>Vendedor</th>
+                            <th>Grupo</th>
+                            <th>Cota</th>
+                            <th>Data da Venda</th>
+                            <th>Status</th>
+                            <th>% Lance Embutido</th>
+                            <th>% Lance Total Sugerido</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- As vendas serão inseridas aqui -->
+                    </tbody>
+                </table>
+                <h3>Anotações</h3>
+                <div id="anotacoesContainer">
+                    <!-- As anotações serão inseridas aqui -->
+                </div>
+                <textarea id="anotacoes" placeholder="Escreva suas anotações aqui..."></textarea>
+                <button id="salvarAnotacaoBtn">Salvar Anotação</button>
+                <input type="file" id="anexos" multiple>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

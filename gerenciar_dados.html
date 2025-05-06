@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Dados Pessoais - FR Consórcio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Variáveis de cores */
+        :root {
+            --background-color: linear-gradient(135deg, #ffffff, #e0e0e0);
+            --text-color: #333;
+            --header-background: rgba(255, 255, 255, 0.9);
+            --header-text-color: #333;
+            --sidebar-background: linear-gradient(135deg, #4e4376, #6a5acd);
+            --sidebar-text-color: #fff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --card-text-color: #333;
+            --button-background: #381e97;
+            --button-hover-background: #6a5acd;
+            --button-text-color: white;
+        }
+
+        body.dark-mode {
+            --background-color: linear-gradient(135deg, #0a0f1e, #0d1b2a);
+            --text-color: #e0e0e0;
+            --header-background: rgba(27, 38, 59, 0.8);
+            --header-text-color: #e0e0e0;
+            --sidebar-background: linear-gradient(135deg, #1b263b, #0d1b2a);
+            --sidebar-text-color: #e0e0e0;
+            --card-background: rgba(27, 38, 59, 0.8);
+            --card-text-color: #e0e0e0;
+            --button-background: #4e4376;
+            --button-hover-background: #3a2d5e;
+            --button-text-color: white;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-toggle-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 1001; /* Ensure the button is above other elements */
+        }
+
+        .theme-toggle-button:hover {
+            background-color: #4e4376;
+            transform: scale(1.1);
+        }
+
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-background);
+            color: var(--sidebar-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+        .sidebar-bottom-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: auto; /* Garante que os botões fiquem no rodapé */
+    }
+
+    .sidebar-button {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar-button i {
+        margin-right: -5px; /* Reduz o espaçamento entre o ícone e o texto */
+    }
+
+    .sidebar-button span {
+        margin-left: -5px; /* Reduz o espaçamento entre o texto e o ícone */
+    }
+
+    .sidebar-button:first-child {
+        margin-right: 5px;
+    }
+
+    .sidebar-button:last-child {
+        margin-left: 5px;
+    }
+
+        .sidebar a {
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, width 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .sidebar a span {
+            display: none;
+            transition: display 0.3s;
+        }
+
+        .sidebar:hover a span {
+            display: inline;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto; /* Adiciona barra lateral para rolagem */
+            background: var(--background-color);
+            color: var(--text-color);
+            margin-left: 80px; /* Espaçamento da aba lateral */
+            transition: margin-left 0.3s ease, background 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 220px;
+        }
+
+        .header {
+    background: var(--header-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    width: calc(100% - 80px); /* Espaçamento da aba lateral */
+    transition: background-color 0.3s, color 0.3s;
+    margin-bottom: 20px; /* Espaçamento entre o cabeçalho e o funil */
+    position: relative; /* Para posicionamento absoluto dos elementos filhos */
+    height: 15%; /* Define a altura como 20% da altura da tela */
+}
+        .sidebar:hover ~ .header {
+            width: calc(100% - 220px);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--header-text-color);
+        }
+
+        .profile-container {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .profile-container h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: var(--text-color);
+        }
+
+        .profile-container form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .profile-container input, .profile-container textarea {
+            flex: 1 1 calc(50% - 20px); /* Duas colunas com espaçamento */
+            min-width: 200px; /* Largura mínima para os campos */
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .profile-container button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--button-background);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .profile-container button:hover {
+            background-color: var(--button-hover-background);
+        }
+
+        .error-message {
+            color: red;
+            display: none;
+            max-width: 500px;
+        }
+
+        .cpf-input {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .cpf-input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .header h2 {
+    font-family: 'Merriweather', serif; /* Aplica a fonte Merriweather */
+    font-size: 3em; /* Ajuste o tamanho conforme necessário */
+    font-weight: 700; /* Negrito */
+    color: var(--header-text-color); /* Mantém a cor existente */
+    text-align: center; /* Centraliza o texto */
+    letter-spacing: 1px; /* Adiciona espaçamento entre as letras */
+    position: relative; /* Necessário para posicionar as linhas */
+    display: inline-block; /* Garante que o texto seja tratado como bloco */
+}
+
+.header h2::before,
+.header h2::after {
+    content: ''; /* Adiciona conteúdo vazio para as linhas */
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente em relação ao texto */
+    width: 50px; /* Comprimento da linha, ajuste conforme necessário */
+    height: 2px; /* Espessura da linha */
+    background-color: var(--header-text-color); /* Cor da linha */
+}
+
+.header h2::before {
+    left: -60px; /* Posiciona a linha à esquerda */
+}
+
+.header h2::after {
+    right: -60px; /* Posiciona a linha à direita */
+}
+.info-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+.menu-item {
+    position: relative;
+}
+
+.subcategory-sidebar {
+    display: none; /* Esconde o submenu por padrão */
+    position: absolute; /* Posiciona em relação ao elemento pai */
+    top: 0; /* Alinha ao topo do item pai */
+    left: 174px; /* Ajusta para a largura da sidebar expandida */
+    background: var(--sidebar-background);
+    color: var(--sidebar-text-color);
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.sidebar:not(:hover) .subcategory-sidebar {
+    display: none !important; /* Garante que o submenu seja ocultado */
+}
+
+#homeChevron {
+    transition: transform 0.3s ease;
+}
+
+.sidebar a#homeLink {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinha o conteúdo à esquerda */
+    padding: 15px 20px; /* Aumenta o espaço interno */
+    width: 100%; /* Garante que o botão ocupe toda a largura disponível */
+    box-sizing: border-box; /* Inclui o padding na largura total */
+    overflow: hidden; /* Evita que o conteúdo transborde */
+    gap: 1px; /* Adiciona espaço entre o ícone e o texto */
+}
+
+.sidebar:not(:hover) #homeChevron {
+    display: none; /* Esconde o ícone quando a sidebar está colapsada */
+}
+
+/* Mantém o submenu visível enquanto o mouse está sobre o item principal ou o submenu */
+.menu-item:hover .subcategory-sidebar,
+.subcategory-sidebar:hover {
+    display: none;
+}
+.subcategory-sidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#relatoriosSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao elemento pai */
+top: 29%; /* Alinha ao topo do item pai */
+left: 100%; /* Ajusta para a largura da sidebar expandida */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+}
+#homeSubcategoriesSidebar {
+top: 10%; /* Ajuste a posição vertical conforme necessário */
+left: 116%; /* Ajuste a posição horizontal conforme necessário */
+position: absolute; /* Garante que a posição seja relativa ao elemento pai */
+z-index: 1001; /* Certifique-se de que está acima de outros elementos */
+}
+#comercialSubcategoriesSidebar {
+display: none; /* Esconde o submenu por padrão */
+position: absolute; /* Posiciona em relação ao botão pai */
+top: 0; /* Alinha ao topo do botão pai */
+left: 100%; /* Posiciona ao lado direito do botão pai */
+background: var(--sidebar-background);
+color: var(--sidebar-text-color);
+padding: 10px;
+flex-direction: column;
+gap: 10px;
+width: 250px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+z-index: 1000;
+transition: all 0.3s ease;
+
+/* Centraliza os itens */
+display: flex;
+align-items: center; /* Alinha horizontalmente ao centro */
+justify-content: center; /* Alinha verticalmente ao centro */
+}
+    </style>
+    <!-- Adicione os scripts do Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-masker/1.2.0/vanilla-masker.min.js"></script>
+    <script src="gerenciar_dados.js"></script>
+    <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAKPIufxUNS2kHSErxCLANWev4w06-RfwY",
+  authDomain: "cotafacil-b0489.firebaseapp.com",
+  projectId: "cotafacil-b0489",
+  storageBucket: "cotafacil-b0489.firebasestorage.app",
+  messagingSenderId: "201488478427",
+  appId: "1:201488478427:web:a334256656ec8fa53d5cfe",
+  measurementId: "G-9BDP1YLJLE"
+};
+    
+        // Inicializar o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    
+        document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // Carregar dados do usuário
+            db.collection('users').doc(user.email).get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('name').value = doc.data().name;
+                    document.getElementById('cpfCnpj').value = doc.data().cpfCnpj;
+                    document.getElementById('birthdate').value = doc.data().birthdate;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('meta').value = doc.data().meta;
+
+                    // Quebrar linha a cada dois nomes
+                    const userNameElement = document.getElementById('userName');
+                    const userName = doc.data().name;
+                    const nameParts = userName.split(' ');
+                    let formattedName = '';
+                    for (let i = 0; i < nameParts.length; i++) {
+                        formattedName += nameParts[i] + ' ';
+                        if ((i + 1) % 2 === 0 && i !== nameParts.length - 1) {
+                            formattedName += '<br>';
+                        }
+                    }
+                    userNameElement.innerHTML = formattedName;
+                } else {
+                    console.log("Nenhum dado encontrado!");
+                }
+            }).catch((error) => {
+                console.log("Erro ao obter documento:", error);
+            });
+        }
+        
+    });
+
+    const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+    sidebarLogoutButton.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+        }).catch((error) => {
+            console.error('Erro ao fazer logout:', error);
+        });
+    });
+            const updateButton = document.getElementById('updateButton');
+            updateButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const user = auth.currentUser;
+                const name = document.getElementById('name').value;
+                const cpfCnpj = document.getElementById('cpfCnpj').value;
+                const birthdate = document.getElementById('birthdate').value;
+                const meta = VMasker.toMoney(document.getElementById('meta').value);
+                const errorMessage = document.getElementById('errorMessage');
+    
+                console.log(`Dados capturados: ${name}, ${cpfCnpj}, ${birthdate}, ${meta}`); // Log para depuração
+    
+                if (name && cpfCnpj && birthdate && meta) {
+                    db.collection('users').doc(user.email).set({
+                        name: name,
+                        cpfCnpj: cpfCnpj,
+                        birthdate: birthdate,
+                        meta: meta
+                    }, { merge: true }).then(() => {
+                        alert("Dados atualizados com sucesso!");
+                    }).catch((error) => {
+                        errorMessage.textContent = error.message;
+                        errorMessage.style.display = "block";
+                    });
+                } else {
+                    errorMessage.textContent = "Por favor, preencha todos os campos.";
+                    errorMessage.style.display = "block";
+                }
+            });
+    
+            const metaInput = document.getElementById('meta');
+            metaInput.addEventListener('input', () => {
+                metaInput.value = VMasker.toMoney(metaInput.value);
+            });
+
+            document.getElementById('cpfCnpj').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/^(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+                    value = value.replace(/\.(\d{3})(\d{1,2})$/, '.$1-$2');
+                } else {
+                    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                    value = value.replace(/\.(\d{3})(\d{1,2})$/, '.$1/$2');
+                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                }
+                e.target.value = value;
+            });
+        });
+    
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+        function toggleSubmenu(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const chevron = document.getElementById('homeChevron');
+
+    if (submenu.style.display === "none" || submenu.style.display === "") {
+        submenu.style.display = "block";
+        chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+    } else {
+        submenu.style.display = "none";
+        chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+    }
+}
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const sidebarLogoutButton = document.getElementById('sidebarLogoutButton');
+        if (sidebarLogoutButton) {
+            sidebarLogoutButton.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+                }).catch((error) => {
+                    console.error('Erro ao fazer logout:', error);
+                });
+            });
+        } else {
+            console.error("Elemento com ID 'sidebarLogoutButton' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        if (submenu.style.display === "none" || submenu.style.display === "") {
+            submenu.style.display = "block";
+            chevron.style.transform = "rotate(-90deg)"; // Aponta para a direita
+        } else {
+            submenu.style.display = "none";
+            chevron.style.transform = "rotate(0deg)"; // Aponta para baixo
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const relatoriosLink = document.getElementById('relatoriosLink');
+    
+        if (sidebar && relatoriosLink) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Simula o clique no botão "Relatórios"
+                relatoriosLink.click();
+            });
+        } else {
+            console.error("Elemento 'sidebar' ou 'relatoriosLink' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const allSubmenus = document.querySelectorAll('.subcategory-sidebar'); // Seleciona todos os submenus
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha outros submenus abertos
+        allSubmenus.forEach(otherSubmenu => {
+            if (otherSubmenu !== submenu && otherSubmenu.style.display === 'block') {
+                otherSubmenu.style.display = 'none';
+                const otherChevron = otherSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+                if (otherChevron) {
+                    otherChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+                }
+            }
+        });
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const relatoriosChevron = document.getElementById('homeChevron');
+    
+        if (sidebar && relatoriosSubmenu) {
+            sidebar.addEventListener('mouseleave', () => {
+                if (relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+    
+            sidebar.addEventListener('mouseenter', () => {
+                // Não reabre automaticamente o submenu ao retornar
+                if (relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+        } else {
+            console.error("Elemento 'sidebar' ou 'relatoriosSubcategoriesSidebar' não encontrado.");
+        }
+    });
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const chevron = submenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        // Fecha o submenu "Home" se o submenu "Relatórios" for clicado
+        if (submenuId === 'relatoriosSubcategoriesSidebar' && homeSubmenu.style.display === 'block') {
+            homeSubmenu.style.display = 'none';
+            const homeChevron = document.getElementById('homeChevron');
+            if (homeChevron) {
+                homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Fecha o submenu "Relatórios" se o submenu "Home" for clicado
+        if (submenuId === 'homeSubcategoriesSidebar' && relatoriosSubmenu.style.display === 'block') {
+            relatoriosSubmenu.style.display = 'none';
+            const relatoriosChevron = relatoriosSubmenu.previousElementSibling.querySelector('.fas.fa-chevron-down');
+            if (relatoriosChevron) {
+                relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone do submenu fechado
+            }
+        }
+    
+        // Alterna o submenu atual
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (chevron) {
+                chevron.style.transform = 'rotate(-90deg)'; // Aponta para a direita
+            }
+        } else {
+            submenu.style.display = 'none';
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)'; // Aponta para baixo
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const homeSubmenu = document.getElementById('homeSubcategoriesSidebar');
+        const relatoriosSubmenu = document.getElementById('relatoriosSubcategoriesSidebar');
+        const comercialSubmenu = document.getElementById('comercialSubcategoriesSidebar');
+        const homeChevron = document.getElementById('homeChevron');
+        const relatoriosChevron = relatoriosSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+        const comercialChevron = comercialSubmenu?.previousElementSibling.querySelector('.fas.fa-chevron-down');
+    
+        if (sidebar) {
+            sidebar.addEventListener('mouseleave', () => {
+                // Fecha o submenu "Home" se estiver aberto
+                if (homeSubmenu && homeSubmenu.style.display === 'block') {
+                    homeSubmenu.style.display = 'none';
+                    if (homeChevron) {
+                        homeChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Relatórios" se estiver aberto
+                if (relatoriosSubmenu && relatoriosSubmenu.style.display === 'block') {
+                    relatoriosSubmenu.style.display = 'none';
+                    if (relatoriosChevron) {
+                        relatoriosChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+    
+                // Fecha o submenu "Comercial" se estiver aberto
+                if (comercialSubmenu && comercialSubmenu.style.display === 'block') {
+                    comercialSubmenu.style.display = 'none';
+                    if (comercialChevron) {
+                        comercialChevron.style.transform = 'rotate(0deg)'; // Reseta o ícone
+                    }
+                }
+            });
+        } else {
+            console.error("Elemento 'sidebar' não encontrado.");
+        }
+    });
+    </script>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="menu-item">
+                <a href="#" id="homeLink" onclick="toggleSubmenu('homeSubcategoriesSidebar')">
+                    <i class="fas fa-home"></i><span>Home</span>
+                    <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+                </a>
+                <div id="homeSubcategoriesSidebar" class="subcategory-sidebar">
+                    <a href="dashboard.html" class="subcategory"><i class="fas fa-chart-line"></i><span>Dashboard Comercial</span></a>
+                    <a href="dashboard_gestor_comercial.html" class="subcategory"><i class="fas fa-chart-bar"></i><span>Dashboard Gestor Comercial</span></a>
+                    <a href="dashboard_administrativo.html" class="subcategory"><i class="fas fa-chart-pie"></i><span>Dashboard Administrativo</span></a>
+                </div>
+            </div>
+        <a href="cadastro_cliente.html"><i class="fas fa-user-plus"></i><span>Cadastrar Cliente</span></a>
+        <a href="consultar_cliente.html"><i class="fas fa-search"></i><span>Consultar Cliente</span></a>
+        <a href="#" id="relatoriosLink" onclick="toggleSubmenu('relatoriosSubcategoriesSidebar')">
+            <i class="fas fa-chart-line"></i><span>Relatórios</span>
+            <i class="fas fa-chevron-down" id="homeChevron" style="margin-left: 5px; transition: transform 0.3s;"></i>
+        </a>
+        <div id="relatoriosSubcategoriesSidebar" class="subcategory-sidebar">
+            <a class="subcategory" href="#" onclick="toggleSubmenu('comercialSubcategoriesSidebar'); return false;">
+                <i class="fas fa-briefcase"></i><span>Comercial</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px; transition: transform 0.3s;"></i>
+            </a>
+            <div id="comercialSubcategoriesSidebar" class="subcategory-sidebar" style="display: none; padding-left: 20px;">
+                <a href="relatorio_vendas_mensal.html" class="subcategory">
+                    <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-money-bill-wave"></i><span>Comissão à pagar</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-hand-holding-usd"></i><span>Comissão à receber</span>
+                </a>
+                <a href="relatorio_vendas_anual.html" class="subcategory">
+                    <i class="fas fa-undo"></i><span>Estorno</span>
+                </a>
+            </div>
+        </div>
+        <a href="gerenciamento_leads.html"><i class="fas fa-users"></i><span>CRM de Leads</span></a>
+        <a href="gerenciamento_visitas.html"><i class="fas fa-calendar-check"></i><span>CRM de Visitas</span></a>
+        <a href="cadastro_usuario.html"><i class="fas fa-user-cog"></i><span>Cadastrar Usuário</span></a>
+        <a href="configuracoes.html"><i class="fas fa-cogs"></i><span>Configurações</span></a>
+        <div class="sidebar-bottom-buttons">
+            <a href="gerenciar_dados.html" class="sidebar-button"><i class="fas fa-user-cog"></i><span>Perfil</span></a>
+            <a href="#" id="sidebarLogoutButton" class="sidebar-button"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="info-cards">
+                <div class="info-card">
+                    <h2>Gerenciar Dados Pessoais</h2>
+                </div>
+            </div>
+        </div>
+        <div class="profile-container">
+            <h1>Dados do Usuário</h1>
+            <form id="dadosPessoaisForm">
+                <input type="text" id="name" placeholder="Nome Completo" required>
+                <input type="text" id="cpfCnpj" class="cpf-input" placeholder="CPF ou CNPJ" required maxlength="18">
+                <input type="date" id="birthdate" placeholder="Data de Nascimento" required>
+                <input type="email" id="email" placeholder="Email" required disabled>
+                <input type="text" id="meta" placeholder="Meta de Venda (em Reais)" required>
+                <button id="updateButton">Atualizar Dados</button>
+                <p class="error-message" id="errorMessage"></p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
